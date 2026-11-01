@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEKU // SOUNDWAVE DRIVE - BASSLINE SPEC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030610;
+      --panel: #070e1c;
+      --panel-border: #00d9ff;
+      --teku-cyan: #00f0ff;
+      --teku-cyan-glow: rgba(0, 240, 255, 0.45);
+      --teku-orange: #ff7700;
+      --teku-magenta: #ff0077;
+      --teku-white: #e6ffff;
+      --teku-silver: #8faec4;
+      --carbon: #080c14;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.15) 0%, transparent 60%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 30px 30px, 30px 30px;
+      color: var(--teku-white);
+      font-family: 'Rajdhani', -apple-system, sans-serif;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* TEKU LOGO & COCKPIT HEADER */
+    header {
+      background: linear-gradient(135deg, rgba(7, 14, 28, 0.95), rgba(3, 6, 16, 0.98));
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-top: 3px solid var(--teku-cyan);
+      box-shadow: 0 4px 25px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .teku-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      font-style: italic;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow: 
+        0 0 10px var(--teku-cyan),
+        0 0 25px var(--teku-cyan-glow),
+        2px 2px 0px #000;
+    }
+
+    .teku-title span {
+      color: var(--teku-orange);
+      text-shadow: 0 0 12px rgba(255, 119, 0, 0.8);
+    }
+
+    .kanji-sub {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      color: var(--teku-silver);
+      letter-spacing: 3px;
+    }
+
+    .shirako-quote {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--teku-cyan);
+      text-transform: uppercase;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 4px 10px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    }
+
+    /* TACHOMETER LED SHIFT LIGHT BAR */
+    .shift-light-bar {
+      display: flex;
+      gap: 10px;
+      background: #020408;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 8px 16px;
+      border-radius: 4px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .led {
+      flex: 1;
+      max-width: 90px;
+      height: 12px;
+      background: #141f2d;
+      border-radius: 2px;
+      transition: all 0.05s ease;
+    }
+
+    .led.cyan.on {
+      background: var(--teku-cyan);
+      box-shadow: 0 0 10px var(--teku-cyan);
+    }
+
+    .led.yellow.on {
+      background: var(--teku-orange);
+      box-shadow: 0 0 12px var(--teku-orange);
+    }
+
+    .led.magenta.on {
+      background: var(--teku-magenta);
+      box-shadow: 0 0 14px var(--teku-magenta);
+      animation: blink 0.15s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* MAIN CONTROLS (CYBER TUNER BUTTONS) */
+    .main-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--teku-white);
+      background: linear-gradient(180deg, #0e1a2f 0%, #060b14 100%);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      padding: 12px 20px;
+      cursor: pointer;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    button:hover {
+      background: linear-gradient(180deg, #162744 0%, #0a1424 100%);
+      border-color: var(--teku-cyan);
+      color: var(--teku-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #009cb0 0%, #00f0ff 100%);
+      color: #010409;
+      border: none;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+
+    button.primary:hover {
+      background: #00f0ff;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+    }
+
+    button.active {
+      background: linear-gradient(135deg, #c4005b 0%, #ff0077 100%);
+      color: #fff;
+      border-color: var(--teku-magenta);
+      box-shadow: 0 0 20px rgba(255, 0, 119, 0.7);
+    }
+
+    /* TEKU MOTIF SELECTOR BAR */
+    .motif-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(4, 9, 20, 0.7);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 8px 14px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    }
+
+    .motif-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--teku-silver);
+      letter-spacing: 2px;
+      margin-right: 4px;
+    }
+
+    .btn-motif {
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      background: rgba(14, 26, 47, 0.8);
+      letter-spacing: 1.5px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    }
+
+    .btn-motif:hover {
+      border-color: var(--teku-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-motif.selected {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(255, 119, 0, 0.25) 100%);
+      border-color: var(--teku-orange);
+      color: var(--teku-orange);
+      box-shadow: 0 0 12px rgba(255, 119, 0, 0.5);
+    }
+
+    /* ACOUSTIC PERSPECTIVE BAR */
+    .deck-mode-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(3, 7, 16, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 8px 14px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    }
+
+    .btn-deck {
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      background: rgba(14, 26, 47, 0.8);
+      letter-spacing: 1.5px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    }
+
+    .btn-deck:hover {
+      border-color: var(--teku-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-deck.selected {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.3) 0%, rgba(255, 0, 119, 0.3) 100%);
+      border-color: var(--teku-cyan);
+      color: #fff;
+      box-shadow: 0 0 12px var(--teku-cyan);
+    }
+
+    /* SHIRAKO SOUNDBOARD BAR */
+    .soundboard-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(5, 11, 24, 0.9);
+      border: 1px solid rgba(255, 119, 0, 0.35);
+      padding: 8px 14px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    }
+
+    .soundboard-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--teku-orange);
+      letter-spacing: 2px;
+      margin-right: 4px;
+    }
+
+    .btn-soundboard {
+      font-size: 0.72rem;
+      padding: 6px 11px;
+      letter-spacing: 1.2px;
+      clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+    }
+
+    .btn-soundboard.cyan {
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--teku-cyan);
+    }
+    .btn-soundboard.cyan:hover {
+      background: rgba(0, 240, 255, 0.25);
+      box-shadow: 0 0 12px var(--teku-cyan);
+    }
+
+    .btn-soundboard.magenta {
+      border: 1px solid rgba(255, 0, 119, 0.5);
+      background: rgba(255, 0, 119, 0.15);
+      color: var(--teku-magenta);
+    }
+    .btn-soundboard.magenta:hover {
+      background: rgba(255, 0, 119, 0.35);
+      box-shadow: 0 0 14px var(--teku-magenta);
+    }
+
+    .btn-soundboard.orange {
+      border: 1px solid rgba(255, 119, 0, 0.5);
+      background: rgba(255, 119, 0, 0.15);
+      color: var(--teku-orange);
+    }
+    .btn-soundboard.orange:hover {
+      background: rgba(255, 119, 0, 0.35);
+      box-shadow: 0 0 14px var(--teku-orange);
+    }
+
+    /* 16V CAM SCREAMER CARD */
+    .card-screamer {
+      border-color: rgba(255, 119, 0, 0.4);
+      box-shadow: inset 0 0 20px rgba(255, 119, 0, 0.08);
+      transition: all 0.2s ease-out;
+    }
+
+    .card-screamer.screaming {
+      border-color: var(--teku-magenta);
+      box-shadow: 0 0 22px rgba(255, 0, 119, 0.45), inset 0 0 20px rgba(255, 119, 0, 0.25);
+      animation: screamer-glow 0.6s infinite alternate;
+    }
+
+    @keyframes screamer-glow {
+      0% { border-color: var(--teku-orange); box-shadow: 0 0 15px rgba(255, 119, 0, 0.4); }
+      100% { border-color: var(--teku-magenta); box-shadow: 0 0 25px rgba(255, 0, 119, 0.7); }
+    }
+
+    .screamer-badge {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      border: 1px solid;
+    }
+
+    .screamer-badge.dormant {
+      color: var(--teku-silver);
+      border-color: rgba(142, 160, 184, 0.4);
+      background: rgba(142, 160, 184, 0.1);
+    }
+
+    .screamer-badge.screaming {
+      color: #fff;
+      border-color: var(--teku-magenta);
+      background: rgba(255, 0, 119, 0.35);
+      box-shadow: 0 0 12px var(--teku-magenta);
+      animation: blink 0.25s infinite;
+    }
+
+    .screamer-display {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .screamer-freq-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--teku-orange);
+      text-shadow: 0 0 12px rgba(255, 119, 0, 0.6);
+      letter-spacing: 1px;
+    }
+
+    .screamer-bar-container {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      background: #020408;
+      border: 1px solid rgba(255, 119, 0, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .screamer-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teku-cyan) 0%, var(--teku-orange) 65%, var(--teku-magenta) 100%);
+      transition: width 0.08s linear;
+    }
+
+    .screamer-threshold-line {
+      position: absolute;
+      top: 0;
+      left: 65.7%; /* 3000 RPM mark: (3000-700)/(4200-700) */
+      width: 2px;
+      height: 100%;
+      background: #ff0077;
+      box-shadow: 0 0 6px #ff0077;
+    }
+
+    /* TEKU DASHBOARD CARDS */
+    .grid-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(14, 24, 43, 0.7) 0%, rgba(6, 11, 20, 0.9) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.04);
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--teku-cyan), transparent);
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--teku-silver);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .card-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 15px var(--teku-cyan-glow);
+      letter-spacing: 1px;
+    }
+
+    .card-unit {
+      font-size: 0.85rem;
+      color: var(--teku-cyan);
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--teku-cyan);
+      height: 6px;
+      background: #020408;
+      border-radius: 3px;
+    }
+
+    /* REPLAY HUD */
+    #replay-hud {
+      background: rgba(3, 7, 16, 0.95);
+      border: 1px solid var(--teku-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+      clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-bar-shell {
+      width: 100%;
+      height: 8px;
+      background: #02050b;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #replay-progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teku-cyan) 0%, var(--teku-orange) 60%, var(--teku-magenta) 100%);
+      box-shadow: 0 0 10px var(--teku-cyan);
+      transition: width 0.1s linear;
+    }
+
+    /* BASSLINE VISUALIZER CANVAS */
+    .visualizer-wrapper {
+      position: relative;
+      background: #010307;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+      clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 175px;
+      display: block;
+    }
+
+    .vis-overlay-tag {
+      position: absolute;
+      top: 8px; right: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--teku-cyan);
+      background: rgba(0, 240, 255, 0.1);
+      padding: 2px 6px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    /* MUSICAL STATUS BAR */
+    .musical-status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(4, 9, 20, 0.9);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 10px 18px;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      font-size: 0.85rem;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .music-item span:first-child {
+      color: var(--teku-silver);
+      margin-right: 6px;
+    }
+
+    .music-item span:last-child {
+      color: var(--teku-cyan);
+      font-weight: bold;
+    }
+
+    .badge-mode {
+      padding: 4px 10px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      border: 1px solid;
+    }
+
+    .badge-mode.idle {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--teku-cyan);
+      border-color: var(--teku-cyan);
+    }
+
+    .badge-mode.coasting {
+      background: rgba(255, 180, 0, 0.2);
+      color: #ffb400;
+      border-color: #ffb400;
+      box-shadow: 0 0 10px rgba(255, 180, 0, 0.4);
+    }
+
+    .badge-mode.chill {
+      background: rgba(0, 240, 255, 0.2);
+      color: #fff;
+      border-color: var(--teku-cyan);
+      box-shadow: 0 0 12px var(--teku-cyan-glow);
+    }
+
+    .badge-mode.flow {
+      background: rgba(255, 119, 0, 0.2);
+      color: var(--teku-orange);
+      border-color: var(--teku-orange);
+      box-shadow: 0 0 12px rgba(255, 119, 0, 0.5);
+    }
+
+    .badge-mode.attack {
+      background: rgba(255, 0, 119, 0.25);
+      color: #fff;
+      border-color: var(--teku-magenta);
+      box-shadow: 0 0 18px rgba(255, 0, 119, 0.8);
+      animation: blink 0.3s infinite;
+    }
+
+    .log-box {
+      background: #020408;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 10px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      height: 90px;
+      overflow-y: auto;
+      color: var(--teku-silver);
+    }
+
+    .shift-flair {
+      animation: flash-shift 0.4s ease-out;
+    }
+
+    @keyframes flash-shift {
+      0% { background: rgba(0, 240, 255, 0.4); box-shadow: 0 0 25px var(--teku-cyan); }
+      100% { background: transparent; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- TEKU COCKPIT HEADER -->
+  <header>
+    <div>
+      <div class="brand-group">
+        <h1 class="teku-title">TEKU<span>//</span>DRIVE</h1>
+        <div class="kanji-sub">音波駆動 // TEKU TUNER LAB</div>
+      </div>
+      <div class="shirako-quote">"YO, LET'S PUMP UP THE BASSLINE!" ⚡</div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+      <span class="badge-mode idle" id="mode-badge">IDLE</span>
+      <div style="font-size: 0.75rem; color: var(--teku-silver); letter-spacing: 1px;">
+        VEHICLE: <strong>CLIO MIO 1.2 "DRIFT SPEC"</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- TACHOMETER LED SHIFT LIGHTS -->
+  <div class="shift-light-bar">
+    <div class="led cyan" id="led-1"></div>
+    <div class="led cyan" id="led-2"></div>
+    <div class="led cyan" id="led-3"></div>
+    <div class="led cyan" id="led-4"></div>
+    <div class="led yellow" id="led-5"></div>
+    <div class="led yellow" id="led-6"></div>
+    <div class="led magenta" id="led-7"></div>
+    <div class="led magenta" id="led-8"></div>
+  </div>
+
+  <!-- MAIN COCKPIT CONTROLS -->
+  <div class="main-controls">
+    <button class="primary" id="btn-audio">Start Audio Engine</button>
+    <button id="btn-replay">Replay Clio CSV Run (75s)</button>
+    <button id="btn-chill-shift">Test Chill Gear-Shift @ 2.4k</button>
+    <button id="btn-stomp">Test Throttle Stomp (Attack)</button>
+  </div>
+
+  <!-- TEKU MOTIF SELECTOR -->
+  <div class="motif-selector-bar">
+    <span class="motif-label">TEKU MOTIF:</span>
+    <button class="btn-motif selected" data-motif="auto" id="btn-motif-auto">AUTO-CYCLE (8-BAR)</button>
+    <button class="btn-motif" data-motif="halogen" id="btn-motif-halogen">HALOGEN // i_o SPEC</button>
+    <button class="btn-motif" data-motif="shirako" id="btn-motif-shirako">SHIRAKO // BASSLINE</button>
+    <button class="btn-motif" data-motif="anthem" id="btn-motif-anthem">TEKU-ISING // PATA DE BASS</button>
+    <button class="btn-motif" data-motif="metro" id="btn-motif-metro">METRO // NIGHT RUN</button>
+  </div>
+
+  <!-- ACOUSTIC PERSPECTIVE SELECTOR -->
+  <div class="deck-mode-bar">
+    <span class="motif-label">ACOUSTIC PERSPECTIVE:</span>
+    <button class="btn-deck selected" id="btn-perspective-arena" data-perspective="arena">SUBWOOFER ARENA (BASSLINE ARRAY)</button>
+    <button class="btn-deck" id="btn-perspective-headphones" data-perspective="headphones">SHIRAKO DJ HEADPHONES</button>
+  </div>
+
+  <!-- SHIRAKO TAKAMOTO DJ SOUNDBOARD -->
+  <div class="soundboard-bar">
+    <span class="soundboard-label">SHIRAKO SOUNDBOARD:</span>
+    <button class="btn-soundboard cyan" id="btn-sfx-scratch">DJ BABY SCRATCH</button>
+    <button class="btn-soundboard cyan" id="btn-sfx-spinback">TURNTABLE SPINBACK</button>
+    <button class="btn-soundboard magenta" id="btn-sfx-cannon">SONIC CANNON BLAST</button>
+    <button class="btn-soundboard orange" id="btn-sfx-bov">TURBO BOV FLUTTER</button>
+    <button class="btn-soundboard orange" id="btn-sfx-nitrox">NITROX 3 PURGE</button>
+  </div>
+
+  <!-- REPLAY HUD PROGRESS -->
+  <div id="replay-hud" style="display: none;">
+    <div style="display: flex; justify-content: space-between; font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: bold;">
+      <span id="replay-stage-name" style="color: var(--teku-cyan);">STAGE 1: RED LIGHT COCKPIT IDLE</span>
+      <span id="replay-time-label" style="color: var(--teku-silver);">0.0s / 75.0s</span>
+    </div>
+    <div class="progress-bar-shell">
+      <div id="replay-progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- MUSICAL STATUS BAR -->
+  <div class="musical-status-bar">
+    <div class="music-item"><span>Status:</span><span id="label-mode-name">IDLE (Continuous Analog 4-Cyl Rumble & Lope)</span></div>
+    <div class="music-item"><span>Motif:</span><span id="label-motif-name">AUTO (SHIRAKO)</span></div>
+    <div class="music-item"><span>Cycle:</span><span id="label-bar-cycle">Bar 1 of 8</span></div>
+    <div class="music-item"><span>Chord:</span><span id="label-chord">D Minor</span></div>
+    <div class="music-item"><span>Aggression:</span><span id="label-agg-score">0.00</span></div>
+  </div>
+
+  <!-- BASSLINE EQUALIZER VISUALIZER -->
+  <div class="visualizer-wrapper">
+    <div class="vis-overlay-tag">TEKU BASSLINE MK-II // DUAL SUB EQUALIZER</div>
+    <canvas id="visualizer"></canvas>
+  </div>
+
+  <!-- TELEMETRY GAUGE CARDS -->
+  <div class="grid-dashboard">
+    <!-- 16V Cam Screamer Card (>3K RPM Instrument) -->
+    <div class="card card-screamer" id="card-screamer">
+      <div class="card-title">
+        <span>16V Cam Screamer (&ge;3,000 RPM)</span>
+        <span class="screamer-badge dormant" id="screamer-status-badge">DORMANT (&lt;3K)</span>
+      </div>
+      <div class="card-value" id="val-screamer-cutoff" style="color: var(--teku-orange); font-size: 2.2rem;">OFFLINE</div>
+      <div class="screamer-bar-container">
+        <div class="screamer-bar-fill" id="screamer-rpm-fill"></div>
+        <div class="screamer-threshold-line" title="3,000 RPM Screamer Threshold"></div>
+      </div>
+      <div class="card-title" style="margin-top: 4px;">
+        <span>Hypersaw Formant</span>
+        <span id="label-screamer-resonance">Dual Detuned Saw + Sync</span>
+      </div>
+    </div>
+
+    <!-- RPM Card -->
+    <div class="card" id="card-rpm">
+      <div class="card-title">
+        <span>Tachometer (Clio 1.2)</span>
+        <span class="card-unit">RPM</span>
+      </div>
+      <div class="card-value" id="val-rpm">750</div>
+      <input type="range" id="slider-rpm" min="700" max="4200" value="750">
+      <div class="card-title">
+        <span>TB-303 Acid Cutoff</span>
+        <span id="label-cutoff">260 Hz</span>
+      </div>
+    </div>
+
+    <!-- Speed Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Ground Speed</span>
+        <span class="card-unit">KM/H</span>
+      </div>
+      <div class="card-value" id="val-spd">0</div>
+      <input type="range" id="slider-spd" min="0" max="130" value="0">
+      <div class="card-title">
+        <span>BPM Tempo Pulse</span>
+        <span id="label-tempo">84 BPM</span>
+      </div>
+    </div>
+
+    <!-- Throttle Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Throttle (TPS)</span>
+        <span class="card-unit">%</span>
+      </div>
+      <div class="card-value" id="val-tps">13</div>
+      <input type="range" id="slider-tps" min="0" max="100" value="13">
+      <div class="card-title">
+        <span>Pedal Attack Rate</span>
+        <span id="label-dtps">0 %/s</span>
+      </div>
+    </div>
+
+    <!-- Cornering G Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Lateral Force</span>
+        <span class="card-unit">G</span>
+      </div>
+      <div class="card-value" id="val-g">0.00</div>
+      <input type="range" id="slider-g" min="-0.40" max="0.40" step="0.02" value="0.0">
+      <div class="card-title">
+        <span>Stereo Acoustic Pan</span>
+        <span id="label-pan">Center</span>
+      </div>
+    </div>
+
+    <!-- Engine Coolant Temp (ECT) Card -->
+    <div class="card" id="card-temp">
+      <div class="card-title">
+        <span>Coolant Temp (ECT)</span>
+        <span class="card-unit">°C</span>
+      </div>
+      <div class="card-value" id="val-temp" style="color: var(--teku-cyan);">88</div>
+      <input type="range" id="slider-temp" min="20" max="112" value="88">
+      <div class="card-title">
+        <span>Idle Timbre</span>
+        <span id="label-thermal-state" style="color: var(--teku-cyan); font-weight: bold;">WARM // CONTINUOUS ANALOG TUBE PURR (88°C)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>TEKU Telemetry Log & Shift Telemetry</span>
+      <span id="timeline-clock">T+0.00s</span>
+    </div>
+    <div class="log-box" id="log-output">
+[TEKU TUNER LAB] Bassline Sound System armed. Ready for launch.
+[Profile] Clio Mio 1.2 D4F: 750 RPM idle | 2,450 RPM shift point | ±0.35G lateral limit.
+    </div>
+  </div>
+</div>
+
+<script src="audio_engine.js"></script>
+</body>
+</html>
