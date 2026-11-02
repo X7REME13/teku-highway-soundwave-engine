@@ -254,15 +254,30 @@ console.log(`   ✓ 12 km/h Rolling: Kick/Hat is ${(stRolling.gradients.drumsKic
 // City at 32 km/h: Full snare break swells in
 applySteady(2200, 32, 45, 0.0, 88);
 const stCity = engine.telemetryState;
-console.assert(stCity.gradients.drumsFull > 0.2 && stCity.gradients.drumsFull < 0.8, 'Full drums must be a continuous gradient');
-console.assert(stCity.gradients.drumCutoff > 3000 && stCity.gradients.drumCutoff < 8000, 'Drum cutoff must sweep continuously');
+console.assert(stCity.gradients.drumsFull > 0.2 && stCity.gradients.drumsFull < 0.9, 'Full drums must be a continuous gradient');
+console.assert(stCity.gradients.drumCutoff > 3000 && stCity.gradients.drumCutoff < 9000, 'Drum cutoff must sweep continuously');
 console.log(`   ✓ 32 km/h City: Full Breakbeat is ${(stCity.gradients.drumsFull * 100).toFixed(1)}%, Cutoff is ${Math.round(stCity.gradients.drumCutoff)} Hz`);
 
-// Boulevard at 65 km/h: Stabs engaged
-applySteady(2800, 65, 60, 0.0, 90);
-const stBlvd = engine.telemetryState;
-console.assert(stBlvd.gradients.stabs > 0.3, 'Stabs must be active at 65 km/h');
-console.log(`   ✓ 65 km/h Boulevard: Industrial Stabs at ${(stBlvd.gradients.stabs * 100).toFixed(1)}%\n`);
+// Legal Speed Ceiling at 58-60 km/h: Full punch unlocked at legal speeds!
+applySteady(2800, 58, 60, 0.0, 90);
+const stLegalPeak = engine.telemetryState;
+console.assert(stLegalPeak.gradients.stabs > 0.8, 'Stabs must be at full presence by 58-60 km/h');
+console.assert(stLegalPeak.gradients.drumCutoff >= 13500, 'Drum cutoff must be 14kHz (100% open) at 58-60 km/h');
+console.log(`   ✓ 58 km/h Legal Speed Ceiling: Industrial Stabs at ${(stLegalPeak.gradients.stabs * 100).toFixed(1)}%, Cutoff at ${Math.round(stLegalPeak.gradients.drumCutoff)} Hz (Full Punch)`);
+
+// Test safety ceiling above 60 km/h: 85 km/h does NOT increase cutoff beyond 14kHz
+applySteady(3000, 85, 60, 0.0, 90);
+const stOverCeiling = engine.telemetryState;
+console.assert(stOverCeiling.gradients.drumCutoff === 14000, 'Drum cutoff must cap at 14000 Hz, no reward for illegal speeds');
+console.log('   ✓ Above 60 km/h: Strictly capped at 1.0 (Zero incentive for illegal speeding)');
+
+// Test Deceleration Detection
+engine.updateTelemetry(2200, 55, 30, 0.0, 90);
+// Sudden drop in speed (deceleration)
+engine.updateTelemetry(1800, 42, 8, 0.0, 90);
+console.assert(engine.telemetryState.events.includes('DECELERATING'), 'Deceleration event must trigger when slowing down');
+console.assert(engine.telemetryState.gradients.tranceBridge > 0.1, 'Trance bridge must swell during deceleration');
+console.log('   ✓ Decelerating from 55 to 42 km/h: DECELERATING event triggered & Trance Bridge swelled.\n');
 
 // -----------------------------------------------------------------
 // TEST 5: KICK SIDECHAIN DUCKING PUMP

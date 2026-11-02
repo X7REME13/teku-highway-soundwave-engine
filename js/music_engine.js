@@ -127,8 +127,8 @@ class TekuMusicEngine {
     // Update mapper (computes continuous gradients & events)
     this.telemetryState = this.telemetryMapper.update(rpm, speed, throttle, lateralG, temp);
 
-    // Dynamic Tempo micro-nudging (Centering at 136 BPM, ±4 BPM with speed gradient)
-    const speedRatio = Math.min(1.0, speed / 110.0);
+    // Dynamic Tempo micro-nudging (Centering at 136 BPM, ±4 BPM with speed gradient up to 60 km/h legal limit)
+    const speedRatio = Math.min(1.0, Math.max(0, speed / 60.0));
     this.bpm = (this.generator.session.baseBpm || 136) + (speedRatio * 4.0);
 
     // Apply continuous lateral panning

@@ -134,16 +134,16 @@ function updateUI() {
     }
   }
 
-  // Update Mode Badge & Name
+  // Update Mode Badge & Name (Aligned to 60 km/h legal speed ceiling)
   let modeName = 'STOPPED (Sustained Sub-Bass Riff)';
   let badgeClass = 'idle';
-  if (spd > 70 || rpm > 2950) {
-    modeName = 'PEAK (Full Breakbeat, Teku Hook & Stabs)';
+  if (spd > 54 || rpm > 2800) {
+    modeName = 'PEAK LEGAL (Full Breakbeat, Teku Hook & Stabs)';
     badgeClass = 'attack';
-  } else if (spd > 40) {
+  } else if (spd > 36) {
     modeName = 'BOULEVARD (Breakbeat, Hook Swell & Stabs)';
     badgeClass = 'flow';
-  } else if (spd > 18) {
+  } else if (spd > 16) {
     modeName = 'CITY (Rolling Breakbeat & Snare Groove)';
     badgeClass = 'flow';
   } else if (spd > 4) {
@@ -408,12 +408,12 @@ const tripKeyframes = [
   { t: 28.0, rpm: 2450, spd: 48, tps: 35, g: 0.26,  temp: 88, stage: "STAGE 3: ENTERING ROUNDABOUT // STEREO PANNING RIGHT" },
   { t: 33.0, rpm: 2500, spd: 48, tps: 35, g: -0.34, temp: 88, stage: "STAGE 3: ROUNDABOUT APEX // STEREO AUTO-PAN SWEEP (-0.34G LEFT)" },
   { t: 37.0, rpm: 1950, spd: 48, tps: 12, g: 0.02,  temp: 88, stage: "STAGE 3B: TRANCE BRIDGE (PUENTE) // SUPERSAW PAD & ECHO ARP BREATHER" },
-  { t: 41.0, rpm: 2500, spd: 54, tps: 40, g: 0.0,   temp: 89, stage: "STAGE 4: ON-RAMP BUILD-UP // SNARE ROLL & FILTER SWEEP TO 14kHz" },
-  { t: 43.0, rpm: 3200, spd: 62, tps: 88, g: 0.12,  temp: 91, stage: "STAGE 4: THROTTLE STOMP // 1.2s RISER INTO 808 SUB DROP!" },
-  { t: 48.0, rpm: 3680, spd: 78, tps: 92, g: 0.08,  temp: 94, stage: "STAGE 4: UPPER MADNESS SPRINT // ACID SCREAMER ARP & 32nd HAT RATCHETS" },
-  { t: 53.0, rpm: 3400, spd: 82, tps: 60, g: 0.0,   temp: 96, stage: "STAGE 4: OVERHEAT >95°C // THICK 5.5x ASYMMETRIC TUBE SATURATION" },
-  { t: 57.0, rpm: 2200, spd: 65, tps: 14, g: -0.02, temp: 93, stage: "STAGE 5: COASTING TRANCE BRIDGE // EUPHORIC PAD & SUB WAVE" },
-  { t: 61.0, rpm: 1800, spd: 40, tps: 8,  g: -0.06, temp: 91, stage: "STAGE 5: MODERATE BRAKING // GRADUAL BREAKDOWN TO CITY GROOVE" },
+  { t: 41.0, rpm: 2500, spd: 50, tps: 40, g: 0.0,   temp: 89, stage: "STAGE 4: ON-RAMP BUILD-UP // SNARE ROLL & FILTER SWEEP TO 14kHz" },
+  { t: 43.0, rpm: 3200, spd: 56, tps: 88, g: 0.12,  temp: 91, stage: "STAGE 4: THROTTLE STOMP (2nd GEAR) // 1.2s RISER INTO 808 SUB DROP!" },
+  { t: 48.0, rpm: 3680, spd: 58, tps: 92, g: 0.08,  temp: 94, stage: "STAGE 4: UPPER MADNESS SPRINT // ACID SCREAMER ARP & 32nd HAT RATCHETS" },
+  { t: 53.0, rpm: 3400, spd: 60, tps: 60, g: 0.0,   temp: 96, stage: "STAGE 4: 60 KM/H LEGAL CEILING // 100% PUNCH, SATURATION & PEAK GROOVE" },
+  { t: 57.0, rpm: 2200, spd: 50, tps: 14, g: -0.02, temp: 93, stage: "STAGE 5: DECELERATION & COASTING // EUPHORIC TRANCE BRIDGE" },
+  { t: 61.0, rpm: 1800, spd: 38, tps: 8,  g: -0.06, temp: 91, stage: "STAGE 5: MODERATE BRAKING // GRADUAL BREAKDOWN TO CITY GROOVE" },
   { t: 64.0, rpm: 1400, spd: 22, tps: 6,  g: -0.08, temp: 90, stage: "STAGE 5: DECELERATING // DRUMS LOWPASS FILTER SWEPT DOWN" },
   { t: 67.0, rpm: 1100, spd: 14, tps: 4,  g: -0.05, temp: 89, stage: "STAGE 5: SMOOTH GRADIENT CROSSFADE // SNARE RECEDING" },
   { t: 69.5, rpm: 880,  spd: 7,  tps: 0,  g: -0.02, temp: 88, stage: "STAGE 5: APPROACHING 4 KM/H THRESHOLD // KICK GENTLY ROLLING OFF" },
