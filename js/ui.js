@@ -699,18 +699,24 @@ function drawVisualizer() {
 
   // 3. Acoustic Zone Dividers (Sub-Bass | Mid-Grit & Hook | Breakbeat & Air)
   const colStep = plotW / NUM_BANDS;
-  const zoneBoundaries = [
+  const isNarrow = plotW < 520;
+
+  const zoneBoundaries = isNarrow ? [
+    { startBand: 0,  endBand: 8,  title: 'SUB 25-125Hz',   color: '#00f0ff' },
+    { startBand: 8,  endBand: 20, title: 'MID/HOOK 160-2k', color: '#ff8800' },
+    { startBand: 20, endBand: 30, title: 'AIR 2.5k-20k',    color: '#ff0077' }
+  ] : [
     { startBand: 0,  endBand: 8,  title: 'SUB-BASS // 25–125Hz',       color: '#00f0ff' },
     { startBand: 8,  endBand: 20, title: 'MID-GRIT & HOOK // 160–2kHz', color: '#ff8800' },
     { startBand: 20, endBand: 30, title: 'BREAKS & AIR // 2.5k–20kHz',  color: '#ff0077' }
   ];
 
-  ctx.font = '700 9px Orbitron, monospace';
+  ctx.font = isNarrow ? '700 7.5px Orbitron, monospace' : '700 9px Orbitron, monospace';
   ctx.textAlign = 'left';
   for (const z of zoneBoundaries) {
     const zx = padLeft + z.startBand * colStep;
     ctx.fillStyle = z.color;
-    ctx.fillText(z.title, zx + 2, 13);
+    ctx.fillText(z.title, zx + 2, isNarrow ? 11 : 13);
 
     if (z.startBand > 0) {
       ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
@@ -794,17 +800,21 @@ function drawVisualizer() {
       ctx.shadowBlur = 0;
     }
 
-    // Draw Frequency Band Label at Bottom
-    const labelX = x + barW * 0.5;
-    const labelY = padTop + plotH + 6;
-    if (b < 8) {
-      ctx.fillStyle = litSegs > 2 ? '#00f0ff' : 'rgba(0, 240, 255, 0.65)';
-    } else if (b < 20) {
-      ctx.fillStyle = litSegs > 2 ? '#ffaa00' : 'rgba(255, 170, 0, 0.65)';
-    } else {
-      ctx.fillStyle = litSegs > 2 ? '#ff4499' : 'rgba(255, 68, 153, 0.65)';
+    // Draw Frequency Band Label at Bottom (Thinned on narrow screens to prevent text collisions)
+    const shouldDrawLabel = !isNarrow || (b % 3 === 0 || b === 29);
+    if (shouldDrawLabel) {
+      const labelX = x + barW * 0.5;
+      const labelY = padTop + plotH + (isNarrow ? 4 : 6);
+      if (b < 8) {
+        ctx.fillStyle = litSegs > 2 ? '#00f0ff' : 'rgba(0, 240, 255, 0.65)';
+      } else if (b < 20) {
+        ctx.fillStyle = litSegs > 2 ? '#ffaa00' : 'rgba(255, 170, 0, 0.65)';
+      } else {
+        ctx.fillStyle = litSegs > 2 ? '#ff4499' : 'rgba(255, 68, 153, 0.65)';
+      }
+      ctx.font = isNarrow ? '700 7px Orbitron, monospace' : '700 8px Orbitron, monospace';
+      ctx.fillText(ISO_30_LABELS[b], labelX, labelY);
     }
-    ctx.fillText(ISO_30_LABELS[b], labelX, labelY);
   }
 
   ctx.restore();
