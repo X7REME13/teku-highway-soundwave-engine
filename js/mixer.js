@@ -25,13 +25,13 @@ class TekuMixer {
       this.panner = ctx.createGain(); // Fallback
     }
 
-    // Master Glue Compressor (protects car amplifiers from digital clipping)
+    // Master Glue Compressor (protects car amplifiers while letting deep sub-bass breathe)
     this.compressor = ctx.createDynamicsCompressor();
-    this.compressor.threshold.setValueAtTime(-14, ctx.currentTime);
-    this.compressor.knee.setValueAtTime(8, ctx.currentTime);
-    this.compressor.ratio.setValueAtTime(3.5, ctx.currentTime);
-    this.compressor.attack.setValueAtTime(0.008, ctx.currentTime);
-    this.compressor.release.setValueAtTime(0.20, ctx.currentTime);
+    this.compressor.threshold.setValueAtTime(-7, ctx.currentTime);
+    this.compressor.knee.setValueAtTime(6, ctx.currentTime);
+    this.compressor.ratio.setValueAtTime(2.4, ctx.currentTime);
+    this.compressor.attack.setValueAtTime(0.035, ctx.currentTime); // 35ms allows full 45-75Hz sub wave punch
+    this.compressor.release.setValueAtTime(0.18, ctx.currentTime);
 
     // FFT Analyser for UI Visualizer
     this.analyser = ctx.createAnalyser();
@@ -42,21 +42,38 @@ class TekuMixer {
     this.compressor.connect(this.analyser);
     this.analyser.connect(ctx.destination);
 
-    // --- 2. BASS BUS (With Sidechain Pump & Coolant Temperature Tube Overdrive) ---
+    // --- 2. BASS BUS ARCHITECTURE (Parallel Sub-Bass & Saturated Mid-Bass) ---
     this.bassBus = ctx.createGain();
     this.bassBus.gain.setValueAtTime(1.0, ctx.currentTime);
 
+    // Sidechain Ducking Gain (applied to both Sub and Mid)
     this.bassSidechainGain = ctx.createGain();
     this.bassSidechainGain.gain.setValueAtTime(1.0, ctx.currentTime);
+
+    // A. Dedicated Sub-Bass Bus: Pure, massive, clean sine foundation
+    this.subBassBus = ctx.createGain();
+    this.subBassBus.gain.setValueAtTime(1.35, ctx.currentTime); // +2.6dB dedicated sub boost!
+
+    // B. Mid-Bass Bus: Receives tube distortion and saturation
+    this.midBassBus = ctx.createGain();
+    this.midBassBus.gain.setValueAtTime(0.75, ctx.currentTime);
 
     this.bassDistortion = ctx.createWaveShaper();
     this.bassDistortion.curve = this.makeAsymmetricTubeCurve(3.2);
     this.bassDistortion.oversample = '4x';
 
-    this.bassBus.connect(this.bassSidechainGain);
-    this.bassSidechainGain.connect(this.bassDistortion);
+    // Route Sub directly into Sidechain Ducking (uncompromised clean sine power, no square-wave clipping)
+    this.subBassBus.connect(this.bassSidechainGain);
+
+    // Route Mid through Tube Distortion into Sidechain Ducking
+    this.midBassBus.connect(this.bassDistortion);
+    this.bassDistortion.connect(this.bassSidechainGain);
+
+    // Route legacy bassBus into midBassBus for backward compatibility
+    this.bassBus.connect(this.midBassBus);
+
     // Bass connects directly to masterGain (bypassing panner so sub stays rock-solid mono!)
-    this.bassDistortion.connect(this.masterGain);
+    this.bassSidechainGain.connect(this.masterGain);
 
     // --- 3. DRUM BUS ---
     this.drumBus = ctx.createGain();
@@ -90,8 +107,8 @@ class TekuMixer {
     const t = time || this.ctx.currentTime;
     const gainParam = this.bassSidechainGain.gain;
     gainParam.cancelScheduledValues(t);
-    gainParam.setValueAtTime(0.18, t); // Instant duck
-    gainParam.exponentialRampToValueAtTime(1.0, t + 0.12); // Smooth 120ms release
+    gainParam.setValueAtTime(0.22, t); // Quick duck (-13 dB dip for punchy kick impact)
+    gainParam.exponentialRampToValueAtTime(1.0, t + 0.11); // Smooth 110ms release
   }
 
   /**

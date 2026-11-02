@@ -22,69 +22,116 @@ class TekuInstruments {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
 
-    // Dual Detuned Sawtooth (Punchy mid-bass harmonics 80 - 250 Hz)
+    // ========================================================
+    // A. PHYSICAL SUB-BASS FOUNDATION (The 42 - 82 Hz Sweet Spot)
+    // ========================================================
+    // Fold frequency down into the physical sub-bass range (42 - 82 Hz)
+    // Never allows subsonic inaudible rumble (<40 Hz) or weak bass
+    const targetFreq = (hasSlide && this.lastBassFreq) ? this.lastBassFreq : freq;
+    let subStartFreq = targetFreq;
+    while (subStartFreq > 82) subStartFreq *= 0.5;
+    while (subStartFreq < 42) subStartFreq *= 2.0;
+
+    let subEndFreq = freq;
+    while (subEndFreq > 82) subEndFreq *= 0.5;
+    while (subEndFreq < 42) subEndFreq *= 2.0;
+
+    // 1. Primary Pure Sine Sub Oscillator (100% focused fundamental pressure)
+    const subSine = ctx.createOscillator();
+    subSine.type = 'sine';
+    subSine.frequency.setValueAtTime(subStartFreq, now);
+
+    // 2. Secondary Triangle Sub Oscillator (Analog acoustic body warmth)
+    const subTri = ctx.createOscillator();
+    subTri.type = 'triangle';
+    subTri.frequency.setValueAtTime(subStartFreq, now);
+
+    if (hasSlide) {
+      subSine.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.08);
+      subTri.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.08);
+    }
+
+    // Dedicated Sub Lowpass Filter (gentle 115 Hz cutoff, flat 0.707 Q, no mid-peaking)
+    const subFilter = ctx.createBiquadFilter();
+    subFilter.type = 'lowpass';
+    subFilter.frequency.setValueAtTime(115, now);
+    subFilter.Q.setValueAtTime(0.707, now);
+
+    // Sub Amplitude VCA (Massive sub presence, punchy 5ms attack, solid sustain)
+    const subGain = ctx.createGain();
+    const subPeak = Math.min(1.40, isAccent ? vel * 1.55 : vel * 1.30);
+    subGain.gain.setValueAtTime(0.001, now);
+    subGain.gain.linearRampToValueAtTime(subPeak, now + 0.005);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 1.08);
+
+    subSine.connect(subFilter);
+    subTri.connect(subFilter);
+    subFilter.connect(subGain);
+
+    // Connect Sub directly to uncompromised subBassBus (rock-solid mono, full clean headroom)
+    if (this.mixer.subBassBus) {
+      subGain.connect(this.mixer.subBassBus);
+    } else {
+      subGain.connect(this.mixer.bassBus);
+    }
+
+    // ========================================================
+    // B. TEKU / ROLAND TB-303 MID-BASS GRIT (Harmonics 90 - 450 Hz)
+    // ========================================================
     const saw1 = ctx.createOscillator();
     const saw2 = ctx.createOscillator();
     saw1.type = 'sawtooth';
     saw2.type = 'sawtooth';
 
-    // Sub-Bass Solid Foundation (40 - 70 Hz fundamental)
-    const subOsc = ctx.createOscillator();
-    subOsc.type = 'triangle';
-
-    // Frequency & Portamento Slide
-    const startFreq = (hasSlide && this.lastBassFreq) ? this.lastBassFreq : freq;
-    saw1.frequency.setValueAtTime(startFreq, now);
-    saw2.frequency.setValueAtTime(startFreq, now);
-    subOsc.frequency.setValueAtTime(startFreq * 0.5, now); // Sub octave
+    saw1.frequency.setValueAtTime(targetFreq, now);
+    saw2.frequency.setValueAtTime(targetFreq, now);
 
     if (hasSlide) {
       saw1.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
       saw2.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
-      subOsc.frequency.exponentialRampToValueAtTime(freq * 0.5, now + 0.08);
     }
     this.lastBassFreq = freq;
 
-    // Micro-detune for analog width & thickness (+/- 6 cents)
-    saw1.detune.setValueAtTime(6, now);
-    saw2.detune.setValueAtTime(-6, now);
+    // Analog chorus detune (+/- 5 cents)
+    saw1.detune.setValueAtTime(5, now);
+    saw2.detune.setValueAtTime(-5, now);
 
-    // 24 dB/oct 4-Pole Low-Pass Filter
-    const filter1 = ctx.createBiquadFilter();
-    const filter2 = ctx.createBiquadFilter();
-    filter1.type = 'lowpass';
-    filter2.type = 'lowpass';
+    // Resonant Lowpass Filter for the mid-grit sweep
+    const midFilter = ctx.createBiquadFilter();
+    midFilter.type = 'lowpass';
+    const baseCutoff = isAccent ? 460 : 300;
+    midFilter.frequency.setValueAtTime(baseCutoff * 1.8, now);
+    midFilter.frequency.exponentialRampToValueAtTime(baseCutoff, now + duration * 0.65);
+    midFilter.Q.setValueAtTime(isAccent ? 2.4 : 1.8, now);
 
-    const baseCutoff = isAccent ? 420 : 260; // Concentrated below 500 Hz!
-    filter1.frequency.setValueAtTime(baseCutoff * 2.2, now);
-    filter1.frequency.exponentialRampToValueAtTime(baseCutoff, now + duration * 0.6);
-    filter1.Q.setValueAtTime(isAccent ? 5.5 : 3.2, now);
+    // Mid-Saw VCA (balanced so it adds bite without drowning out the sub-bass)
+    const midGain = ctx.createGain();
+    const midPeak = isAccent ? vel * 0.42 : vel * 0.32;
+    midGain.gain.setValueAtTime(0.001, now);
+    midGain.gain.linearRampToValueAtTime(midPeak, now + 0.006);
+    midGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
-    filter2.frequency.setValueAtTime(baseCutoff * 2.0, now);
-    filter2.frequency.exponentialRampToValueAtTime(baseCutoff, now + duration * 0.6);
-    filter2.Q.setValueAtTime(isAccent ? 4.5 : 2.5, now);
+    saw1.connect(midFilter);
+    saw2.connect(midFilter);
+    midFilter.connect(midGain);
 
-    // Amplitude VCA Envelope
-    const gain = ctx.createGain();
-    const peakVol = Math.min(1.0, isAccent ? vel * 1.25 : vel);
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(peakVol, now + 0.006); // Punchy 6ms attack
-    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    if (this.mixer.midBassBus) {
+      midGain.connect(this.mixer.midBassBus);
+    } else {
+      midGain.connect(this.mixer.bassBus);
+    }
 
-    // Audio Routing: Oscillators -> Filters -> Gain -> Bass Bus
-    saw1.connect(filter1);
-    saw2.connect(filter1);
-    subOsc.connect(filter1);
-    filter1.connect(filter2);
-    filter2.connect(gain);
-    gain.connect(this.mixer.bassBus);
-
+    // Start all 4 oscillators together
+    subSine.start(now);
+    subTri.start(now);
     saw1.start(now);
     saw2.start(now);
-    subOsc.start(now);
-    saw1.stop(now + duration + 0.02);
-    saw2.stop(now + duration + 0.02);
-    subOsc.stop(now + duration + 0.02);
+
+    const stopTime = now + duration + 0.04;
+    subSine.stop(stopTime);
+    subTri.stop(stopTime);
+    saw1.stop(stopTime);
+    saw2.stop(stopTime);
   }
 
   // ==========================================
@@ -345,8 +392,31 @@ class TekuInstruments {
   }
 
   triggerDropImpact(time) {
-    this.triggerCrash(time);
-    this.triggerDJScratch('baby_scratch', time);
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+
+    // 1. Massive 808 Sub-Boom (88 Hz dropping to 36 Hz with rich sub sustain)
+    const boomOsc = ctx.createOscillator();
+    const boomGain = ctx.createGain();
+    boomOsc.type = 'sine';
+    boomOsc.frequency.setValueAtTime(88, now);
+    boomOsc.frequency.exponentialRampToValueAtTime(36, now + 0.22);
+
+    boomGain.gain.setValueAtTime(1.4, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+    boomOsc.connect(boomGain);
+    if (this.mixer.subBassBus) {
+      boomGain.connect(this.mixer.subBassBus);
+    } else {
+      boomGain.connect(this.mixer.bassBus);
+    }
+    boomOsc.start(now);
+    boomOsc.stop(now + 0.80);
+
+    // 2. Metallic Crash & DJ Scratch flair
+    this.triggerCrash(now);
+    this.triggerDJScratch('baby_scratch', now);
   }
 }
 
