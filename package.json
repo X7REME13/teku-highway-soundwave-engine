@@ -1,0 +1,29 @@
+{
+  "name": "teku-highway-soundwave-engine",
+  "version": "1.0.0",
+  "description": "Procedural, reactive electronic music engine driven by vehicular OBD-II telemetry. Inspired by Hot Wheels AcceleRacers (Teku Team / Shirako Takamoto - Bassline).",
+  "main": "js/music_engine.js",
+  "scripts": {
+    "test": "node verify_music_engine.js",
+    "start": "python3 -m http.server 8085"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/X7REME13/teku-highway-soundwave-engine.git"
+  },
+  "homepage": "https://x7reme13.github.io/teku-highway-soundwave-engine/",
+  "keywords": [
+    "webaudio",
+    "procedural-music",
+    "generative-music",
+    "obd2",
+    "telemetry",
+    "acceleracers",
+    "teku",
+    "breakbeat",
+    "tech-trance",
+    "sub-bass"
+  ],
+  "author": "X7REME13",
+  "license": "MIT"
+}
