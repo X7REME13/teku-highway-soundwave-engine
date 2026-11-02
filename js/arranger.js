@@ -39,7 +39,7 @@ class TekuArranger {
     if (gradients.flatOut > 0.35) {
       this.sectionName = 'FLAT-OUT ATTACK';
     } else if (!isDriving) {
-      this.sectionName = 'IDLE BASS';
+      this.sectionName = (gradients.idleRev > 0.20) ? 'NEUTRAL REV' : 'IDLE AMBIANCE';
     } else if (isBridgeBar) {
       this.sectionName = 'TRANCE BRIDGE';
     } else if (isBuildUpBar) {
@@ -75,7 +75,7 @@ class TekuArranger {
 
     // Automatic Trance Build-Up Riser on Bar 14 Step 0 -> Drop on Bar 15 Step 0
     if (isBuildUpBar && bar === 14 && step === 0) {
-      const secondsPerBeat = 60.0 / (session.baseBpm || 136);
+      const secondsPerBeat = 60.0 / (session.baseBpm || 112);
       this.instruments.triggerRiser(time, secondsPerBeat * 4.0);
     }
 
@@ -116,7 +116,7 @@ class TekuArranger {
       drumNote = session.drumsA[step];
     }
 
-    const secondsPerBeat = 60.0 / (session.baseBpm || 136);
+    const secondsPerBeat = 60.0 / (session.baseBpm || 112);
     const stepDuration = secondsPerBeat / 4.0;
 
     // ==========================================
@@ -163,7 +163,7 @@ class TekuArranger {
       if (step % 4 === 2 && gradients.drumsKickHat > 0.08) {
         this.instruments.triggerHat(time, true, false);
       }
-    } else if (drumNote) {
+    } else if (drumNote && isDriving) {
       // Full Teku Breakbeat Groove (Bars 1-8 & Climax Bars 15-16)
       if (drumNote.kick && gradients.drumsKickHat > 0.02) {
         const kickVol = gradients.drumsKickHat * (0.85 + energy * 0.25);
@@ -184,6 +184,31 @@ class TekuArranger {
         this.instruments.triggerSnare(time, snareVol);
       } else if (drumNote.ghostSnare && gradients.drumsFull > 0.12) {
         this.instruments.triggerGhostSnare(time);
+      }
+    } else if (!isDriving) {
+      // ==========================================
+      // 2B. IDLE COCKPIT AMBIANCE & NEUTRAL REVVING
+      // ==========================================
+      const idleRev = gradients.idleRev || 0;
+      // Ambient warm chord wash on step 0 and 8
+      if (step === 0 || step === 8) {
+        const padDur = stepDuration * 8.2;
+        const padVel = 0.50 + idleRev * 0.35;
+        const padOpenness = 0.30 + idleRev * 0.45;
+        this.instruments.triggerTrancePad(rootMidi, time, padDur, padVel, padOpenness);
+      }
+      // Gentle engine heartbeat pulse on step 0
+      if (step === 0) {
+        const kickVol = 0.26 + idleRev * 0.32;
+        this.instruments.triggerKick(time, kickVol);
+      }
+      // Soft closed hat on step 8
+      if (step === 8) {
+        this.instruments.triggerHat(time, false, false);
+      }
+      // Resonant accent stab on neutral rev blip
+      if (idleRev > 0.35 && (step === 4 || step === 12)) {
+        this.instruments.triggerStab(time, rootMidi + 12, idleRev * 0.65);
       }
     }
 

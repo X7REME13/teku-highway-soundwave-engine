@@ -53,7 +53,7 @@ assert(manifest.display === 'standalone', 'Manifest display mode is "standalone"
 assert(manifest.icons.some(i => i.src.includes('icon-192')), 'Manifest has 192x192 icon');
 assert(manifest.icons.some(i => i.src.includes('icon-512')), 'Manifest has 512x512 icon');
 assert(manifest.icons.some(i => i.purpose === 'maskable'), 'Manifest has maskable icon for Android');
-assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5'), 'Service worker cache key bumped to v2/v3/v4/v5');
+assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6'), 'Service worker cache key bumped to v2/v3/v4/v5/v6');
 assert(swContent.includes('teku-logo.png'), 'Authentic Teku logo cached in Service Worker');
 
 // 4. Retro Digital Cluster HUDs (Corvette C4 & Nissan 300ZX Z31)
@@ -110,7 +110,7 @@ assert(htmlContent.includes('id="btn-lab-clear-logs"'), 'Lab clear logs button #
 assert(htmlContent.includes('id="teku-hud-toast"'), 'HUD toast container #teku-hud-toast exists');
 assert(htmlContent.includes('js/telemetry_logger.js'), 'index.html loads js/telemetry_logger.js');
 assert(swContent.includes('js/telemetry_logger.js'), 'Service worker caches js/telemetry_logger.js');
-assert(swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5'), 'Service worker cache bumped to v4/v5');
+assert(swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6'), 'Service worker cache bumped to v4/v5/v6');
 assert(uiJsContent.includes('window.downloadTekuLogs'), 'Exposes window.downloadTekuLogs for console/quick actions');
 
 // Unit test TekuTelemetryLogger
@@ -156,6 +156,17 @@ assert(dispatchedG > 0.03, 'TekuMotionSensor processes linear acceleration into 
 assert(testSensor.smoothedLateralG > 0.03, 'Smoothed lateral G updated with automotive lowpass');
 testSensor.calibrateZero();
 assert(Math.abs(testSensor.smoothedLateralG) < 0.01, 'calibrateZero() cancels mount bias to 0.00 G');
+
+// 9. Slower Cruising Tempo (112 BPM), Coasting UI & Neutral Rev
+console.log('\nTEST 9: Verifying Slower Cruising Tempo (112 BPM), Coasting & Neutral Rev UI:');
+assert(htmlContent.includes('id="label-tempo" style="display: none;">112</span>'), 'index.html defaults tempo readout to 112 BPM');
+assert(htmlContent.includes('id="val-c4-bpm">112</span>'), 'C4 cluster defaults tempo to 112 BPM');
+assert(htmlContent.includes('.screamer-badge.coasting'), 'CSS includes .screamer-badge.coasting');
+assert(htmlContent.includes('.c4-reserve-badge.coasting'), 'CSS includes .c4-reserve-badge.coasting');
+assert(uiJsContent.includes('COASTING // ${spd} KM/H'), 'ui.js formats dedicated COASTING badge with speed');
+assert(uiJsContent.includes('NEUTRAL REV // ${rpm} RPM'), 'ui.js formats dedicated NEUTRAL REV badge with RPM');
+assert(uiJsContent.includes('COASTING // DRIFT'), 'Z31 HUD reflects coasting state');
+assert(swContent.includes('teku-soundwaves-v6'), 'Service Worker cache bumped to v6 for seamless client update');
 
 console.log('\n====================================================');
 if (failed === 0) {

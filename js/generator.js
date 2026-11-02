@@ -21,9 +21,9 @@ class TekuGenerator {
   generateNewSession(seed = null) {
     if (seed !== null) this.rng.setSeed(seed);
 
-    // Pick Session Key & BPM (calibrated around Teku-Ising 136.7 BPM)
+    // Pick Session Key & BPM (Calibrated for midtempo heavy cruising 110-116 BPM)
     const key = this.rng.pick(TekuTheory.KEYS);
-    const bpm = this.rng.randInt(132, 138);
+    const bpm = this.rng.randInt(110, 116);
 
     // Pick Riff Archetype & Scale
     const archetypes = ['teku_ising_signature', 'shirako_big_beat', 'accelecharger_tresillo', 'night_drift_303'];

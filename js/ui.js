@@ -145,7 +145,7 @@ function updateUI() {
 
   // Update Cockpit Digital Readouts
   const labelTempo = document.getElementById('label-tempo');
-  if (labelTempo) labelTempo.textContent = Math.round(engine.bpm || 136);
+  if (labelTempo) labelTempo.textContent = Math.round(engine.bpm || 112);
 
   const labelThermalDrive = document.getElementById('label-thermal-drive');
   if (labelThermalDrive) {
@@ -190,22 +190,41 @@ function updateUI() {
   if (screamerFill) {
     screamerFill.style.width = `${Math.min(100, Math.round(st.energy * 100))}%`;
   }
+  const events = (st && st.events) ? st.events : [];
+  const isCoasting = events.includes('COASTING') || ((st?.gradients?.tranceBridge || 0) > 0.35 && spd >= 14);
+  const isNeutralRev = spd <= 4 && ((st?.gradients?.idleRev || 0) > 0.15 || rpm > 1050 || events.includes('IDLE_REV'));
+
   if (screamerBadge && cardScreamer) {
     if (st.energy > 0.65 || spd > 65) {
       screamerBadge.textContent = 'OVERDRIVE';
       screamerBadge.className = 'screamer-badge screaming';
       cardScreamer.classList.add('screaming');
+    } else if (isCoasting) {
+      screamerBadge.textContent = 'COASTING';
+      screamerBadge.className = 'screamer-badge coasting';
+      cardScreamer.classList.remove('screaming');
+    } else if (isNeutralRev) {
+      screamerBadge.textContent = 'NEUTRAL REV';
+      screamerBadge.className = 'screamer-badge screaming';
+      cardScreamer.classList.remove('screaming');
     } else {
-      screamerBadge.textContent = spd <= 4 ? 'SUB-IDLE' : 'GROOVE';
+      screamerBadge.textContent = spd <= 4 ? 'IDLE' : 'GROOVE';
       screamerBadge.className = 'screamer-badge dormant';
       cardScreamer.classList.remove('screaming');
     }
   }
 
-  // Update Mode Badge & Name (Aligned to 60 km/h legal speed ceiling)
-  let modeName = 'STOPPED (Sustained Sub-Bass Riff)';
+  // Update Mode Badge & Name (Aligned to 60 km/h legal speed ceiling + Coasting & Idle states)
+  let modeName = 'IDLE COCKPIT (Warm Pad Wash & Heartbeat Pulse)';
   let badgeClass = 'idle';
-  if (spd > 54 || rpm > 2800) {
+
+  if (isCoasting) {
+    modeName = 'COASTING (Atmospheric Trance Pad Wash & Reverb Drift)';
+    badgeClass = 'coasting';
+  } else if (isNeutralRev) {
+    modeName = `NEUTRAL REV (${rpm} RPM Throttle Blip & Filter Sweep)`;
+    badgeClass = 'attack';
+  } else if (spd > 54 || rpm > 2800) {
     modeName = 'PEAK LEGAL (Full Breakbeat, Teku Hook & Stabs)';
     badgeClass = 'attack';
   } else if (spd > 36) {
@@ -216,11 +235,17 @@ function updateUI() {
     badgeClass = 'flow';
   } else if (spd > 4) {
     modeName = 'ROLLING (Kick & Swung Hats Swelling In)';
-    badgeClass = 'coasting';
+    badgeClass = 'flow';
   }
 
   if (modeBadge) {
-    if (spd <= 0) {
+    if (isCoasting) {
+      modeBadge.textContent = `COASTING // ${spd} KM/H`;
+      modeBadge.className = 'badge-mode coasting';
+    } else if (isNeutralRev) {
+      modeBadge.textContent = `NEUTRAL REV // ${rpm} RPM`;
+      modeBadge.className = 'badge-mode attack';
+    } else if (spd <= 0) {
       modeBadge.textContent = 'IDLE // 0 KM/H';
       modeBadge.className = 'badge-mode idle';
     } else {
@@ -383,7 +408,7 @@ function updateC4HUD(spd, rpm, tps, g, temp, st) {
     valC4Drive.textContent = driveAmount;
   }
   if (valC4Temp) valC4Temp.textContent = temp.toFixed(0);
-  if (valC4Bpm) valC4Bpm.textContent = Math.round(engine.bpm || 136);
+  if (valC4Bpm) valC4Bpm.textContent = Math.round(engine.bpm || 112);
   if (valC4G) valC4G.textContent = Math.abs(g).toFixed(2);
   if (valC4Rpm) valC4Rpm.textContent = String(Math.floor(rpm / 100)).padStart(2, '0');
 
@@ -399,11 +424,22 @@ function updateC4HUD(spd, rpm, tps, g, temp, st) {
     if (c4TpsBars[i]) c4TpsBars[i].classList.toggle('lit', i < numTpsBars);
   }
 
-  // Flatout stomp indicator
+  // Flatout & Coasting indicator
+  const isC4Coasting = (st?.events && st.events.includes('COASTING')) || ((st?.gradients?.tranceBridge || 0) > 0.35 && spd >= 14);
   const isFlatout = Boolean((st?.gradients?.flatOut || 0) > 0.3 || tps >= 80);
   if (c4FlatoutBadge) {
-    c4FlatoutBadge.textContent = isFlatout ? 'FLAT-OUT' : 'RESERVE';
-    c4FlatoutBadge.classList.toggle('flatout', isFlatout);
+    if (isC4Coasting) {
+      c4FlatoutBadge.textContent = 'COASTING';
+      c4FlatoutBadge.classList.add('coasting');
+      c4FlatoutBadge.classList.remove('flatout');
+    } else if (isFlatout) {
+      c4FlatoutBadge.textContent = 'FLAT-OUT';
+      c4FlatoutBadge.classList.add('flatout');
+      c4FlatoutBadge.classList.remove('coasting');
+    } else {
+      c4FlatoutBadge.textContent = 'RESERVE';
+      c4FlatoutBadge.classList.remove('flatout', 'coasting');
+    }
   }
 
   // Coolant status & warning
@@ -460,11 +496,25 @@ function updateZ31HUD(spd, rpm, tps, g, temp, st) {
   if (z31TurnL) z31TurnL.classList.toggle('lit', g < -0.06);
   if (z31TurnR) z31TurnR.classList.toggle('lit', g > 0.06);
 
-  // Top row: Warning / Attack lamp
+  // Top row: Warning / Attack / Coast lamp
   const isAttack = Boolean((st?.gradients?.flatOut || 0) > 0.25 || tps >= 70 || rpm > 3200);
+  const isZ31Coasting = (st?.events && st.events.includes('COASTING')) || ((st?.gradients?.tranceBridge || 0) > 0.35 && spd >= 14);
+  const isZ31NeutralRev = spd <= 4 && ((st?.gradients?.idleRev || 0) > 0.15 || rpm > 1050);
+
   if (z31ShiftLamp) {
-    z31ShiftLamp.textContent = isAttack ? 'ATTACK // STOMP' : (rpm > 2400 ? 'SHIFT UP' : 'TURBO // BOOST');
-    z31ShiftLamp.classList.toggle('lit', isAttack || rpm > 2400);
+    if (isAttack) {
+      z31ShiftLamp.textContent = 'ATTACK // STOMP';
+      z31ShiftLamp.classList.add('lit');
+    } else if (isZ31Coasting) {
+      z31ShiftLamp.textContent = 'COASTING // DRIFT';
+      z31ShiftLamp.classList.add('lit');
+    } else if (isZ31NeutralRev) {
+      z31ShiftLamp.textContent = 'NEUTRAL REV';
+      z31ShiftLamp.classList.add('lit');
+    } else {
+      z31ShiftLamp.textContent = (rpm > 2400) ? 'SHIFT UP' : 'TURBO // BOOST';
+      z31ShiftLamp.classList.toggle('lit', rpm > 2400);
+    }
   }
 
   // Left gauge: 12-bar vertical throttle VFD

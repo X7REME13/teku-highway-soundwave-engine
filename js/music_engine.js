@@ -35,7 +35,7 @@ class TekuMusicEngine {
     this.lookaheadMs = 25.0;
     this.timerID = null;
 
-    this.bpm = 136; // Calibrated to Teku-Ising ground truth
+    this.bpm = 112; // Calibrated for midtempo heavy cruising (110-116 BPM)
     this.stepCount = 16;
 
     // Telemetry Cache
@@ -72,12 +72,12 @@ class TekuMusicEngine {
     this.mixer = new TekuMixer(this.ctx);
     this.instruments = new TekuInstruments(this.ctx, this.mixer);
     this.arranger = new TekuArranger(this.generator, this.instruments, this.mixer);
-    this.bpm = this.generator.session.baseBpm || 136;
+    this.bpm = this.generator.session.baseBpm || 112;
   }
 
   setSeed(seed) {
     this.generator.generateNewSession(seed);
-    this.bpm = this.generator.session.baseBpm || 136;
+    this.bpm = this.generator.session.baseBpm || 112;
     if (this.arranger) {
       this.arranger.currentBar = 1;
       this.arranger.isPendingDrop = false;
@@ -152,10 +152,10 @@ class TekuMusicEngine {
     // Update mapper (computes continuous gradients & events)
     this.telemetryState = this.telemetryMapper.update(rpm, speed, throttle, lateralG, temp);
 
-    // Dynamic Tempo micro-nudging (Centering at 136 BPM, ±4 BPM with speed, +6 BPM flat-out sprint surge)
+    // Dynamic Tempo micro-nudging (Centering at 112 BPM base, +8 BPM with speed up to 60 km/h, +4 BPM flat-out sprint surge)
     const speedRatio = Math.min(1.0, Math.max(0, speed / 60.0));
-    const flatOutSurge = (this.telemetryState && this.telemetryState.gradients) ? (this.telemetryState.gradients.flatOut || 0) * 6.0 : 0;
-    this.bpm = (this.generator.session.baseBpm || 136) + (speedRatio * 4.0) + flatOutSurge;
+    const flatOutSurge = (this.telemetryState && this.telemetryState.gradients) ? (this.telemetryState.gradients.flatOut || 0) * 4.0 : 0;
+    this.bpm = (this.generator.session.baseBpm || 112) + (speedRatio * 8.0) + flatOutSurge;
 
     // Apply continuous lateral panning and thermal modulation
     if (this.mixer) {
@@ -170,6 +170,7 @@ class TekuMusicEngine {
     if (this.instruments && this.instruments.updateThermalState) {
       this.instruments.updateThermalState(temp, this.telemetryState ? this.telemetryState.gradients : null);
     }
+    return this.telemetryState;
   }
 
   scheduler() {

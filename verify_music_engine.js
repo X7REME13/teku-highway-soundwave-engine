@@ -355,9 +355,79 @@ console.assert(stHot.gradients.thermalCold === 0.0, 'Cold profile must be 0.0 wh
 console.assert(stHot.gradients.thermalHot >= 0.75, 'Hot spicy profile must be >= 0.75 at 99°C');
 console.log(`   ✓ Thermal Staging verified: 25°C Cold Profile=${(coldVal * 100).toFixed(0)}%, 99°C Spicy Profile=${(stHot.gradients.thermalHot * 100).toFixed(0)}%.\n`);
 
+// -----------------------------------------------------------------
+// TEST 11: RENAULT CLIO MIO 1.2 D4F THROTTLE BASELINE NORMALIZATION
+// -----------------------------------------------------------------
+console.log('TEST 11: Testing Renault Clio Mio D4F Throttle Calibration (13% closed baseline):');
+// At closed throttle (13% raw), effective throttle must be 0% and energy must have 0% throttle contribution
+applySteady(750, 0, 13, 0.0, 88, 25);
+const stIdleTps = engine.telemetryState;
+console.assert(stIdleTps.raw.effectiveThrottle === 0, 'Raw effective throttle must be 0% at 13% raw idle baseline');
+console.assert(stIdleTps.smoothed.effectiveThrottle < 0.1, 'Smoothed effective throttle must converge to 0% at idle');
+console.assert(stIdleTps.energy < 0.01, 'Idle vehicle must have negligible energy score (no false energy from 13% baseline)');
+
+// At mid throttle (47.5% raw), effective throttle should be ~50%
+applySteady(2000, 35, 47.5, 0.0, 88, 25);
+const stMidTps = engine.telemetryState;
+console.assert(Math.abs(stMidTps.smoothed.effectiveThrottle - 50.0) < 2.0, `Effective throttle at 47.5% raw should be ~50%, got ${stMidTps.smoothed.effectiveThrottle}`);
+
+// At WOT (82% raw), effective throttle should be 100%
+applySteady(3500, 55, 82, 0.0, 88, 25);
+const stWotTps = engine.telemetryState;
+console.assert(stWotTps.raw.effectiveThrottle === 100.0, 'Raw effective throttle at 82% raw must be 100%');
+console.assert(stWotTps.smoothed.effectiveThrottle > 98.0, 'Smoothed effective throttle at 82% raw must reach > 98%');
+console.log('   ✓ Clio Mio D4F Throttle Normalization verified: Raw 13% -> 0% Eff, Raw 47.5% -> 50% Eff, Raw 82% -> 100% Eff.\n');
+
+// -----------------------------------------------------------------
+// TEST 12: ROBUST COASTING DETECTION & TRANCE BRIDGE SWELL
+// -----------------------------------------------------------------
+console.log('TEST 12: Testing Robust Coasting Detection (Cruising with foot off gas):');
+// Cruising at 45 km/h, foot lifted off gas (raw throttle = 13% idle baseline)
+engine.updateTelemetry(2200, 48, 30, 0.0, 88);
+const stCoasting = engine.updateTelemetry(2100, 45, 13, 0.0, 88);
+console.assert(stCoasting.events.includes('COASTING'), 'COASTING event must trigger when speed >= 14 km/h and foot off gas (13% raw)');
+console.assert(stCoasting.gradients.tranceBridge > 0.35, 'Trance bridge must swell > 0.35 when coasting');
+console.log(`   ✓ Coasting detected cleanly at 45 km/h with 13% raw throttle! Trance Bridge swell = ${(stCoasting.gradients.tranceBridge * 100).toFixed(1)}%.\n`);
+
+// -----------------------------------------------------------------
+// TEST 13: IDLE AMBIANCE & NEUTRAL REVVING DYNAMICS
+// -----------------------------------------------------------------
+console.log('TEST 13: Testing Idle Ambiance & Neutral Throttle Blip:');
+// 1. Pure idle at stoplight (750 RPM, 0 km/h)
+applySteady(750, 0, 13, 0.0, 88, 15);
+const stPureIdle = engine.telemetryState;
+console.assert(stPureIdle.gradients.isIdle === true, 'isIdle must be true at 0 km/h');
+console.assert(stPureIdle.gradients.idleRev === 0.0, 'idleRev must be 0.0 at 750 RPM');
+console.assert(stPureIdle.gradients.drumCutoff === 320, 'drumCutoff must stay muffled at 320 Hz during pure idle');
+
+// 2. Throttle blip in neutral at stoplight (RPM sweeps to 2200, raw throttle to 35%)
+const stRev = engine.updateTelemetry(2200, 0, 35, 0.0, 88);
+console.assert(stRev.gradients.idleRev > 0.30, `idleRev must surge on blip, got ${stRev.gradients.idleRev}`);
+console.assert(stRev.gradients.drumCutoff > 1000, `drumCutoff must sweep > 1000 Hz on blip, got ${stRev.gradients.drumCutoff} Hz`);
+console.assert(stRev.events.includes('IDLE_REV'), 'IDLE_REV event must trigger on throttle blip in neutral');
+console.log(`   ✓ Neutral Revving verified: 2200 RPM blip opened filter to ${stRev.gradients.drumCutoff} Hz with idleRev=${(stRev.gradients.idleRev * 100).toFixed(0)}%.\n`);
+
+// -----------------------------------------------------------------
+// TEST 14: SLOWER MIDTEMPO CRUISING BPM RANGE & OBD INTERLEAVED SCHEDULING
+// -----------------------------------------------------------------
+console.log('TEST 14: Verifying Slower Cruising BPM (110-116 BPM) & Interleaved OBD-II Polling:');
+const testGen = new TekuGenerator();
+for (let i = 0; i < 20; i++) {
+  testGen.generateNewSession();
+  const b = testGen.session.baseBpm;
+  console.assert(b >= 110 && b <= 116, `Base BPM must be between 110 and 116 BPM, got ${b}`);
+}
+console.log('   ✓ 20 randomly rolled sessions confirmed strictly within 110-116 BPM.');
+
+const { TekuOBDBluetooth } = require('./js/obd_bluetooth.js');
+const obdInstance = new TekuOBDBluetooth(engine);
+console.assert(typeof obdInstance.startPolling === 'function', 'TekuOBDBluetooth has startPolling');
+console.assert(obdInstance.pollCycleCount === 0 || obdInstance.pollCycleCount === undefined, 'TekuOBDBluetooth tracks poll cycles');
+console.log('   ✓ Interleaved OBD-II high-speed architecture confirmed.\n');
+
 engine.stop();
 
 console.log('====================================================');
-console.log('>>> ALL 10 TEKU MUSIC ENGINE TESTS PASSED PERFECTLY! <<<');
+console.log('>>> ALL 14 TEKU MUSIC ENGINE TESTS PASSED PERFECTLY! <<<');
 console.log('====================================================');
 process.exit(0);

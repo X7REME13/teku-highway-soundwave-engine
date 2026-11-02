@@ -72,7 +72,7 @@ class TekuTelemetryLogger {
     let tubeDrive = data.tubeDrive;
 
     if (this.engine) {
-      if (!bpm) bpm = Math.round(this.engine.bpm || 136);
+      if (!bpm) bpm = Math.round(this.engine.bpm || 112);
       if (this.engine.telemetryState) {
         const st = this.engine.telemetryState;
         if (energy === undefined) energy = Number(st.energy.toFixed(2));
@@ -82,8 +82,16 @@ class TekuTelemetryLogger {
         }
       }
       if (!audioMode) {
+        const events = this.engine.telemetryState?.events || [];
+        const isCoasting = events.includes('COASTING') || ((this.engine.telemetryState?.gradients?.tranceBridge || 0) > 0.35 && spd >= 14);
+        const isNeutralRev = spd <= 4 && ((this.engine.telemetryState?.gradients?.idleRev || 0) > 0.15 || rpm > 1050 || events.includes('IDLE_REV'));
+
         if (!this.engine.isRunning) {
           audioMode = 'STOPPED';
+        } else if (isCoasting) {
+          audioMode = 'COASTING';
+        } else if (isNeutralRev) {
+          audioMode = 'IDLE_REV';
         } else if (spd > 54 || rpm > 2800) {
           audioMode = 'PEAK_LEGAL';
         } else if (spd > 36) {
@@ -97,7 +105,7 @@ class TekuTelemetryLogger {
         }
       }
     } else {
-      if (!bpm) bpm = 136;
+      if (!bpm) bpm = 112;
       if (energy === undefined) energy = 0.0;
       if (drumCutoff === undefined) drumCutoff = 1200;
       if (tubeDrive === undefined) tubeDrive = 2.2;

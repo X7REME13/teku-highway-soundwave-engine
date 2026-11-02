@@ -109,7 +109,7 @@ class TekuMixer {
 
     if (ctx.createDelay) {
       this.delayNode = ctx.createDelay(1.0);
-      this.delayNode.delayTime.setValueAtTime(0.33, ctx.currentTime); // Dotted 16th at 136 BPM
+      this.delayNode.delayTime.setValueAtTime(0.40, ctx.currentTime); // Dotted 16th at 112 BPM
 
       this.delayFeedback = ctx.createGain();
       this.delayFeedback.gain.setValueAtTime(0.38, ctx.currentTime);
