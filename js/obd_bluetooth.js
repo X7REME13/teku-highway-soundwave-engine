@@ -18,6 +18,7 @@ class TekuOBDBluetooth {
     this.isConnected = false;
     this.isPolling = false;
     this.isHandshaking = false;
+    this.activeProtocol = 'KWP2000 (ISO 14230-4)';
 
     // Buffer for chunked serial responses
     this.rxBuffer = '';
@@ -96,7 +97,7 @@ class TekuOBDBluetooth {
       await this.handshakeELM327();
 
       this.isConnected = true;
-      this.onStatus('CONNECTED', `Connected to ${this.device.name || 'OBD-II'} (CAN 500k ready)`);
+      this.onStatus('CONNECTED', `Connected to ${this.device.name || 'OBD-II'} (${this.activeProtocol})`);
 
       // Start continuous telemetry polling
       this.startPolling();
@@ -203,17 +204,55 @@ class TekuOBDBluetooth {
   }
 
   /**
-   * ELM327 Standard AT Handshake Sequence
+   * ELM327 Protocol Handshake & Renault Clio Mio (D4F 1.2) KWP2000 Tuning
+   *
+   * Renault Clio Mio 1.2 16V (D4F 728 / SIM32 ECU) diagnostic topology:
+   * 1. Primary: ISO 14230-4 KWP (Fast Init 10.4k) on PIN 7 (K-Line) -> ATSP5
+   * 2. Fallback: ISO 14230-4 KWP (Slow 5-baud Init, 10.4 kbaud) -> ATSP4
+   * 3. Fallback: ISO 9141-2 (5-baud init) -> ATSP3
+   * 4. Universal Fallback: Automatic Protocol Search -> ATSP0
    */
   async handshakeELM327() {
     this.isHandshaking = true;
     try {
-      await this.sendCommand('ATZ', 1500);  // Reset
-      await this.sleep(120);
+      await this.sendCommand('ATZ', 1500);  // Reset ELM327 chip
+      await this.sleep(150);
       await this.sendCommand('ATE0', 800);  // Echo Off
       await this.sendCommand('ATL0', 800);  // Linefeeds Off
       await this.sendCommand('ATH0', 800);  // Headers Off
-      await this.sendCommand('ATSP0', 1200); // Auto-Protocol Search
+      await this.sendCommand('ATAT1', 800); // Adaptive Timing Auto 1 (optimizes loop speed)
+
+      // Prioritize Renault Clio Mio D4F native protocols before falling back
+      let protocolEstablished = false;
+      const protocolsToTry = [
+        { id: 'ATSP5', name: 'ISO 14230-4 KWP (Fast Init 10.4k - Clio D4F)' },
+        { id: 'ATSP4', name: 'ISO 14230-4 KWP (Slow Init - Clio D4F)' },
+        { id: 'ATSP3', name: 'ISO 9141-2 (K-Line Legacy)' },
+        { id: 'ATSP0', name: 'Auto-Protocol Search' }
+      ];
+
+      for (const proto of protocolsToTry) {
+        try {
+          this.onStatus('HANDSHAKE', `Testing protocol: ${proto.name}...`);
+          await this.sendCommand(proto.id, 1000);
+
+          // Test wakeup response on PID 0100 (Supported PIDs query)
+          const testResp = await this.sendCommand('0100', 1800);
+          if (testResp && (testResp.includes('4100') || testResp.includes('41 00'))) {
+            protocolEstablished = true;
+            this.activeProtocol = proto.name;
+            break;
+          }
+        } catch (e) {
+          // If individual probe fails, try next protocol in priority list
+        }
+      }
+
+      if (!protocolEstablished) {
+        // Fallback to ATSP0 so any vehicle can still attempt connection
+        await this.sendCommand('ATSP0', 1000).catch(() => {});
+        this.activeProtocol = 'Generic OBD-II (Auto)';
+      }
     } finally {
       this.isHandshaking = false;
     }
