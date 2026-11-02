@@ -53,7 +53,7 @@ assert(manifest.display === 'standalone', 'Manifest display mode is "standalone"
 assert(manifest.icons.some(i => i.src.includes('icon-192')), 'Manifest has 192x192 icon');
 assert(manifest.icons.some(i => i.src.includes('icon-512')), 'Manifest has 512x512 icon');
 assert(manifest.icons.some(i => i.purpose === 'maskable'), 'Manifest has maskable icon for Android');
-assert(swContent.includes('teku-soundwaves-v2'), 'Service worker cache key bumped to v2');
+assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3'), 'Service worker cache key bumped to v2/v3');
 assert(swContent.includes('teku-logo.png'), 'Authentic Teku logo cached in Service Worker');
 
 // 4. Retro Digital Cluster HUDs (Corvette C4 & Nissan 300ZX Z31)

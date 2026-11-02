@@ -15,6 +15,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'DSEG7-Classic';
+      src: url('./fonts/DSEG7Classic-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'DSEG7-Classic-Italic';
+      src: url('./fonts/DSEG7Classic-BoldItalic.woff2') format('woff2');
+      font-weight: 700;
+      font-style: italic;
+      font-display: swap;
+    }
+
     :root {
       --bg: #030610;
       --panel: #070e1c;
@@ -1986,22 +2002,61 @@
       font-weight: 900;
     }
 
+    /* 7-Segment DSEG Display with Unlit Ghost Backdrops */
+    .dseg-wrap {
+      position: relative;
+      display: inline-flex;
+      justify-content: flex-end;
+      align-items: baseline;
+      font-family: 'DSEG7-Classic-Italic', 'Orbitron', monospace;
+      font-style: italic;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
+
+    .dseg-ghost {
+      color: rgba(255, 170, 0, 0.08);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .dseg-val {
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: #ffaa00;
+      text-shadow: 0 0 10px rgba(255, 170, 0, 0.75);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .z31-dseg-ghost {
+      color: rgba(0, 255, 102, 0.08);
+    }
+
+    .z31-dseg-val {
+      color: #00ff66;
+      text-shadow: 0 0 12px rgba(0, 255, 102, 0.85);
+    }
+
     /* ============================================================
        1987 CORVETTE C4 DIGITAL CLUSTER
        ============================================================ */
     .c4-cluster-panel {
-      background: #080a0f;
-      border: 2px solid #1c2430;
-      box-shadow: inset 0 0 25px #000, 0 6px 30px rgba(0,0,0,0.85);
-      padding: 10px 14px;
+      background: #06090e;
+      border: 3px solid #141c26;
+      box-shadow: inset 0 0 35px #000, 0 8px 30px rgba(0,0,0,0.9);
+      padding: 12px 16px 26px 16px;
       position: relative;
-      border-radius: 6px;
+      border-radius: 8px;
     }
 
     .c4-bezel {
       display: grid;
-      grid-template-columns: 1fr 1.15fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr 1.25fr 1fr;
+      gap: 12px;
       width: 100%;
       align-items: stretch;
       position: relative;
@@ -2009,13 +2064,13 @@
 
     .c4-bolt {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background: radial-gradient(circle, #6b7280 30%, #374151 70%, #111827 100%);
+      background: radial-gradient(circle, #9ca3af 20%, #4b5563 60%, #111827 100%);
       border: 1px solid #1f2937;
-      box-shadow: inset 0 0 2px #fff;
-      z-index: 2;
+      box-shadow: inset 0 0 2px #fff, 0 1px 3px #000;
+      z-index: 4;
     }
     .c4-bolt.tl { top: -6px; left: -8px; }
     .c4-bolt.tr { top: -6px; right: -8px; }
@@ -2023,95 +2078,134 @@
     .c4-bolt.br { bottom: -6px; right: -8px; }
 
     .c4-bay {
-      background: #000000;
-      border: 2px solid #141a22;
+      background: #010305;
+      border: 2px solid #121922;
       border-radius: 4px;
-      padding: 8px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.95);
-      min-height: 160px;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.98);
+      min-height: 180px;
       position: relative;
       overflow: hidden;
     }
 
+    .c4-bay::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 170, 0, 0.02) 0%, transparent 80%);
+      pointer-events: none;
+    }
+
     .c4-bay-title {
-      font-family: monospace;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #ffaa00;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* Steering Column Cutout & 1987 Plaque */
+    .c4-bottom-notch-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .c4-year-plaque {
+      background: #f3f4f6;
+      color: #111827;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      padding: 1px 18px;
+      border: 1px solid #9ca3af;
+      border-radius: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8), inset 0 0 2px rgba(255,255,255,0.8);
+      transform: translateY(4px);
+    }
+
+    .c4-steering-cutout {
+      width: 140px;
+      height: 18px;
+      background: var(--bg);
+      border-top: 3px solid #141c26;
+      border-left: 3px solid #141c26;
+      border-right: 3px solid #141c26;
+      border-radius: 40px 40px 0 0;
+    }
+
+    /* C4 Left Bay (Speedometer) */
+    .c4-speed-svg {
+      width: 100%;
+      height: 130px;
+      display: block;
+    }
+
+    .c4-ladder-bar {
+      fill: rgba(0, 230, 118, 0.12);
+      transition: fill 0.06s ease, filter 0.06s ease;
+    }
+
+    .c4-ladder-bar.lit {
+      fill: #00e676;
+      filter: drop-shadow(0 0 5px #00e676);
+    }
+
+    .c4-scale-txt {
+      font-family: 'Rajdhani', monospace;
+      font-weight: 700;
+      font-size: 7.5px;
+      fill: #00e676;
+    }
+
+    .c4-scale-txt.mph {
+      text-anchor: end;
+    }
+
+    .c4-scale-txt.kmh {
+      text-anchor: start;
+    }
+
+    .c4-tick {
+      stroke: #00e676;
+      stroke-width: 1.1;
+      stroke-opacity: 0.75;
+    }
+
+    .c4-speed-digital-dock {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .c4-unit-label {
+      font-family: 'Rajdhani', monospace;
       font-size: 0.65rem;
       font-weight: 800;
       color: #ffaa00;
       letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
     }
 
-    /* C4 Speedometer */
-    .c4-speed-content {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex: 1;
+    .c4-speed-digital-dock .dseg-wrap {
+      font-size: 2.8rem;
     }
 
-    .c4-speed-ladder {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      flex: 1;
-    }
-
-    .c4-ladder-bar {
-      height: 4px;
-      background: rgba(0, 230, 118, 0.12);
-      border-radius: 1px;
-      transform: skewX(-20deg);
-      transition: background 0.08s ease, box-shadow 0.08s ease;
-    }
-
-    .c4-ladder-bar.lit {
-      background: #00e676;
-      box-shadow: 0 0 8px #00e676;
-    }
-
-    .c4-speed-axis {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 90px;
-      font-family: monospace;
-      font-size: 0.6rem;
-      color: #ffaa00;
-      line-height: 1;
-      padding: 2px 0;
-    }
-
-    .c4-speed-digital {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      border-top: 1px solid rgba(255, 170, 0, 0.25);
-      padding-top: 4px;
-      margin-top: 4px;
-    }
-
-    .c4-unit-label {
-      font-family: monospace;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #ffaa00;
-    }
-
-    .c4-digital-val {
-      font-family: monospace;
-      font-size: 2.5rem;
-      font-weight: 900;
-      color: #ffaa00;
-      line-height: 1;
-      text-shadow: 0 0 10px rgba(255, 170, 0, 0.7);
-    }
-
-    /* C4 Driver Information Center (DIC) */
+    /* C4 Center Bay (Driver Information Center) */
     .c4-dic-grid {
       display: grid;
       grid-template-columns: 1fr 0.8fr 1fr;
@@ -2121,13 +2215,14 @@
     }
 
     .c4-dic-cell {
-      border: 1px solid rgba(255, 170, 0, 0.35);
-      background: rgba(255, 170, 0, 0.03);
+      border: 1px solid rgba(255, 170, 0, 0.4);
+      background: rgba(255, 170, 0, 0.02);
       padding: 4px 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       border-radius: 2px;
+      position: relative;
     }
 
     .c4-cell-head {
@@ -2137,26 +2232,29 @@
     }
 
     .c4-label {
-      font-family: monospace;
-      font-size: 0.58rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.62rem;
       font-weight: 800;
       color: #ffaa00;
       letter-spacing: 0.5px;
     }
 
     .c4-dic-num {
-      font-family: monospace;
-      font-size: 1.15rem;
-      font-weight: 900;
+      font-family: 'DSEG7-Classic-Italic', monospace;
+      font-style: italic;
+      font-size: 1.25rem;
+      font-weight: 700;
       color: #ffaa00;
-      text-shadow: 0 0 8px rgba(255, 170, 0, 0.6);
-      line-height: 1.1;
+      text-shadow: 0 0 8px rgba(255, 170, 0, 0.7);
+      line-height: 1;
     }
 
     .c4-sub-label {
-      font-family: monospace;
-      font-size: 0.52rem;
-      color: rgba(255, 170, 0, 0.75);
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: rgba(255, 170, 0, 0.8);
+      letter-spacing: 0.5px;
     }
 
     .c4-fuel-col {
@@ -2164,11 +2262,13 @@
       align-items: center;
       text-align: center;
       padding: 4px 2px;
+      background: rgba(0, 230, 118, 0.02);
+      border-color: rgba(0, 230, 118, 0.35);
     }
 
     .c4-fuel-f, .c4-fuel-e {
-      font-family: monospace;
-      font-size: 0.65rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.75rem;
       font-weight: 900;
       color: #00e676;
     }
@@ -2176,17 +2276,18 @@
     .c4-fuel-bars {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      width: 70%;
-      margin: 4px 0;
+      gap: 2.5px;
+      width: 72%;
+      margin: 3px 0;
       flex: 1;
+      justify-content: space-evenly;
     }
 
     .c4-fbar {
       height: 4px;
       background: rgba(0, 230, 118, 0.12);
       border-radius: 1px;
-      transition: all 0.08s ease;
+      transition: all 0.06s ease;
     }
 
     .c4-fbar.lit {
@@ -2195,25 +2296,28 @@
     }
 
     .c4-reserve-badge {
-      font-family: monospace;
-      font-size: 0.52rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.55rem;
       font-weight: 900;
       color: #030610;
       background: #ffaa00;
-      padding: 1px 3px;
+      padding: 1px 4px;
       border-radius: 1px;
       margin-top: 2px;
+      letter-spacing: 0.5px;
     }
 
     .c4-reserve-badge.flatout {
       background: #ef4444;
       color: #fff;
-      box-shadow: 0 0 8px #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      animation: blink 0.2s infinite;
     }
 
     .c4-fuel-note {
-      font-family: monospace;
-      font-size: 0.45rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.5rem;
+      font-weight: 700;
       color: #ffaa00;
       line-height: 1.1;
       margin-top: 3px;
@@ -2226,16 +2330,16 @@
     }
 
     .c4-deg {
-      font-family: monospace;
-      font-size: 0.7rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.75rem;
       color: #ffaa00;
       font-weight: 800;
     }
 
     .c4-warn-block {
-      width: 6px;
-      height: 6px;
-      background: #374151;
+      width: 7px;
+      height: 7px;
+      background: #1f2937;
       border-radius: 1px;
     }
 
@@ -2245,19 +2349,22 @@
       animation: blink 0.2s infinite;
     }
 
-    /* C4 Tachometer */
+    /* C4 Right Bay (Tachometer) */
     .c4-tach-top {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      justify-content: flex-start;
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      z-index: 2;
     }
 
     .c4-upshift-indicator {
       display: flex;
       align-items: center;
       gap: 4px;
-      opacity: 0.25;
-      transition: opacity 0.15s ease;
+      opacity: 0.2;
+      transition: opacity 0.12s ease;
     }
 
     .c4-upshift-indicator.lit {
@@ -2268,95 +2375,92 @@
       font-size: 1.1rem;
       color: #ffaa00;
       text-shadow: 0 0 8px #ffaa00;
+      line-height: 1;
     }
 
     .c4-arrow-text {
-      font-family: monospace;
-      font-size: 0.45rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.48rem;
       color: #ffaa00;
-      line-height: 1.1;
-      font-weight: 800;
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: 0.5px;
     }
 
-    .c4-tach-scale {
-      display: flex;
-      gap: 8px;
-      font-family: monospace;
-      font-size: 0.6rem;
-      color: #ffaa00;
-    }
-
-    .c4-tach-arc-wrap {
-      display: flex;
-      align-items: flex-end;
-      height: 60px;
-      margin: 8px 0;
-    }
-
-    .c4-tach-ladder {
-      display: flex;
-      gap: 3px;
+    .c4-tach-svg {
       width: 100%;
-      height: 100%;
-      align-items: flex-end;
+      height: 130px;
+      display: block;
     }
 
     .c4-tbar {
-      flex: 1;
-      background: rgba(0, 230, 118, 0.15);
-      border-radius: 1px;
-      transition: all 0.08s ease;
+      fill: rgba(0, 230, 118, 0.15);
+      transition: fill 0.06s ease, filter 0.06s ease;
     }
 
     .c4-tbar.lit {
-      background: #00e676;
-      box-shadow: 0 0 8px #00e676;
+      fill: #00e676;
+      filter: drop-shadow(0 0 6px #00e676);
     }
 
     .c4-tbar.yellow {
-      background: rgba(234, 179, 8, 0.15);
+      fill: rgba(234, 179, 8, 0.15);
     }
     .c4-tbar.yellow.lit {
-      background: #eab308;
-      box-shadow: 0 0 8px #eab308;
+      fill: #eab308;
+      filter: drop-shadow(0 0 6px #eab308);
     }
 
     .c4-tbar.red {
-      background: rgba(239, 68, 68, 0.15);
+      fill: rgba(239, 68, 68, 0.15);
     }
     .c4-tbar.red.lit {
-      background: #ef4444;
-      box-shadow: 0 0 8px #ef4444;
+      fill: #ef4444;
+      filter: drop-shadow(0 0 6px #ef4444);
     }
 
-    .c4-tach-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      border-top: 1px solid rgba(255, 170, 0, 0.25);
-      padding-top: 4px;
+    .c4-tach-scale-marks .c4-scale-txt {
+      font-family: 'Rajdhani', monospace;
+      font-weight: 800;
+      font-size: 8px;
+      fill: #ffaa00;
+      text-anchor: middle;
     }
 
     .c4-gear-box {
-      font-family: monospace;
-      font-size: 0.95rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 1.05rem;
       font-weight: 900;
       color: #ffaa00;
-      border: 1px solid rgba(255, 170, 0, 0.4);
-      padding: 1px 6px;
-      border-radius: 2px;
+      border: 1.5px solid rgba(255, 170, 0, 0.6);
+      padding: 1px 7px;
+      border-radius: 3px;
+      background: rgba(255, 170, 0, 0.08);
+      box-shadow: 0 0 8px rgba(255, 170, 0, 0.3);
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
     }
 
-    .c4-tach-val-wrap {
+    .c4-tach-val-dock {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
     }
 
+    .c4-tach-val-dock .dseg-wrap {
+      font-size: 2.8rem;
+    }
+
     .c4-rpm-sub {
-      font-family: monospace;
-      font-size: 0.55rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
       color: #ffaa00;
+      letter-spacing: 1px;
     }
 
     /* ============================================================
@@ -2364,8 +2468,8 @@
        ============================================================ */
     .z31-cluster-panel {
       background: #020704;
-      border: 2px solid #0c2617;
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 255, 102, 0.12);
+      border: 2px solid #0d301b;
+      box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.98), 0 0 25px rgba(0, 255, 102, 0.15);
       padding: 10px 14px;
       border-radius: 6px;
       position: relative;
@@ -2383,85 +2487,86 @@
       justify-content: space-between;
       align-items: center;
       background: #000000;
-      border: 1px solid rgba(0, 255, 102, 0.3);
-      padding: 4px 12px;
+      border: 1px solid rgba(0, 255, 102, 0.35);
+      padding: 6px 14px;
       border-radius: 3px;
     }
 
     .z31-turn-arrow {
-      font-size: 1.1rem;
-      color: rgba(0, 255, 102, 0.2);
-      transition: color 0.1s ease;
+      font-size: 1.3rem;
+      color: rgba(0, 255, 102, 0.18);
+      transition: color 0.1s ease, text-shadow 0.1s ease;
+      line-height: 1;
     }
 
     .z31-turn-arrow.lit {
       color: #00ff66;
-      text-shadow: 0 0 10px #00ff66;
+      text-shadow: 0 0 12px #00ff66;
     }
 
     .z31-speed-box {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 10px;
+      border: 1px solid rgba(0, 255, 102, 0.4);
+      padding: 2px 10px;
+      border-radius: 2px;
+      background: rgba(0, 255, 102, 0.03);
     }
 
     .z31-label {
-      font-family: monospace;
-      font-size: 0.65rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.7rem;
       font-weight: 800;
       color: #00ff66;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
     }
 
     .z31-speed-readout {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .z31-digital-val {
-      font-family: monospace;
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #00ff66;
-      line-height: 1;
-      text-shadow: 0 0 12px rgba(0, 255, 102, 0.85);
+    .z31-speed-readout .dseg-wrap {
+      font-size: 2.4rem;
     }
 
     .z31-unit {
-      font-family: monospace;
-      font-size: 0.7rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.75rem;
       font-weight: 800;
       color: #00ff66;
     }
 
     .z31-warning-lamp {
-      font-family: monospace;
-      font-size: 0.6rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.68rem;
       font-weight: 900;
       color: #05140b;
       background: rgba(0, 255, 102, 0.15);
-      border: 1px solid rgba(0, 255, 102, 0.3);
-      padding: 2px 6px;
+      border: 1px solid rgba(0, 255, 102, 0.35);
+      padding: 3px 8px;
       border-radius: 2px;
+      letter-spacing: 1px;
       transition: all 0.1s ease;
     }
 
     .z31-warning-lamp.lit {
       background: #00ff66;
       color: #010804;
-      box-shadow: 0 0 12px #00ff66;
+      box-shadow: 0 0 14px #00ff66;
     }
 
     .z31-main-grid {
       display: grid;
-      grid-template-columns: 60px 1fr 60px;
-      gap: 8px;
+      grid-template-columns: 68px 1fr 68px;
+      gap: 10px;
       background: #000000;
-      border: 1px solid rgba(0, 255, 102, 0.25);
+      border: 1px solid rgba(0, 255, 102, 0.28);
       padding: 8px;
       border-radius: 3px;
-      min-height: 130px;
+      min-height: 140px;
       align-items: stretch;
     }
 
@@ -2470,24 +2575,25 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid rgba(0, 255, 102, 0.2);
-      padding: 4px 2px;
+      border: 1px solid rgba(0, 255, 102, 0.25);
+      padding: 6px 3px;
       border-radius: 2px;
       background: rgba(0, 255, 102, 0.02);
     }
 
     .z31-sub-title {
-      font-family: monospace;
-      font-size: 0.55rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.62rem;
       font-weight: 800;
       color: #00ff66;
+      letter-spacing: 0.5px;
     }
 
     .z31-vertical-vfd {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      width: 70%;
+      gap: 2.5px;
+      width: 72%;
       margin: 4px 0;
       flex: 1;
       justify-content: space-evenly;
@@ -2497,7 +2603,7 @@
       height: 4px;
       background: rgba(0, 255, 102, 0.12);
       border-radius: 1px;
-      transition: all 0.08s ease;
+      transition: all 0.06s ease;
     }
 
     .z31-vbar.lit {
@@ -2511,8 +2617,8 @@
     }
 
     .z31-sub-unit, .z31-sub-val, .z31-vfd-h, .z31-vfd-c {
-      font-family: monospace;
-      font-size: 0.55rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.62rem;
       font-weight: 800;
       color: #00ff66;
     }
@@ -2522,8 +2628,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border: 1px solid rgba(0, 255, 102, 0.25);
-      padding: 6px 10px;
+      border: 1px solid rgba(0, 255, 102, 0.3);
+      padding: 6px 12px;
       border-radius: 2px;
       background: rgba(0, 255, 102, 0.02);
     }
@@ -2532,68 +2638,73 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(0, 255, 102, 0.2);
-      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(0, 255, 102, 0.25);
+      padding-bottom: 4px;
     }
 
     .z31-tach-badge {
-      font-family: monospace;
-      font-size: 0.65rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.7rem;
       font-weight: 900;
       color: #00ff66;
       background: rgba(0, 255, 102, 0.15);
-      padding: 1px 4px;
+      padding: 1px 5px;
+      letter-spacing: 1px;
     }
 
     .z31-tach-scale-label {
-      font-family: monospace;
-      font-size: 0.55rem;
-      color: rgba(0, 255, 102, 0.7);
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: rgba(0, 255, 102, 0.75);
     }
 
     .z31-tach-num-wrap {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 6px;
+    }
+
+    .z31-tach-num-wrap .dseg-wrap {
+      font-size: 1.8rem;
     }
 
     .z31-rpm-unit {
-      font-family: monospace;
-      font-size: 0.55rem;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.62rem;
+      font-weight: 800;
       color: #00ff66;
     }
 
-    .z31-torque-curve {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 72px;
-      margin: 6px 0;
+    .z31-tach-svg {
       width: 100%;
+      height: 95px;
+      display: block;
+      margin: 4px 0;
     }
 
     .z31-col {
-      flex: 1;
-      height: var(--col-h, 20px);
-      background: rgba(0, 255, 102, 0.12);
-      border-radius: 1px 1px 0 0;
-      transition: all 0.08s ease;
+      fill: rgba(0, 255, 102, 0.12);
+      transition: fill 0.06s ease, filter 0.06s ease;
     }
 
     .z31-col.lit {
-      background: #00ff66;
-      box-shadow: 0 0 10px rgba(0, 255, 102, 0.85);
+      fill: #00ff66;
+      filter: drop-shadow(0 0 8px #00ff66);
     }
 
-    .z31-torque-axis {
-      display: flex;
-      justify-content: space-between;
-      font-family: monospace;
-      font-size: 0.6rem;
-      font-weight: 800;
-      color: #00ff66;
-      border-top: 1px solid rgba(0, 255, 102, 0.3);
-      padding-top: 2px;
+    .z31-tick {
+      stroke: #00ff66;
+      stroke-width: 1.2;
+      stroke-opacity: 0.8;
+    }
+
+    .z31-ax-txt {
+      font-family: 'Rajdhani', monospace;
+      font-weight: 700;
+      font-size: 8px;
+      fill: #00ff66;
+      text-anchor: middle;
     }
 
     /* Media query for C4 & Z31 on mobile */
@@ -2745,6 +2856,9 @@
     <!-- ============================================================
          HUD SKIN 2: 1987 CORVETTE C4 MULTI-COLOR DIGITAL CLUSTER
          ============================================================ -->
+    <!-- ============================================================
+         HUD SKIN 2: 1987 CORVETTE C4 MULTI-COLOR DIGITAL CLUSTER
+         ============================================================ -->
     <div id="hud-c4" class="hud-cluster c4-cluster-panel" style="display: none;">
       <div class="c4-bezel">
         <div class="c4-bolt tl"></div>
@@ -2752,39 +2866,74 @@
         <div class="c4-bolt bl"></div>
         <div class="c4-bolt br"></div>
 
-        <!-- LEFT BAY: SPEEDOMETER -->
+        <!-- LEFT BAY: SPEEDOMETER (AUTHENTIC CURVED SWEEPING RIBBON) -->
         <div class="c4-bay c4-bay-speed">
           <div class="c4-bay-title">SPEEDOMETER</div>
-          <div class="c4-speed-content">
-            <div class="c4-speed-ladder" id="c4-speed-ladder">
-              <div class="c4-ladder-bar bar-20"></div>
-              <div class="c4-ladder-bar bar-19"></div>
-              <div class="c4-ladder-bar bar-18"></div>
-              <div class="c4-ladder-bar bar-17"></div>
-              <div class="c4-ladder-bar bar-16"></div>
-              <div class="c4-ladder-bar bar-15"></div>
-              <div class="c4-ladder-bar bar-14"></div>
-              <div class="c4-ladder-bar bar-13"></div>
-              <div class="c4-ladder-bar bar-12"></div>
-              <div class="c4-ladder-bar bar-11"></div>
-              <div class="c4-ladder-bar bar-10"></div>
-              <div class="c4-ladder-bar bar-9"></div>
-              <div class="c4-ladder-bar bar-8"></div>
-              <div class="c4-ladder-bar bar-7"></div>
-              <div class="c4-ladder-bar bar-6"></div>
-              <div class="c4-ladder-bar bar-5"></div>
-              <div class="c4-ladder-bar bar-4"></div>
-              <div class="c4-ladder-bar bar-3"></div>
-              <div class="c4-ladder-bar bar-2"></div>
-              <div class="c4-ladder-bar bar-1"></div>
-            </div>
-            <div class="c4-speed-axis">
-              <span>85</span><span>75</span><span>65</span><span>55</span><span>45</span><span>35</span><span>25</span><span>15</span><span>5</span>
-            </div>
-          </div>
-          <div class="c4-speed-digital">
+          <svg id="c4-speed-ladder" viewBox="0 0 178 155" class="c4-speed-svg" xmlns="http://www.w3.org/2000/svg">
+            <g class="c4-ribbon-group">
+              <rect x="32.0" y="142.0" width="34.0" height="4.5" rx="1" class="c4-ladder-bar bar-1" />
+              <rect x="33.6" y="135.6" width="34.5" height="4.5" rx="1" class="c4-ladder-bar bar-2" />
+              <rect x="35.8" y="129.2" width="35.1" height="4.5" rx="1" class="c4-ladder-bar bar-3" />
+              <rect x="38.4" y="122.7" width="35.6" height="4.5" rx="1" class="c4-ladder-bar bar-4" />
+              <rect x="41.1" y="116.3" width="36.1" height="4.5" rx="1" class="c4-ladder-bar bar-5" />
+              <rect x="44.1" y="109.9" width="36.6" height="4.5" rx="1" class="c4-ladder-bar bar-6" />
+              <rect x="47.2" y="103.5" width="37.2" height="4.5" rx="1" class="c4-ladder-bar bar-7" />
+              <rect x="50.4" y="97.1" width="37.7" height="4.5" rx="1" class="c4-ladder-bar bar-8" />
+              <rect x="53.7" y="90.6" width="38.2" height="4.5" rx="1" class="c4-ladder-bar bar-9" />
+              <rect x="57.2" y="84.2" width="38.7" height="4.5" rx="1" class="c4-ladder-bar bar-10" />
+              <rect x="60.7" y="77.8" width="39.3" height="4.5" rx="1" class="c4-ladder-bar bar-11" />
+              <rect x="64.3" y="71.4" width="39.8" height="4.5" rx="1" class="c4-ladder-bar bar-12" />
+              <rect x="68.0" y="64.9" width="40.3" height="4.5" rx="1" class="c4-ladder-bar bar-13" />
+              <rect x="71.8" y="58.5" width="40.8" height="4.5" rx="1" class="c4-ladder-bar bar-14" />
+              <rect x="75.7" y="52.1" width="41.4" height="4.5" rx="1" class="c4-ladder-bar bar-15" />
+              <rect x="79.6" y="45.7" width="41.9" height="4.5" rx="1" class="c4-ladder-bar bar-16" />
+              <rect x="83.6" y="39.3" width="42.4" height="4.5" rx="1" class="c4-ladder-bar bar-17" />
+              <rect x="87.7" y="32.8" width="42.9" height="4.5" rx="1" class="c4-ladder-bar bar-18" />
+              <rect x="91.8" y="26.4" width="43.5" height="4.5" rx="1" class="c4-ladder-bar bar-19" />
+              <rect x="96.0" y="20.0" width="44.0" height="4.5" rx="1" class="c4-ladder-bar bar-20" />
+            </g>
+            <g class="c4-mph-scale">
+              <line x1="24.0" y1="144.5" x2="30.0" y2="144.5" class="c4-tick" />
+              <text x="21.0" y="147.0" class="c4-scale-txt mph">5</text>
+              <line x1="30.4" y1="125.2" x2="36.4" y2="125.2" class="c4-tick" />
+              <text x="27.4" y="127.7" class="c4-scale-txt mph">15</text>
+              <line x1="39.2" y1="106.0" x2="45.2" y2="106.0" class="c4-tick" />
+              <text x="36.2" y="108.5" class="c4-scale-txt mph">25</text>
+              <line x1="45.7" y1="93.1" x2="51.7" y2="93.1" class="c4-tick" />
+              <text x="42.7" y="95.6" class="c4-scale-txt mph">35</text>
+              <line x1="56.3" y1="73.9" x2="62.3" y2="73.9" class="c4-tick" />
+              <text x="53.3" y="76.4" class="c4-scale-txt mph">45</text>
+              <line x1="67.7" y1="54.6" x2="73.7" y2="54.6" class="c4-tick" />
+              <text x="64.7" y="57.1" class="c4-scale-txt mph">55</text>
+              <line x1="75.6" y1="41.8" x2="81.6" y2="41.8" class="c4-tick" />
+              <text x="72.6" y="44.3" class="c4-scale-txt mph">65</text>
+              <line x1="83.8" y1="28.9" x2="89.8" y2="28.9" class="c4-tick" />
+              <text x="80.8" y="31.4" class="c4-scale-txt mph">75</text>
+              <line x1="88.0" y1="22.5" x2="94.0" y2="22.5" class="c4-tick" />
+              <text x="85.0" y="25.0" class="c4-scale-txt mph">85</text>
+            </g>
+            <g class="c4-kmh-scale">
+              <line x1="72.9" y1="131.7" x2="78.9" y2="131.7" class="c4-tick" />
+              <text x="81.9" y="134.2" class="c4-scale-txt kmh">20</text>
+              <line x1="86.3" y1="106.0" x2="92.3" y2="106.0" class="c4-tick" />
+              <text x="95.3" y="108.5" class="c4-scale-txt kmh">40</text>
+              <line x1="97.9" y1="86.7" x2="103.9" y2="86.7" class="c4-tick" />
+              <text x="106.9" y="89.2" class="c4-scale-txt kmh">60</text>
+              <line x1="110.3" y1="67.4" x2="116.3" y2="67.4" class="c4-tick" />
+              <text x="119.3" y="69.9" class="c4-scale-txt kmh">80</text>
+              <line x1="128.0" y1="41.8" x2="134.0" y2="41.8" class="c4-tick" />
+              <text x="137.0" y="44.3" class="c4-scale-txt kmh">100</text>
+              <line x1="142.0" y1="22.5" x2="148.0" y2="22.5" class="c4-tick" />
+              <text x="151.0" y="25.0" class="c4-scale-txt kmh">120</text>
+            </g>
+          </svg>
+          <div class="c4-speed-digital-dock">
             <span class="c4-unit-label">KM/H</span>
-            <span class="c4-digital-val" id="val-c4-spd">0</span>
+            <div class="dseg-wrap">
+              <span class="dseg-ghost">888</span>
+              <span class="dseg-val" id="val-c4-spd">0</span>
+            </div>
+            <span class="c4-unit-label">MPH</span>
           </div>
         </div>
 
@@ -2797,7 +2946,13 @@
                 <span class="c4-icon">⚡</span>
                 <span class="c4-label">TUBE DRIVE</span>
               </div>
-              <div class="c4-dic-num" id="val-c4-drive">3.4x</div>
+              <div class="c4-num-wrap">
+                <div class="dseg-wrap">
+                  <span class="dseg-ghost">88.8</span>
+                  <span class="dseg-val" id="val-c4-drive">3.4</span>
+                </div>
+                <span class="c4-deg">x</span>
+              </div>
               <div class="c4-sub-label">SATURATION</div>
             </div>
 
@@ -2815,7 +2970,7 @@
               </div>
               <span class="c4-fuel-e">E</span>
               <div class="c4-reserve-badge" id="c4-flatout-badge">RESERVE</div>
-              <div class="c4-fuel-note">UNLEADED<br>FUEL ONLY</div>
+              <div class="c4-fuel-note">⛽ UNLEADED<br>FUEL ONLY</div>
             </div>
 
             <!-- Cell: Coolant Temperature -->
@@ -2825,7 +2980,10 @@
                 <span class="c4-label">COOLANT TEMP</span>
               </div>
               <div class="c4-num-wrap">
-                <span class="c4-dic-num" id="val-c4-temp">88.0</span>
+                <div class="dseg-wrap">
+                  <span class="dseg-ghost">888</span>
+                  <span class="dseg-val" id="val-c4-temp">88</span>
+                </div>
                 <span class="c4-deg">°C</span>
               </div>
               <div class="c4-sub-label" id="c4-temp-sub">OPTIMAL 88°C</div>
@@ -2836,7 +2994,10 @@
               <div class="c4-cell-head">
                 <span class="c4-label">TEMPO // CLOCK</span>
               </div>
-              <div class="c4-dic-num" id="val-c4-bpm">136.0</div>
+              <div class="dseg-wrap">
+                <span class="dseg-ghost">888</span>
+                <span class="dseg-val" id="val-c4-bpm">136</span>
+              </div>
               <div class="c4-sub-label">BPM / GROOVE</div>
             </div>
 
@@ -2845,46 +3006,78 @@
               <div class="c4-cell-head">
                 <span class="c4-label">INSTANT LAT G</span>
               </div>
-              <div class="c4-dic-num" id="val-c4-g">0.00G</div>
+              <div class="c4-num-wrap">
+                <div class="dseg-wrap">
+                  <span class="dseg-ghost">8.88</span>
+                  <span class="dseg-val" id="val-c4-g">0.00</span>
+                </div>
+                <span class="c4-deg">G</span>
+              </div>
               <div class="c4-sub-label">CORNERING</div>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT BAY: ARCHED TACHOMETER -->
+        <!-- RIGHT BAY: ARCHED TACHOMETER (AUTHENTIC BELL ARCH) -->
         <div class="c4-bay c4-bay-tach">
           <div class="c4-tach-top">
             <div class="c4-upshift-indicator" id="c4-upshift-arrow">
               <span class="c4-arrow-icon">⇧</span>
               <span class="c4-arrow-text">UPSHIFT<br>FOR BEST<br>ECONOMY</span>
             </div>
-            <div class="c4-tach-scale">
-              <span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span>
-            </div>
           </div>
-          <!-- Arched tachometer ladder -->
-          <div class="c4-tach-arc-wrap">
-            <div class="c4-tach-ladder" id="c4-tach-ladder">
-              <div class="c4-tbar t1"></div><div class="c4-tbar t2"></div><div class="c4-tbar t3"></div>
-              <div class="c4-tbar t4"></div><div class="c4-tbar t5"></div><div class="c4-tbar t6"></div>
-              <div class="c4-tbar t7"></div><div class="c4-tbar t8"></div><div class="c4-tbar t9"></div>
-              <div class="c4-tbar t10"></div><div class="c4-tbar t11"></div><div class="c4-tbar t12"></div>
-              <div class="c4-tbar t13"></div><div class="c4-tbar t14"></div>
-              <div class="c4-tbar t15 yellow"></div><div class="c4-tbar t16 yellow"></div>
-              <div class="c4-tbar t17 yellow"></div><div class="c4-tbar t18 yellow"></div>
-              <div class="c4-tbar t19 red"></div><div class="c4-tbar t20 red"></div>
-              <div class="c4-tbar t21 red"></div><div class="c4-tbar t22 red"></div>
-              <div class="c4-tbar t23 red"></div><div class="c4-tbar t24 red"></div>
+          <svg id="c4-tach-ladder" viewBox="0 0 178 155" class="c4-tach-svg" xmlns="http://www.w3.org/2000/svg">
+            <g class="c4-tach-group">
+              <rect x="20.0" y="138.0" width="4.4" height="14.0" rx="1" class="c4-tbar t1" />
+              <rect x="25.9" y="116.3" width="4.4" height="15.6" rx="1" class="c4-tbar t2" />
+              <rect x="31.7" y="98.6" width="4.4" height="16.9" rx="1" class="c4-tbar t3" />
+              <rect x="37.6" y="83.0" width="4.4" height="18.0" rx="1" class="c4-tbar t4" />
+              <rect x="43.5" y="69.3" width="4.4" height="19.0" rx="1" class="c4-tbar t5" />
+              <rect x="49.3" y="57.6" width="4.4" height="19.9" rx="1" class="c4-tbar t6" />
+              <rect x="55.2" y="47.7" width="4.4" height="20.6" rx="1" class="c4-tbar t7" />
+              <rect x="61.1" y="39.8" width="4.4" height="21.1" rx="1" class="c4-tbar t8" />
+              <rect x="67.0" y="34.0" width="4.4" height="21.6" rx="1" class="c4-tbar t9" />
+              <rect x="72.8" y="30.1" width="4.4" height="21.8" rx="1" class="c4-tbar t10" />
+              <rect x="78.7" y="28.2" width="4.4" height="22.0" rx="1" class="c4-tbar t11" />
+              <rect x="84.6" y="28.3" width="4.4" height="22.0" rx="1" class="c4-tbar t12" />
+              <rect x="90.4" y="30.2" width="4.4" height="21.8" rx="1" class="c4-tbar t13" />
+              <rect x="96.3" y="34.0" width="4.4" height="21.6" rx="1" class="c4-tbar t14" />
+              <rect x="102.2" y="39.4" width="4.4" height="21.2" rx="1" class="c4-tbar t15 yellow" />
+              <rect x="108.0" y="46.3" width="4.4" height="20.7" rx="1" class="c4-tbar t16 yellow" />
+              <rect x="113.9" y="54.7" width="4.4" height="20.1" rx="1" class="c4-tbar t17 yellow" />
+              <rect x="119.8" y="64.3" width="4.4" height="19.4" rx="1" class="c4-tbar t18 yellow" />
+              <rect x="125.7" y="75.0" width="4.4" height="18.6" rx="1" class="c4-tbar t19 red" />
+              <rect x="131.5" y="86.6" width="4.4" height="17.7" rx="1" class="c4-tbar t20 red" />
+              <rect x="137.4" y="98.9" width="4.4" height="16.8" rx="1" class="c4-tbar t21 red" />
+              <rect x="143.3" y="111.7" width="4.4" height="15.9" rx="1" class="c4-tbar t22 red" />
+              <rect x="149.1" y="124.8" width="4.4" height="15.0" rx="1" class="c4-tbar t23 red" />
+              <rect x="155.0" y="138.0" width="4.4" height="14.0" rx="1" class="c4-tbar t24 red" />
+            </g>
+            <g class="c4-tach-scale-marks">
+              <text x="22.2" y="137.0" class="c4-scale-txt">0</text>
+              <text x="39.8" y="76.0" class="c4-scale-txt">10</text>
+              <text x="63.3" y="30.8" class="c4-scale-txt">20</text>
+              <text x="86.8" y="18.3" class="c4-scale-txt">30</text>
+              <text x="110.2" y="37.3" class="c4-scale-txt">40</text>
+              <text x="133.7" y="79.6" class="c4-scale-txt">50</text>
+              <text x="157.2" y="137.0" class="c4-scale-txt">60</text>
+            </g>
+          </svg>
+          <div class="c4-gear-box" id="c4-gear-box">[ D ]</div>
+          <div class="c4-tach-val-dock">
+            <div class="dseg-wrap">
+              <span class="dseg-ghost">88</span>
+              <span class="dseg-val" id="val-c4-rpm">07</span>
             </div>
-          </div>
-          <div class="c4-tach-bottom">
-            <div class="c4-gear-box" id="c4-gear-box">[ D ]</div>
-            <div class="c4-tach-val-wrap">
-              <span class="c4-digital-val" id="val-c4-rpm">07</span>
-              <span class="c4-rpm-sub">RPM / 100</span>
-            </div>
+            <span class="c4-rpm-sub">RPM / 100</span>
           </div>
         </div>
+      </div>
+
+      <!-- Steering Column Cutout & Authentic 1987 Plaque -->
+      <div class="c4-bottom-notch-wrap">
+        <div class="c4-year-plaque">1987</div>
+        <div class="c4-steering-cutout"></div>
       </div>
     </div>
 
@@ -2899,7 +3092,10 @@
           <div class="z31-speed-box">
             <span class="z31-label">SPEED</span>
             <div class="z31-speed-readout">
-              <span class="z31-digital-val" id="val-z31-spd">0</span>
+              <div class="dseg-wrap">
+                <span class="dseg-ghost z31-dseg-ghost">888</span>
+                <span class="dseg-val z31-dseg-val" id="val-z31-spd">0</span>
+              </div>
               <span class="z31-unit">KM/H</span>
             </div>
           </div>
@@ -2929,47 +3125,74 @@
               <span class="z31-tach-badge">TACH</span>
               <span class="z31-tach-scale-label">x1000r/min</span>
               <div class="z31-tach-num-wrap">
-                <span class="z31-digital-val" id="val-z31-rpm">07</span>
+                <div class="dseg-wrap">
+                  <span class="dseg-ghost z31-dseg-ghost">88</span>
+                  <span class="dseg-val z31-dseg-val" id="val-z31-rpm">07</span>
+                </div>
                 <span class="z31-rpm-unit">RPM x100</span>
               </div>
             </div>
 
-            <!-- 28-COLUMN CURVED TORQUE ARCH -->
-            <div class="z31-torque-curve" id="z31-tach-ladder">
-              <div class="z31-col c1" style="--col-h: 12px;"></div>
-              <div class="z31-col c2" style="--col-h: 14px;"></div>
-              <div class="z31-col c3" style="--col-h: 16px;"></div>
-              <div class="z31-col c4" style="--col-h: 18px;"></div>
-              <div class="z31-col c5" style="--col-h: 22px;"></div>
-              <div class="z31-col c6" style="--col-h: 26px;"></div>
-              <div class="z31-col c7" style="--col-h: 30px;"></div>
-              <div class="z31-col c8" style="--col-h: 35px;"></div>
-              <div class="z31-col c9" style="--col-h: 40px;"></div>
-              <div class="z31-col c10" style="--col-h: 46px;"></div>
-              <div class="z31-col c11" style="--col-h: 52px;"></div>
-              <div class="z31-col c12" style="--col-h: 57px;"></div>
-              <div class="z31-col c13" style="--col-h: 62px;"></div>
-              <div class="z31-col c14" style="--col-h: 66px;"></div>
-              <div class="z31-col c15" style="--col-h: 68px;"></div>
-              <div class="z31-col c16" style="--col-h: 69px;"></div>
-              <div class="z31-col c17" style="--col-h: 70px;"></div>
-              <div class="z31-col c18" style="--col-h: 70px;"></div>
-              <div class="z31-col c19" style="--col-h: 69px;"></div>
-              <div class="z31-col c20" style="--col-h: 67px;"></div>
-              <div class="z31-col c21" style="--col-h: 64px;"></div>
-              <div class="z31-col c22" style="--col-h: 60px;"></div>
-              <div class="z31-col c23" style="--col-h: 56px;"></div>
-              <div class="z31-col c24" style="--col-h: 51px;"></div>
-              <div class="z31-col c25" style="--col-h: 46px;"></div>
-              <div class="z31-col c26" style="--col-h: 40px;"></div>
-              <div class="z31-col c27" style="--col-h: 34px;"></div>
-              <div class="z31-col c28" style="--col-h: 28px;"></div>
-            </div>
+            <!-- 28-COLUMN SVG VG30ET TORQUE CURVE ARCH WITH MATHEMATICALLY ALIGNED TICKS -->
+            <svg id="z31-tach-ladder" viewBox="0 0 333 92" class="z31-tach-svg" xmlns="http://www.w3.org/2000/svg">
+              <!-- VG30ET Continuous Silhouette Torque Line -->
+              <path d="M 17.8 66.0 L 28.8 56.9 L 39.8 48.2 L 50.8 40.3 L 61.8 33.5 L 72.8 28.1 L 83.8 24.3 L 94.8 22.3 L 105.8 21.4 L 116.8 20.2 L 127.8 19.2 L 138.8 18.5 L 149.8 18.1 L 160.8 18.0 L 171.8 18.4 L 182.8 19.1 L 193.8 20.1 L 204.8 21.3 L 215.8 20.6 L 226.8 22.8 L 237.8 25.5 L 248.8 28.6 L 259.8 32.0 L 270.8 35.6 L 281.8 39.5 L 292.8 43.5 L 303.8 47.7 L 314.8 52.0" class="z31-torque-outline" fill="none" stroke="#00ff66" stroke-width="1.8" stroke-opacity="0.9" />
+              
+              <!-- 28-column VFD Torque Comb -->
+              <g class="z31-comb-group">
+                <rect x="14.0" y="66.0" width="7.5" height="6.0" rx="1" class="z31-col c1" />
+                <rect x="25.0" y="56.9" width="7.5" height="15.1" rx="1" class="z31-col c2" />
+                <rect x="36.0" y="48.2" width="7.5" height="23.8" rx="1" class="z31-col c3" />
+                <rect x="47.0" y="40.3" width="7.5" height="31.7" rx="1" class="z31-col c4" />
+                <rect x="58.0" y="33.5" width="7.5" height="38.5" rx="1" class="z31-col c5" />
+                <rect x="69.0" y="28.1" width="7.5" height="43.9" rx="1" class="z31-col c6" />
+                <rect x="80.0" y="24.3" width="7.5" height="47.7" rx="1" class="z31-col c7" />
+                <rect x="91.0" y="22.3" width="7.5" height="49.7" rx="1" class="z31-col c8" />
+                <rect x="102.0" y="21.4" width="7.5" height="50.6" rx="1" class="z31-col c9" />
+                <rect x="113.0" y="20.2" width="7.5" height="51.8" rx="1" class="z31-col c10" />
+                <rect x="124.0" y="19.2" width="7.5" height="52.8" rx="1" class="z31-col c11" />
+                <rect x="135.0" y="18.5" width="7.5" height="53.5" rx="1" class="z31-col c12" />
+                <rect x="146.0" y="18.1" width="7.5" height="53.9" rx="1" class="z31-col c13" />
+                <rect x="157.0" y="18.0" width="7.5" height="54.0" rx="1" class="z31-col c14" />
+                <rect x="168.0" y="18.4" width="7.5" height="53.6" rx="1" class="z31-col c15" />
+                <rect x="179.0" y="19.1" width="7.5" height="52.9" rx="1" class="z31-col c16" />
+                <rect x="190.0" y="20.1" width="7.5" height="51.9" rx="1" class="z31-col c17" />
+                <rect x="201.0" y="21.3" width="7.5" height="50.7" rx="1" class="z31-col c18" />
+                <rect x="212.0" y="20.6" width="7.5" height="51.4" rx="1" class="z31-col c19" />
+                <rect x="223.0" y="22.8" width="7.5" height="49.2" rx="1" class="z31-col c20" />
+                <rect x="234.0" y="25.5" width="7.5" height="46.5" rx="1" class="z31-col c21" />
+                <rect x="245.0" y="28.6" width="7.5" height="43.4" rx="1" class="z31-col c22" />
+                <rect x="256.0" y="32.0" width="7.5" height="40.0" rx="1" class="z31-col c23" />
+                <rect x="267.0" y="35.6" width="7.5" height="36.4" rx="1" class="z31-col c24" />
+                <rect x="278.0" y="39.5" width="7.5" height="32.5" rx="1" class="z31-col c25" />
+                <rect x="289.0" y="43.5" width="7.5" height="28.5" rx="1" class="z31-col c26" />
+                <rect x="300.0" y="47.7" width="7.5" height="24.3" rx="1" class="z31-col c27" />
+                <rect x="311.0" y="52.0" width="7.5" height="20.0" rx="1" class="z31-col c28" />
+              </g>
 
-            <!-- Axis Markings -->
-            <div class="z31-torque-axis">
-              <span>0.5</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
-            </div>
+              <!-- Bottom graduation baseline -->
+              <line x1="10" y1="73" x2="323" y2="73" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.5" />
+              
+              <!-- Mathematically aligned Ticks & Numbers -->
+              <g class="z31-axis-labels">
+                <line x1="28.8" y1="73" x2="28.8" y2="77" class="z31-tick" />
+                <text x="28.8" y="86" class="z31-ax-txt">0.5</text>
+                <line x1="50.8" y1="73" x2="50.8" y2="77" class="z31-tick" />
+                <text x="50.8" y="86" class="z31-ax-txt">1</text>
+                <line x1="94.8" y1="73" x2="94.8" y2="77" class="z31-tick" />
+                <text x="94.8" y="86" class="z31-ax-txt">2</text>
+                <line x1="138.8" y1="73" x2="138.8" y2="77" class="z31-tick" />
+                <text x="138.8" y="86" class="z31-ax-txt">3</text>
+                <line x1="182.8" y1="73" x2="182.8" y2="77" class="z31-tick" />
+                <text x="182.8" y="86" class="z31-ax-txt">4</text>
+                <line x1="226.8" y1="73" x2="226.8" y2="77" class="z31-tick" />
+                <text x="226.8" y="86" class="z31-ax-txt">5</text>
+                <line x1="270.8" y1="73" x2="270.8" y2="77" class="z31-tick" />
+                <text x="270.8" y="86" class="z31-ax-txt">6</text>
+                <line x1="314.8" y1="73" x2="314.8" y2="77" class="z31-tick" />
+                <text x="314.8" y="86" class="z31-ax-txt">7</text>
+              </g>
+            </svg>
           </div>
 
           <!-- RIGHT: 10-BAR VFD COOLANT & DRIVE GAUGES -->

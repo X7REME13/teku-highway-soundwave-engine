@@ -313,21 +313,21 @@ function updateC4HUD(spd, rpm, tps, g, temp, st) {
   if (valC4Spd) valC4Spd.textContent = spd;
   if (valC4Drive) {
     const driveAmount = (2.2 + (st?.gradients?.thermal || 0) * 3.3).toFixed(1);
-    valC4Drive.textContent = `${driveAmount}x`;
+    valC4Drive.textContent = driveAmount;
   }
   if (valC4Temp) valC4Temp.textContent = temp.toFixed(0);
   if (valC4Bpm) valC4Bpm.textContent = Math.round(engine.bpm || 136);
-  if (valC4G) valC4G.textContent = `${g >= 0 ? '+' : ''}${g.toFixed(2)}G`;
+  if (valC4G) valC4G.textContent = Math.abs(g).toFixed(2);
   if (valC4Rpm) valC4Rpm.textContent = String(Math.floor(rpm / 100)).padStart(2, '0');
 
-  // Left Bay: 20-segment speed ladder (calibrated to 0-65 km/h legal punch window)
-  const numSpdBars = Math.min(20, Math.round((spd / 65) * 20));
+  // Left Bay: 20-segment sweeping speed ribbon (calibrated to 0-120 km/h scale)
+  const numSpdBars = Math.min(20, Math.max(0, Math.round((spd / 120) * 20)));
   for (let i = 0; i < 20; i++) {
     if (c4SpeedBars[i]) c4SpeedBars[i].classList.toggle('lit', i < numSpdBars);
   }
 
   // Center Bay: 14-segment fuel/throttle ladder
-  const numTpsBars = Math.min(14, Math.round((tps / 100) * 14));
+  const numTpsBars = Math.min(14, Math.max(0, Math.round((tps / 100) * 14)));
   for (let i = 0; i < 14; i++) {
     if (c4TpsBars[i]) c4TpsBars[i].classList.toggle('lit', i < numTpsBars);
   }
@@ -349,8 +349,8 @@ function updateC4HUD(spd, rpm, tps, g, temp, st) {
     else c4TempSub.textContent = 'OPTIMAL 88°C';
   }
 
-  // Right Bay: Arched Tachometer 24 segments (calibrated to 4000 RPM)
-  const numTachBars = Math.min(24, Math.round((rpm / 4000) * 24));
+  // Right Bay: Arched Tachometer 24 segments (calibrated to 0-6000 RPM, 4 bars per 1000 RPM)
+  const numTachBars = Math.min(24, Math.max(0, Math.round((rpm / 6000) * 24)));
   for (let i = 0; i < 24; i++) {
     if (c4TachBars[i]) c4TachBars[i].classList.toggle('lit', i < numTachBars);
   }
@@ -387,7 +387,7 @@ function updateZ31HUD(spd, rpm, tps, g, temp, st) {
   // Digital speed & RPM
   if (valZ31Spd) valZ31Spd.textContent = spd;
   if (valZ31Rpm) valZ31Rpm.textContent = String(Math.floor(rpm / 100)).padStart(2, '0');
-  if (valZ31Temp) valZ31Temp.textContent = `${temp}°C`;
+  if (valZ31Temp) valZ31Temp.textContent = `${temp.toFixed(0)}°C`;
 
   // Top row: Lateral G turn arrows
   if (z31TurnL) z31TurnL.classList.toggle('lit', g < -0.06);
@@ -401,13 +401,13 @@ function updateZ31HUD(spd, rpm, tps, g, temp, st) {
   }
 
   // Left gauge: 12-bar vertical throttle VFD
-  const numTpsBars = Math.min(12, Math.round((tps / 100) * 12));
+  const numTpsBars = Math.min(12, Math.max(0, Math.round((tps / 100) * 12)));
   for (let i = 0; i < 12; i++) {
     if (z31TpsBars[i]) z31TpsBars[i].classList.toggle('lit', i < numTpsBars);
   }
 
-  // Center gauge: 28-column rising torque curve tachometer
-  const numTachCols = Math.min(28, Math.max(0, Math.round((rpm / 4000) * 28)));
+  // Center gauge: 28-column rising torque curve tachometer (calibrated to 0-7000 RPM, 4 columns per 1000 RPM)
+  const numTachCols = Math.min(28, Math.max(0, Math.round((rpm / 7000) * 28)));
   for (let i = 0; i < 28; i++) {
     if (z31TachCols[i]) z31TachCols[i].classList.toggle('lit', i < numTachCols);
   }
