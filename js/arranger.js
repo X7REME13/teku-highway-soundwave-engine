@@ -36,7 +36,9 @@ class TekuArranger {
     const isBuildUpBar = isDriving && (bar === 13 || bar === 14);
     const isClimaxBar = isDriving && (bar === 15 || bar === 16);
 
-    if (!isDriving) {
+    if (gradients.flatOut > 0.35) {
+      this.sectionName = 'FLAT-OUT ATTACK';
+    } else if (!isDriving) {
       this.sectionName = 'IDLE BASS';
     } else if (isBridgeBar) {
       this.sectionName = 'TRANCE BRIDGE';
@@ -53,13 +55,20 @@ class TekuArranger {
     // 1. Audio Bus Continuous Automation (Smooth 60ms time constant)
     this.applyContinuousGradients(gradients, time, isBridgeBar, isBuildUpBar);
 
+    // Pick Current Harmonic Chord (2 bars per chord across progression)
+    const chordIndex = Math.floor((bar - 1) / 2) % session.progression.length;
+    const chord = session.progression[chordIndex];
+    const rootMidi = session.key.rootMidi + chord.degOffset;
+
     // 2. Event Handling: Shift Flair & Throttle Kick Riser
     if (events.includes('SHIFT')) {
       const scratchType = (bar % 2 === 0) ? 'baby_scratch' : 'chirp';
       this.instruments.triggerDJScratch(scratchType, time);
     }
 
-    if (events.includes('THROTTLE_STAB') && !this.isPendingDrop) {
+    // VISCERAL FLAT-OUT ATTACK DETONATION: Fire 808 drop + rave chord impact immediately!
+    if (events.includes('THROTTLE_STAB')) {
+      this.instruments.triggerFlatOutImpact(time, rootMidi);
       this.isPendingDrop = true;
       this.dropRiserTriggered = false;
     }
@@ -75,23 +84,18 @@ class TekuArranger {
       this.instruments.triggerDropImpact(time);
     }
 
-    // Fire Riser 1/2 bar before a manual throttle-stab drop
+    // Fire secondary Riser 1/2 bar later if still pinned flat-out
     if (this.isPendingDrop && !this.dropRiserTriggered && step === 8) {
       this.instruments.triggerRiser(time, 0.88);
       this.dropRiserTriggered = true;
     }
 
-    // Step 0 of new phrase: 808 Drop Impact if pending
+    // Step 0 of new phrase: secondary 808 Drop Impact if pending
     if (step === 0 && this.isPendingDrop && this.dropRiserTriggered) {
       this.instruments.triggerDropImpact(time);
       this.isPendingDrop = false;
       this.dropRiserTriggered = false;
     }
-
-    // Pick Current Harmonic Chord (2 bars per chord across progression)
-    const chordIndex = Math.floor((bar - 1) / 2) % session.progression.length;
-    const chord = session.progression[chordIndex];
-    const rootMidi = session.key.rootMidi + chord.degOffset;
 
     // Pick Step Data (16-Bar Form with Trance Bridge on 9-12 & Build-Up on 13-14)
     let bassNote, drumNote;
@@ -281,14 +285,17 @@ class TekuArranger {
       this.mixer.midBassBus.gain.setTargetAtTime(targetMidBass, t, 0.12);
     }
 
-    // 4. Trance Bus & Echo Delay Wet Swell
-    if (this.mixer.delayWet && this.mixer.delayWet.gain) {
-      const targetWet = (isBridgeBar || isBuildUpBar) ? 0.52 : 0.34;
-      this.mixer.delayWet.gain.setTargetAtTime(targetWet, t, 0.10);
+    // 4. Trance Bus & Echo Delay Wet Swell (Modulated by musical structure + Thermal state)
+    if (this.mixer.delayWet && this.mixer.delayWet.gain && this.mixer.delayWet.gain.setTargetAtTime) {
+      const baseWet = (isBridgeBar || isBuildUpBar) ? 0.52 : 0.34;
+      const coldFactor = gradients.thermalCold || 0;
+      const hotFactor = gradients.thermalHot || 0;
+      const targetWet = baseWet * (1.0 - coldFactor * 0.70) + (hotFactor * 0.16);
+      this.mixer.delayWet.gain.setTargetAtTime(Math.min(0.68, Math.max(0.08, targetWet)), t, 0.10);
     }
 
     // 5. Thermal Overdrive on Bass (continuous 2.2 -> 5.5)
-    if (gradients.thermal !== undefined) {
+    if (gradients.thermal !== undefined && this.mixer.bassDistortion) {
       const drive = 2.2 + (gradients.thermal * 3.3);
       this.mixer.bassDistortion.curve = this.mixer.makeAsymmetricTubeCurve(drive);
     }

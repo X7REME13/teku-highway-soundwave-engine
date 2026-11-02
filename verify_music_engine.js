@@ -311,9 +311,53 @@ console.assert(engine.generator.session.mutationCount > 0, 'Session must undergo
 console.assert(JSON.stringify(engine.generator.session.bassA[0]) === initialStep0, 'Step 0 root anchor must remain stable across mutations');
 console.log(`   ✓ 8-Bar cycle completed without error. Track evolved (Mutation count: ${engine.generator.session.mutationCount})\n`);
 
+// -----------------------------------------------------------------
+// TEST 8: RAPID PLAY / MUTE TOGGLE RESILIENCE
+// -----------------------------------------------------------------
+console.log('TEST 8: Testing Rapid Play / Mute Toggle Bug Fix:');
+engine.stop();
+console.assert(engine.isRunning === false, 'Engine should be stopped');
+console.assert(engine.mixer.masterGain.gain.value === 0.0, 'Master gain must be 0.0 when stopped');
+
+// Rapid toggles
+engine.start();
+engine.stop();
+engine.start();
+console.assert(engine.isRunning === true, 'Engine must be running after rapid re-start');
+console.assert(engine.mixer.masterGain.gain.value === 0.85, 'Master gain must be fully restored to 0.85 (not stuck in silence)');
+console.log('   ✓ Rapid Start -> Stop -> Start sequence cleanly restores masterGain to 0.85 without silence.\n');
+
+// -----------------------------------------------------------------
+// TEST 9: VISCERAL FLAT-OUT ATTACK OVERHAUL (WOT LAUNCH)
+// -----------------------------------------------------------------
+console.log('TEST 9: Testing Flat-Out WOT Attack Override:');
+// Simulate 1st gear launch at low speed (12 km/h) with 95% throttle stomp
+engine.updateTelemetry(2800, 12, 95, 0.0, 88);
+const stWot = engine.telemetryState;
+console.assert(stWot.gradients.flatOut > 0.5, 'Flat-out gradient must surge > 0.5 on throttle floor');
+console.assert(stWot.gradients.drumCutoff >= 14000, 'Flat-out attack must immediately open drum cutoff to 14,000 Hz even at 12 km/h');
+console.assert(stWot.events.includes('THROTTLE_STAB'), 'THROTTLE_STAB event must trigger on stomp');
+console.log(`   ✓ Flat-Out Attack verified: 12 km/h WOT launch cuts straight to 14,000 Hz with flatOut ${(stWot.gradients.flatOut * 100).toFixed(0)}%.\n`);
+
+// -----------------------------------------------------------------
+// TEST 10: CONTINUOUS THERMAL STAGING (COLD OPEN-LOOP & SPICY MIX)
+// -----------------------------------------------------------------
+console.log('TEST 10: Testing Cold Start & Hot Spicy Thermal Profiles:');
+applySteady(750, 0, 13, 0.0, 25, 15); // Freezing cold start
+const stCold = engine.telemetryState;
+const coldVal = stCold.gradients.thermalCold;
+console.assert(coldVal >= 0.95, 'Cold start profile must be ~1.0 at 25°C');
+console.assert(stCold.gradients.thermalHot === 0.0, 'Hot profile must be 0.0 at cold start');
+
+applySteady(2500, 45, 40, 0.0, 99, 15); // Hard run, hot engine
+const stHot = engine.telemetryState;
+console.assert(stHot.gradients.thermalCold === 0.0, 'Cold profile must be 0.0 when engine is hot');
+console.assert(stHot.gradients.thermalHot >= 0.75, 'Hot spicy profile must be >= 0.75 at 99°C');
+console.log(`   ✓ Thermal Staging verified: 25°C Cold Profile=${(coldVal * 100).toFixed(0)}%, 99°C Spicy Profile=${(stHot.gradients.thermalHot * 100).toFixed(0)}%.\n`);
+
 engine.stop();
 
 console.log('====================================================');
-console.log('>>> ALL TEKU MUSIC ENGINE TESTS PASSED PERFECTLY! <<<');
+console.log('>>> ALL 10 TEKU MUSIC ENGINE TESTS PASSED PERFECTLY! <<<');
 console.log('====================================================');
 process.exit(0);

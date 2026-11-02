@@ -31,9 +31,13 @@ class TekuTelemetryMapper {
       upperMadness: 0.0, // High-register Tech-Trance Arp & Acid madness (22 to 85 km/h + RPM/Throttle)
       tranceBridge: 0.0, // Anti-fatigue Trance Bridge swell when coasting at speed or during bridge bars
       drumCutoff: 300,   // Lowpass sweep from 300 Hz up to 14000 Hz
-      thermal: 0.5       // 0.0 (cold) -> 0.5 (warm 88C) -> 1.0 (hot 105C)
+      thermal: 0.5,      // 0.0 (cold) -> 0.5 (warm 88C) -> 1.0 (hot 105C)
+      thermalCold: 0.0,  // 1.0 at cold start (<=25C) -> 0.0 at operating temp (>=68C)
+      thermalHot: 0.0,   // 0.0 at cruise (<=88C) -> 1.0 at spicy/fan threshold (>=102C)
+      flatOut: 0.0       // 0.0 (cruise) -> 1.0 (instant WOT floor / throttle stab attack)
     };
 
+    this.flatOutHold = 0.0;
     this.events = [];
   }
 
@@ -49,11 +53,16 @@ class TekuTelemetryMapper {
     const rawDSpeed = (speed - this.lastSpeed) / dt;
     this.dSpeed = Math.max(-100, Math.min(100, rawDSpeed));
 
-    // 2. Smooth Values with 1-Pole Lowpass Filter
+    // 2. Smooth Values with Asymmetric 1-Pole Lowpass Filter
+    // When driver floors it (throttle >= 70% or dTPS > 65), fast-attack alpha engages (alpha = 0.78)
+    const isFastAttack = (throttle >= 70) || (rawDTPS > 65);
+    const alphaTps = isFastAttack ? 0.78 : 0.30;
+    const alphaRpm = isFastAttack ? 0.65 : 0.30;
     const alpha = 0.30;
-    this.smoothed.rpm += alpha * (rpm - this.smoothed.rpm);
+
+    this.smoothed.rpm += alphaRpm * (rpm - this.smoothed.rpm);
     this.smoothed.speed += alpha * (speed - this.smoothed.speed);
-    this.smoothed.throttle += alpha * (throttle - this.smoothed.throttle);
+    this.smoothed.throttle += alphaTps * (throttle - this.smoothed.throttle);
     this.smoothed.lateralG += alpha * (lateralG - this.smoothed.lateralG);
     this.smoothed.temp += alpha * (temp - this.smoothed.temp);
 
@@ -68,8 +77,8 @@ class TekuTelemetryMapper {
       this.events.push('SHIFT');
     }
 
-    // 5. Throttle Kick / Stab Detection (Sudden floor down > 90%/s)
-    if (this.dTPS > 90) {
+    // 5. Throttle Kick / Stab Detection (Sudden floor down > 75%/s or snap from <60% to >=80%)
+    if (this.dTPS > 75 || (throttle >= 80 && this.lastThrottle < 60)) {
       this.events.push('THROTTLE_STAB');
     }
 
@@ -95,6 +104,16 @@ class TekuTelemetryMapper {
 
     this.energyScore = (0.40 * normRpm) + (0.30 * normTps) + (0.20 * normDtps) + (0.10 * normG);
     this.energyScore = Math.max(0, Math.min(1, this.energyScore));
+
+    // 7B. Flat-Out WOT Attack Calculation (Instantaneous visceral response!)
+    const isWOT = (throttle >= 72) || (this.smoothed.throttle >= 70);
+    if (isWOT || this.events.includes('THROTTLE_STAB')) {
+      this.flatOutHold = Math.min(1.0, (this.flatOutHold || 0) + 0.65);
+      if (throttle >= 85) this.flatOutHold = 1.0;
+    } else {
+      this.flatOutHold = Math.max(0.0, (this.flatOutHold || 0) * 0.72);
+    }
+    this.gradients.flatOut = Math.max(0.0, Math.min(1.0, this.flatOutHold));
 
     // 8. Compute Continuous Audio Layer Gradients
     // Speed (s) acts as the Macro Motion / State Detector:
@@ -169,13 +188,28 @@ class TekuTelemetryMapper {
     }
 
     // E. Continuous Drum Lowpass Filter Cutoff Sweep (320 Hz when stopped -> 14,000 Hz at 58-60 km/h)
+    // FLAT-OUT ATTACK OVERRIDE: Instant bypass to 14 kHz even at low speeds so floor-down launches rip through!
     const speedRatio = Math.min(1.0, Math.max(0, s / 58.0));
-    this.gradients.drumCutoff = 320 + Math.pow(speedRatio, 1.25) * (14000 - 320);
+    const speedCutoff = 320 + Math.pow(speedRatio, 1.25) * (14000 - 320);
+    const flatOutCutoff = (this.gradients.flatOut || 0) * 14000;
+    this.gradients.drumCutoff = Math.min(14000, Math.round(Math.max(speedCutoff, flatOutCutoff)));
 
-    // E2. Continuous Bass Filter Cutoff Boost (0 Hz at idle -> +620 Hz at peak energy)
-    this.gradients.bassCutoffBoost = Math.round(Math.pow(this.energyScore, 1.15) * 620);
+    // E2. Continuous Bass Filter Cutoff Boost (0 Hz at idle -> +620 Hz at peak energy + flatOut boost)
+    this.gradients.bassCutoffBoost = Math.round(Math.pow(this.energyScore, 1.15) * 620 + (this.gradients.flatOut || 0) * 380);
 
-    // F. Continuous Thermal Gradient (0.0 at <=40°C, 0.5 at 88°C, 1.0 at >=104°C)
+    // Flat-Out surge across upper synths and zeroing out trance bridge
+    if (this.gradients.flatOut > 0.05) {
+      this.gradients.stabs = Math.min(1.0, (this.gradients.stabs || 0) + this.gradients.flatOut * 0.75);
+      this.gradients.hook = Math.min(1.0, (this.gradients.hook || 0) + this.gradients.flatOut * 0.85);
+      this.gradients.upperMadness = Math.min(1.0, (this.gradients.upperMadness || 0) + this.gradients.flatOut * 0.95);
+      this.gradients.tranceBridge = Math.max(0.0, (this.gradients.tranceBridge || 0) * (1.0 - this.gradients.flatOut));
+    }
+
+    // F. Continuous Thermal Gradients
+    // curTemp: engine coolant temperature in °C
+    // - thermal: generic 0.0 (<=40°C) -> 0.5 (88°C) -> 1.0 (>=104°C)
+    // - thermalCold: 1.0 at cold start (<=25°C) -> 0.0 at operating temp (>=68°C)
+    // - thermalHot: 0.0 at cruise (<=88°C) -> 1.0 at spicy/fan threshold (>=102°C)
     const curTemp = this.smoothed.temp;
     if (curTemp <= 40) {
       this.gradients.thermal = 0.0;
@@ -186,6 +220,12 @@ class TekuTelemetryMapper {
     } else {
       this.gradients.thermal = Math.min(1.0, 0.50 + ((curTemp - 88.0) / 16.0) * 0.50); // 0.50 -> 1.0
     }
+
+    // Cold start profile factor (1.0 at <=25°C down to 0.0 at >=68°C)
+    this.gradients.thermalCold = Math.max(0, Math.min(1.0, (68.0 - curTemp) / 43.0));
+
+    // Hot spicy profile factor (0.0 at <=88°C up to 1.0 at >=102°C)
+    this.gradients.thermalHot = Math.max(0, Math.min(1.0, (curTemp - 88.0) / 14.0));
 
     return {
       energy: this.energyScore,

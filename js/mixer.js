@@ -93,12 +93,19 @@ class TekuMixer {
     // --- 4. STAB BUS ---
     this.stabBus = ctx.createGain();
     this.stabBus.gain.setValueAtTime(0.75, ctx.currentTime);
-    this.stabBus.connect(this.panner);
 
     // --- 4B. TRANCE & UPPER MADNESS BUS (With Dotted-16th Stereo Echo Delay) ---
     this.tranceBus = ctx.createGain();
     this.tranceBus.gain.setValueAtTime(0.85, ctx.currentTime);
-    this.tranceBus.connect(this.panner);
+
+    // Sizzling Thermal Overdrive for Synth Leads, Pads & Stabs ("Spicy Mix")
+    this.synthDistortion = ctx.createWaveShaper();
+    this.synthDistortion.curve = this.makeAsymmetricTubeCurve(1.2);
+    this.synthDistortion.oversample = '2x';
+
+    this.tranceBus.connect(this.synthDistortion);
+    this.stabBus.connect(this.synthDistortion);
+    this.synthDistortion.connect(this.panner);
 
     if (ctx.createDelay) {
       this.delayNode = ctx.createDelay(1.0);
@@ -115,8 +122,8 @@ class TekuMixer {
       this.delayWet = ctx.createGain();
       this.delayWet.gain.setValueAtTime(0.36, ctx.currentTime);
 
-      this.tranceBus.connect(this.delayNode);
-      this.stabBus.connect(this.delayNode);
+      // Route shaped synth signal into delay line
+      this.synthDistortion.connect(this.delayNode);
       this.delayNode.connect(this.delayFilter);
       this.delayFilter.connect(this.delayFeedback);
       this.delayFeedback.connect(this.delayNode);
@@ -162,24 +169,70 @@ class TekuMixer {
   }
 
   /**
-   * Modulate Bass Distortion by Engine Coolant Temp (°C)
-   * Cold: Crisp, clean 2.4 drive
-   * Warm: Optimal 3.5 analog warmth
-   * Hot (>95°C): Thick, heavily saturated 5.5 tube overdrive
+   * Modulate Bass & Synth Saturation + Delay Reverb by Engine Coolant Temp (°C)
+   * Cold (<65°C): Clean digital tone (1.6x-2.2x sub), dry reverb (0.10 wet)
+   * Warm (65-92°C): Optimal analog warmth (3.4x sub, 1.4x lead, 0.36 wet)
+   * Hot (>92°C): Sizzling spicy mix (up to 5.8x sub overdrive, 4.4x lead saturation, 0.52 wet)
    */
-  updateThermalDistortion(temp) {
-    if (!this.bassDistortion) return;
-    let drive = 3.5;
-    if (temp < 50) {
-      drive = 2.4;
-    } else if (temp > 95) {
-      drive = 5.5;
-    } else {
-      // 50 - 95 range
-      const ratio = (temp - 50.0) / 45.0;
-      drive = 2.4 + ratio * 2.1;
+  updateThermalState(temp, gradients = null) {
+    // 1. Modulate Bass Distortion
+    if (this.bassDistortion) {
+      let bassDrive = 3.4;
+      if (temp < 50) {
+        bassDrive = 1.6 + Math.max(0, (temp - 20) / 30.0) * 0.8;
+      } else if (temp > 95) {
+        const ratio = Math.min(1.0, (temp - 95.0) / 10.0);
+        bassDrive = 3.8 + ratio * 2.0; // 3.8 -> 5.8x
+      } else {
+        const ratio = (temp - 50.0) / 45.0;
+        bassDrive = 2.4 + ratio * 1.4; // 2.4 -> 3.8x
+      }
+      this.bassDistortion.curve = this.makeAsymmetricTubeCurve(bassDrive);
     }
-    this.bassDistortion.curve = this.makeAsymmetricTubeCurve(drive);
+
+    // 2. Modulate Synth Lead / Pad Saturation ("Spicy Mix")
+    if (this.synthDistortion) {
+      let synthDrive = 1.2;
+      if (temp < 65) {
+        synthDrive = 1.0; // Clean linear pass
+      } else if (temp > 92) {
+        const spicyRatio = Math.min(1.0, (temp - 92.0) / 13.0);
+        synthDrive = 1.4 + spicyRatio * 3.0; // 1.4 -> 4.4x sizzling lead saturation!
+      } else {
+        const warmRatio = (temp - 65.0) / 27.0;
+        synthDrive = 1.0 + warmRatio * 0.4; // 1.0 -> 1.4x
+      }
+      this.synthDistortion.curve = this.makeAsymmetricTubeCurve(synthDrive);
+    }
+
+    // 3. Modulate Delay Wetness & Feedback
+    const t = this.ctx.currentTime;
+    if (this.delayWet && this.delayWet.gain && this.delayWet.gain.setTargetAtTime) {
+      let targetWet = 0.36;
+      if (temp < 65) {
+        const coldRatio = Math.max(0, (temp - 20) / 45.0);
+        targetWet = 0.10 + coldRatio * 0.24; // 0.10 -> 0.34
+      } else if (temp > 92) {
+        const hotRatio = Math.min(1.0, (temp - 92.0) / 13.0);
+        targetWet = 0.36 + hotRatio * 0.16; // 0.36 -> 0.52
+      }
+      this.delayWet.gain.setTargetAtTime(targetWet, t, 0.12);
+    }
+
+    if (this.delayFeedback && this.delayFeedback.gain && this.delayFeedback.gain.setTargetAtTime) {
+      let targetFeedback = 0.38;
+      if (temp < 65) {
+        targetFeedback = 0.18;
+      } else if (temp > 92) {
+        const hotRatio = Math.min(1.0, (temp - 92.0) / 13.0);
+        targetFeedback = 0.38 + hotRatio * 0.10;
+      }
+      this.delayFeedback.gain.setTargetAtTime(targetFeedback, t, 0.12);
+    }
+  }
+
+  updateThermalDistortion(temp) {
+    this.updateThermalState(temp);
   }
 
   /**

@@ -4,7 +4,7 @@
   "description": "Procedural, reactive electronic music engine driven by vehicular OBD-II telemetry. Inspired by Hot Wheels AcceleRacers (Teku Team / Shirako Takamoto - Bassline).",
   "main": "js/music_engine.js",
   "scripts": {
-    "test": "node verify_music_engine.js",
+    "test": "node verify_music_engine.js && node verify_ui_dom.js",
     "start": "python3 -m http.server 8085"
   },
   "repository": {

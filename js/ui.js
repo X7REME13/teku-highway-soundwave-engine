@@ -227,6 +227,10 @@ function updateUI() {
       labelPan.textContent = `Hard Right (${Math.round((g / 0.35) * 100)}%)`;
     }
   }
+
+  // Update Retro Digital Clusters (1987 Corvette C4 & 1984 Nissan 300ZX Z31)
+  updateC4HUD(spd, rpm, tps, g, temp, st);
+  updateZ31HUD(spd, rpm, tps, g, temp, st);
 }
 
 // 8-LED Tachometer Shift Lights Controller
@@ -241,6 +245,177 @@ function updateShiftLights(rpm) {
         el.classList.remove('on');
       }
     }
+  }
+}
+
+// ============================================================
+// RETRO DIGITAL CLUSTER CONTROLLERS: 1987 C4 & 1984 Z31
+// ============================================================
+
+// Skin Switcher DOM Selectors
+const btnSkinTeku = document.getElementById('btn-skin-teku');
+const btnSkinC4 = document.getElementById('btn-skin-c4');
+const btnSkinZ31 = document.getElementById('btn-skin-z31');
+const hudTeku = document.getElementById('hud-teku');
+const hudC4 = document.getElementById('hud-c4');
+const hudZ31 = document.getElementById('hud-z31');
+
+let currentSkin = 'teku';
+
+function switchHudSkin(skin) {
+  currentSkin = skin;
+  if (hudTeku) hudTeku.style.display = (skin === 'teku') ? 'block' : 'none';
+  if (hudC4) hudC4.style.display = (skin === 'c4') ? 'block' : 'none';
+  if (hudZ31) hudZ31.style.display = (skin === 'z31') ? 'block' : 'none';
+
+  if (btnSkinTeku) btnSkinTeku.classList.toggle('active', skin === 'teku');
+  if (btnSkinC4) btnSkinC4.classList.toggle('active', skin === 'c4');
+  if (btnSkinZ31) btnSkinZ31.classList.toggle('active', skin === 'z31');
+
+  log(`[HUD] Active Cluster Skin: ${skin.toUpperCase()}`);
+  updateUI();
+}
+
+if (btnSkinTeku) btnSkinTeku.addEventListener('click', () => switchHudSkin('teku'));
+if (btnSkinC4) btnSkinC4.addEventListener('click', () => switchHudSkin('c4'));
+if (btnSkinZ31) btnSkinZ31.addEventListener('click', () => switchHudSkin('z31'));
+
+// URL param / hash skin selector for testing and deep-linking
+if (typeof window !== 'undefined' && window.location) {
+  if (window.location.hash === '#c4' || window.location.search.includes('hud=c4')) {
+    switchHudSkin('c4');
+  } else if (window.location.hash === '#z31' || window.location.search.includes('hud=z31')) {
+    switchHudSkin('z31');
+  }
+}
+
+// 1. 1987 Chevrolet Corvette C4 Digital Cluster
+const valC4Spd = document.getElementById('val-c4-spd');
+const valC4Drive = document.getElementById('val-c4-drive');
+const valC4Temp = document.getElementById('val-c4-temp');
+const valC4Bpm = document.getElementById('val-c4-bpm');
+const valC4G = document.getElementById('val-c4-g');
+const valC4Rpm = document.getElementById('val-c4-rpm');
+const c4TempWarn = document.getElementById('c4-temp-warn-block');
+const c4TempSub = document.getElementById('c4-temp-sub');
+const c4Upshift = document.getElementById('c4-upshift-arrow');
+const c4GearBox = document.getElementById('c4-gear-box');
+const c4FlatoutBadge = document.getElementById('c4-flatout-badge');
+
+const c4SpeedBars = Array.from({ length: 20 }, (_, i) => document.querySelector(`#c4-speed-ladder .bar-${i + 1}`));
+const c4TpsBars = Array.from({ length: 14 }, (_, i) => document.querySelector(`#c4-tps-ladder .f${i + 1}`));
+const c4TachBars = Array.from({ length: 24 }, (_, i) => document.querySelector(`#c4-tach-ladder .t${i + 1}`));
+
+function updateC4HUD(spd, rpm, tps, g, temp, st) {
+  if (!hudC4 || hudC4.style.display === 'none') return;
+
+  // Digital values
+  if (valC4Spd) valC4Spd.textContent = spd;
+  if (valC4Drive) {
+    const driveAmount = (2.2 + (st?.gradients?.thermal || 0) * 3.3).toFixed(1);
+    valC4Drive.textContent = `${driveAmount}x`;
+  }
+  if (valC4Temp) valC4Temp.textContent = temp.toFixed(0);
+  if (valC4Bpm) valC4Bpm.textContent = Math.round(engine.bpm || 136);
+  if (valC4G) valC4G.textContent = `${g >= 0 ? '+' : ''}${g.toFixed(2)}G`;
+  if (valC4Rpm) valC4Rpm.textContent = String(Math.floor(rpm / 100)).padStart(2, '0');
+
+  // Left Bay: 20-segment speed ladder (calibrated to 0-65 km/h legal punch window)
+  const numSpdBars = Math.min(20, Math.round((spd / 65) * 20));
+  for (let i = 0; i < 20; i++) {
+    if (c4SpeedBars[i]) c4SpeedBars[i].classList.toggle('lit', i < numSpdBars);
+  }
+
+  // Center Bay: 14-segment fuel/throttle ladder
+  const numTpsBars = Math.min(14, Math.round((tps / 100) * 14));
+  for (let i = 0; i < 14; i++) {
+    if (c4TpsBars[i]) c4TpsBars[i].classList.toggle('lit', i < numTpsBars);
+  }
+
+  // Flatout stomp indicator
+  const isFlatout = Boolean((st?.gradients?.flatOut || 0) > 0.3 || tps >= 80);
+  if (c4FlatoutBadge) {
+    c4FlatoutBadge.textContent = isFlatout ? 'FLAT-OUT' : 'RESERVE';
+    c4FlatoutBadge.classList.toggle('flatout', isFlatout);
+  }
+
+  // Coolant status & warning
+  if (c4TempWarn) {
+    c4TempWarn.classList.toggle('warn-red', temp > 95 || temp < 50);
+  }
+  if (c4TempSub) {
+    if (temp < 60) c4TempSub.textContent = 'COLD // DIGITAL';
+    else if (temp > 95) c4TempSub.textContent = 'HOT // OVERDRIVE';
+    else c4TempSub.textContent = 'OPTIMAL 88°C';
+  }
+
+  // Right Bay: Arched Tachometer 24 segments (calibrated to 4000 RPM)
+  const numTachBars = Math.min(24, Math.round((rpm / 4000) * 24));
+  for (let i = 0; i < 24; i++) {
+    if (c4TachBars[i]) c4TachBars[i].classList.toggle('lit', i < numTachBars);
+  }
+
+  // Upshift prompt & gear box
+  const shouldUpshift = (rpm > 2300 && tps > 20 && spd < 58);
+  if (c4Upshift) c4Upshift.classList.toggle('lit', shouldUpshift);
+
+  let gear = 'P';
+  if (spd <= 0 && rpm <= 850) gear = 'P';
+  else if (spd < 18) gear = '1';
+  else if (spd < 34) gear = '2';
+  else if (spd < 48) gear = '3';
+  else if (spd < 58) gear = '4';
+  else gear = '5';
+  if (c4GearBox) c4GearBox.textContent = `[ ${gear} ]`;
+}
+
+// 2. 1984 Nissan 300ZX (Z31) Monochrome Green VFD Cluster
+const valZ31Spd = document.getElementById('val-z31-spd');
+const valZ31Rpm = document.getElementById('val-z31-rpm');
+const valZ31Temp = document.getElementById('val-z31-temp');
+const z31TurnL = document.getElementById('z31-turn-l');
+const z31TurnR = document.getElementById('z31-turn-r');
+const z31ShiftLamp = document.getElementById('z31-shift-lamp');
+
+const z31TpsBars = Array.from({ length: 12 }, (_, i) => document.querySelector(`#z31-tps-ladder .zb${i + 1}`));
+const z31TachCols = Array.from({ length: 28 }, (_, i) => document.querySelector(`#z31-tach-ladder .c${i + 1}`));
+const z31TempBars = Array.from({ length: 10 }, (_, i) => document.querySelector(`#z31-temp-ladder .zt${i + 1}`));
+
+function updateZ31HUD(spd, rpm, tps, g, temp, st) {
+  if (!hudZ31 || hudZ31.style.display === 'none') return;
+
+  // Digital speed & RPM
+  if (valZ31Spd) valZ31Spd.textContent = spd;
+  if (valZ31Rpm) valZ31Rpm.textContent = String(Math.floor(rpm / 100)).padStart(2, '0');
+  if (valZ31Temp) valZ31Temp.textContent = `${temp}°C`;
+
+  // Top row: Lateral G turn arrows
+  if (z31TurnL) z31TurnL.classList.toggle('lit', g < -0.06);
+  if (z31TurnR) z31TurnR.classList.toggle('lit', g > 0.06);
+
+  // Top row: Warning / Attack lamp
+  const isAttack = Boolean((st?.gradients?.flatOut || 0) > 0.25 || tps >= 70 || rpm > 3200);
+  if (z31ShiftLamp) {
+    z31ShiftLamp.textContent = isAttack ? 'ATTACK // STOMP' : (rpm > 2400 ? 'SHIFT UP' : 'TURBO // BOOST');
+    z31ShiftLamp.classList.toggle('lit', isAttack || rpm > 2400);
+  }
+
+  // Left gauge: 12-bar vertical throttle VFD
+  const numTpsBars = Math.min(12, Math.round((tps / 100) * 12));
+  for (let i = 0; i < 12; i++) {
+    if (z31TpsBars[i]) z31TpsBars[i].classList.toggle('lit', i < numTpsBars);
+  }
+
+  // Center gauge: 28-column rising torque curve tachometer
+  const numTachCols = Math.min(28, Math.max(0, Math.round((rpm / 4000) * 28)));
+  for (let i = 0; i < 28; i++) {
+    if (z31TachCols[i]) z31TachCols[i].classList.toggle('lit', i < numTachCols);
+  }
+
+  // Right gauge: 10-bar vertical coolant VFD (40°C - 110°C)
+  const numTempBars = Math.min(10, Math.max(1, Math.round(((temp - 40) / 70) * 10)));
+  for (let i = 0; i < 10; i++) {
+    if (z31TempBars[i]) z31TempBars[i].classList.toggle('lit', i < numTempBars);
   }
 }
 
@@ -449,25 +624,206 @@ if (btnBluetooth && obd) {
   });
 }
 
-// PWA Install Prompt Listener
+// ============================================================
+// FULLSCREEN MODE CONTROLLER
+// ============================================================
+const btnFullscreen = document.getElementById('btn-fullscreen');
+const fsIcon = document.getElementById('fs-icon');
+const fsLabel = document.getElementById('fs-label');
+
+function isFullscreenActive() {
+  return Boolean(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+async function toggleFullscreen() {
+  try {
+    if (!isFullscreenActive()) {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        await docEl.requestFullscreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        await docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        await docEl.msRequestFullscreen();
+      }
+      log('[HUD] Fullscreen Mode engaged.');
+    } else {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        await document.msExitFullscreen();
+      }
+      log('[HUD] Exited Fullscreen Mode.');
+    }
+  } catch (err) {
+    log(`[HUD] Fullscreen toggle: ${err.message}`);
+  }
+  updateFullscreenUI();
+}
+
+function updateFullscreenUI() {
+  const active = isFullscreenActive();
+  if (fsIcon) fsIcon.textContent = active ? '🗗' : '⛶';
+  if (fsLabel) fsLabel.textContent = active ? 'EXIT' : 'FULLSCREEN';
+  if (btnFullscreen) {
+    btnFullscreen.classList.toggle('active', active);
+    btnFullscreen.setAttribute('title', active ? 'Exit Fullscreen Mode' : 'Enter Fullscreen Mode');
+  }
+}
+
+if (btnFullscreen) {
+  btnFullscreen.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', updateFullscreenUI);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+  document.addEventListener('mozfullscreenchange', updateFullscreenUI);
+  document.addEventListener('MSFullscreenChange', updateFullscreenUI);
+}
+
+// ============================================================
+// PWA MOBILE INSTALL CONTROLLER (ANDROID + IOS + DESKTOP)
+// ============================================================
+const btnInstallHeader = document.getElementById('btn-install-header');
+const pwaMobileBanner = document.getElementById('pwa-mobile-banner');
+const btnPwaAction = document.getElementById('btn-pwa-action');
+const btnPwaDismiss = document.getElementById('btn-pwa-dismiss');
+const pwaIosModal = document.getElementById('pwa-ios-modal');
+const btnPwaIosClose = document.getElementById('btn-pwa-ios-close');
+const btnPwaIosOk = document.getElementById('btn-pwa-ios-ok');
+
 let deferredInstallPrompt = null;
+const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isStandalone = (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches) ||
+                     (typeof navigator !== 'undefined' && navigator.standalone === true);
+
+if (isStandalone && btnInstallHeader) {
+  btnInstallHeader.style.display = 'none';
+}
+
+function isPwaDismissed() {
+  try {
+    return sessionStorage.getItem('teku_pwa_dismissed') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setPwaDismissed() {
+  try {
+    sessionStorage.setItem('teku_pwa_dismissed', 'true');
+  } catch {}
+}
+
+function showPWAMobileBanner() {
+  if (isStandalone || isPwaDismissed() || !pwaMobileBanner) return;
+
+  if (isIOS) {
+    if (btnPwaAction) btnPwaAction.textContent = 'HOW TO';
+    pwaMobileBanner.style.display = 'flex';
+  } else if (deferredInstallPrompt) {
+    if (btnPwaAction) btnPwaAction.textContent = 'INSTALL';
+    pwaMobileBanner.style.display = 'flex';
+  } else if (isMobileDevice) {
+    if (btnPwaAction) btnPwaAction.textContent = 'INSTALL';
+    pwaMobileBanner.style.display = 'flex';
+  }
+}
+
+function hidePWAMobileBanner() {
+  if (pwaMobileBanner) pwaMobileBanner.style.display = 'none';
+}
+
+function openIOSGuide() {
+  if (pwaIosModal) pwaIosModal.style.display = 'flex';
+}
+
+function closeIOSGuide() {
+  if (pwaIosModal) pwaIosModal.style.display = 'none';
+}
+
+// 1. Intercept beforeinstallprompt (Android / Chrome)
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  if (btnInstallPwa) {
-    btnInstallPwa.style.display = 'inline-block';
-  }
+  if (btnInstallHeader) btnInstallHeader.style.display = 'inline-flex';
+  if (btnInstallPwa) btnInstallPwa.style.display = 'inline-block';
+  showPWAMobileBanner();
+  log('[PWA] Native install prompt captured and ready.');
 });
 
-if (btnInstallPwa) {
-  btnInstallPwa.addEventListener('click', async () => {
-    if (!deferredInstallPrompt) return;
+// 2. Trigger Installation Action
+async function handleInstallTrigger() {
+  if (isIOS) {
+    openIOSGuide();
+    hidePWAMobileBanner();
+    return;
+  }
+
+  if (deferredInstallPrompt) {
+    hidePWAMobileBanner();
     deferredInstallPrompt.prompt();
     const { outcome } = await deferredInstallPrompt.userChoice;
-    log(`PWA Install choice: ${outcome}`);
-    deferredInstallPrompt = null;
-    btnInstallPwa.style.display = 'none';
+    log(`[PWA] Install prompt outcome: ${outcome}`);
+    if (outcome === 'accepted') {
+      deferredInstallPrompt = null;
+      if (btnInstallHeader) btnInstallHeader.style.display = 'none';
+    }
+  } else {
+    log('[PWA] Use your browser menu (⋮ or Share) -> "Add to Home screen" to install.');
+    if (isMobileDevice) {
+      alert('To install Teku HUD:\nOpen browser menu (⋮) -> Tap "Add to Home screen" or "Install App".');
+    }
+  }
+}
+
+// Header Install Pill click
+if (btnInstallHeader) {
+  btnInstallHeader.addEventListener('click', handleInstallTrigger);
+}
+
+// Mobile Banner Action click
+if (btnPwaAction) {
+  btnPwaAction.addEventListener('click', handleInstallTrigger);
+}
+
+// Banner Dismiss click
+if (btnPwaDismiss) {
+  btnPwaDismiss.addEventListener('click', () => {
+    hidePWAMobileBanner();
+    setPwaDismissed();
   });
+}
+
+// iOS Modal Listeners
+if (btnPwaIosClose) btnPwaIosClose.addEventListener('click', closeIOSGuide);
+if (btnPwaIosOk) btnPwaIosOk.addEventListener('click', closeIOSGuide);
+if (pwaIosModal) {
+  pwaIosModal.addEventListener('click', (e) => {
+    if (e.target === pwaIosModal) closeIOSGuide();
+  });
+}
+
+// 3. App Installed Event
+window.addEventListener('appinstalled', () => {
+  log('>>> TEKU SOUND SYSTEM INSTALLED AS PWA! <<<');
+  deferredInstallPrompt = null;
+  hidePWAMobileBanner();
+  if (btnInstallHeader) btnInstallHeader.style.display = 'none';
+  if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+});
+
+// Auto-show banner on mobile devices after 1.5s if not installed
+if (isMobileDevice && !isStandalone && !isPwaDismissed()) {
+  setTimeout(() => {
+    showPWAMobileBanner();
+  }, 1500);
 }
 
 // Test Chill Gear-Shift @ 2.4k RPM
@@ -496,23 +852,24 @@ btnChillShift.addEventListener('click', () => {
   }, 1000);
 });
 
-// Test Throttle Stomp (Attack Mode Riser & Drop)
+// Test Flat-Out Throttle Stomp (Immediate Visceral Attack & Rave Overdrive)
 btnStomp.addEventListener('click', () => {
   if (!engine.isRunning) btnAudio.click();
-  log('>>> THROTTLE STAB! (dTPS > 90%/s) -> Scheduling Riser into 808 Drop! <<<');
+  log('>>> FLAT-OUT FLOOR STOMP! (100% TPS WOT) -> DETONATING IMMEDIATE 808 SUB-DROP + 14kHz RAVE REZ SCREAMER! <<<');
 
-  sliderTps.value = 95;
-  sliderRpm.value = 3600;
-  sliderSpd.value = 55;
-  sliderG.value = 0.28;
+  sliderTps.value = 100;
+  sliderRpm.value = 3800;
+  sliderSpd.value = 58;
+  sliderG.value = 0.32;
   updateUI();
 
   setTimeout(() => {
-    sliderTps.value = 35;
-    sliderRpm.value = 2500;
+    sliderTps.value = 28;
+    sliderRpm.value = 2300;
     sliderG.value = 0.0;
     updateUI();
-  }, 2200);
+    log('>>> FLAT-OUT SPRINT COMPLETED: Coasting into Boulevard Flow <<<');
+  }, 2600);
 });
 
 // ==========================================

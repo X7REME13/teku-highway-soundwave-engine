@@ -86,14 +86,31 @@ class TekuMusicEngine {
 
   start() {
     if (!this.ctx) this.init();
+    if (this.timerID) {
+      clearTimeout(this.timerID);
+      this.timerID = null;
+    }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
 
-    this.isRunning = true;
-    this.currentStep = 0;
-    this.bar = 1;
-    this.nextNoteTime = this.ctx.currentTime + 0.05;
+    // Restore Master Gain cleanly (fixes permanent silence after stop -> start)
+    if (this.mixer && this.mixer.masterGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      if (this.mixer.masterGain.gain.cancelScheduledValues) {
+        this.mixer.masterGain.gain.cancelScheduledValues(now);
+      }
+      if (this.mixer.masterGain.gain.setValueAtTime) {
+        this.mixer.masterGain.gain.setValueAtTime(0.85, now);
+      }
+    }
+
+    if (!this.isRunning) {
+      this.isRunning = true;
+      this.currentStep = 0;
+      this.bar = 1;
+      this.nextNoteTime = this.ctx.currentTime + 0.04;
+    }
 
     // Update telemetry state immediately
     this.updateTelemetry(
@@ -114,7 +131,15 @@ class TekuMusicEngine {
       this.timerID = null;
     }
     if (this.mixer && this.mixer.masterGain && this.ctx) {
-      this.mixer.masterGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
+      const now = this.ctx.currentTime;
+      if (this.mixer.masterGain.gain.cancelScheduledValues) {
+        this.mixer.masterGain.gain.cancelScheduledValues(now);
+      }
+      if (this.mixer.masterGain.gain.setTargetAtTime) {
+        this.mixer.masterGain.gain.setTargetAtTime(0.0, now, 0.012);
+      } else if (this.mixer.masterGain.gain.setValueAtTime) {
+        this.mixer.masterGain.gain.setValueAtTime(0.0, now);
+      }
     }
   }
 
@@ -127,14 +152,23 @@ class TekuMusicEngine {
     // Update mapper (computes continuous gradients & events)
     this.telemetryState = this.telemetryMapper.update(rpm, speed, throttle, lateralG, temp);
 
-    // Dynamic Tempo micro-nudging (Centering at 136 BPM, ±4 BPM with speed gradient up to 60 km/h legal limit)
+    // Dynamic Tempo micro-nudging (Centering at 136 BPM, ±4 BPM with speed, +6 BPM flat-out sprint surge)
     const speedRatio = Math.min(1.0, Math.max(0, speed / 60.0));
-    this.bpm = (this.generator.session.baseBpm || 136) + (speedRatio * 4.0);
+    const flatOutSurge = (this.telemetryState && this.telemetryState.gradients) ? (this.telemetryState.gradients.flatOut || 0) * 6.0 : 0;
+    this.bpm = (this.generator.session.baseBpm || 136) + (speedRatio * 4.0) + flatOutSurge;
 
-    // Apply continuous lateral panning
+    // Apply continuous lateral panning and thermal modulation
     if (this.mixer) {
-      this.mixer.updateLateralPan(lateralG);
-      this.mixer.updateThermalDistortion(temp);
+      if (this.mixer.updateLateralPan) this.mixer.updateLateralPan(lateralG);
+      if (this.mixer.updateThermalState) {
+        this.mixer.updateThermalState(temp, this.telemetryState ? this.telemetryState.gradients : null);
+      } else if (this.mixer.updateThermalDistortion) {
+        this.mixer.updateThermalDistortion(temp);
+      }
+    }
+
+    if (this.instruments && this.instruments.updateThermalState) {
+      this.instruments.updateThermalState(temp, this.telemetryState ? this.telemetryState.gradients : null);
     }
   }
 

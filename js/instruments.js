@@ -14,6 +14,23 @@ class TekuInstruments {
     this.mixer = mixer;
     this.lastBassFreq = null;
     this.lastHookFreq = null;
+    this.lastArpFreq = null;
+
+    // Thermal sound staging
+    this.thermalCold = 0.0;
+    this.thermalHot = 0.0;
+    this.temp = 88;
+  }
+
+  updateThermalState(temp, gradients = null) {
+    this.temp = temp;
+    if (gradients) {
+      this.thermalCold = gradients.thermalCold !== undefined ? gradients.thermalCold : 0.0;
+      this.thermalHot = gradients.thermalHot !== undefined ? gradients.thermalHot : 0.0;
+    } else {
+      this.thermalCold = Math.max(0, Math.min(1.0, (68.0 - temp) / 43.0));
+      this.thermalHot = Math.max(0, Math.min(1.0, (temp - 88.0) / 14.0));
+    }
   }
 
   // ==========================================
@@ -218,6 +235,9 @@ class TekuInstruments {
     const startFreq = (hasSlide && this.lastHookFreq) ? this.lastHookFreq : hookFreq;
     this.lastHookFreq = hookFreq;
 
+    const coldFactor = this.thermalCold || 0;
+    const hotFactor = this.thermalHot || 0;
+
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     osc1.type = 'sawtooth';
@@ -225,8 +245,11 @@ class TekuInstruments {
 
     osc1.frequency.setValueAtTime(startFreq, now);
     osc2.frequency.setValueAtTime(startFreq, now);
-    osc1.detune.setValueAtTime(9, now);
-    osc2.detune.setValueAtTime(-9, now);
+
+    const baseDetune = 9 * (1.0 - coldFactor * 0.55) + (hotFactor * 6);
+    const drift = (hotFactor > 0.05) ? (Math.random() - 0.5) * 12 * hotFactor : 0;
+    osc1.detune.setValueAtTime(baseDetune + drift, now);
+    osc2.detune.setValueAtTime(-baseDetune + drift, now);
 
     if (hasSlide) {
       osc1.frequency.exponentialRampToValueAtTime(hookFreq, now + 0.06);
@@ -235,10 +258,11 @@ class TekuInstruments {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    const cut = isAccent ? 1450 : 950;
+    const baseCut = isAccent ? 1450 : 950;
+    const cut = baseCut * (1.0 - coldFactor * 0.20) + (hotFactor * 320);
     filter.frequency.setValueAtTime(cut * 1.6, now);
     filter.frequency.exponentialRampToValueAtTime(cut * 0.65, now + dur * 0.85);
-    filter.Q.setValueAtTime(3.5, now);
+    filter.Q.setValueAtTime(3.5 + hotFactor * 1.8, now);
 
     const gain = ctx.createGain();
     const peak = vel * (isAccent ? 0.34 : 0.24);
@@ -286,9 +310,14 @@ class TekuInstruments {
     osc2.frequency.setValueAtTime(startFreq, now);
     osc3.frequency.setValueAtTime(isScreamer ? startFreq * 2.0 : startFreq, now); // Octave shimmer on screamers!
 
-    osc1.detune.setValueAtTime(14, now);
-    osc2.detune.setValueAtTime(-14, now);
-    osc3.detune.setValueAtTime(7, now);
+    const coldFactor = this.thermalCold || 0;
+    const hotFactor = this.thermalHot || 0;
+
+    const baseDetune = 14 * (1.0 - coldFactor * 0.55) + (hotFactor * 12);
+    const arpDrift = (hotFactor > 0.05) ? (Math.random() - 0.5) * 18 * hotFactor : 0;
+    osc1.detune.setValueAtTime(baseDetune + arpDrift, now);
+    osc2.detune.setValueAtTime(-baseDetune + arpDrift, now);
+    osc3.detune.setValueAtTime(baseDetune * 0.5 + arpDrift, now);
 
     if (hasSlide) {
       const slideTime = now + 0.045;
@@ -300,11 +329,14 @@ class TekuInstruments {
     // High-Q Acid / Trance Pluck Filter (Sweeps from 7.5 kHz down to 1.4 kHz)
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    const peakCut = isScreamer ? 9200 : (isAccent ? 6800 : 4800);
-    const baseCut = isScreamer ? 2400 : 1350;
+    const rawPeakCut = isScreamer ? 9200 : (isAccent ? 6800 : 4800);
+    const rawBaseCut = isScreamer ? 2400 : 1350;
+    const peakCut = rawPeakCut * (1.0 - coldFactor * 0.22) + (hotFactor * 1800);
+    const baseCut = rawBaseCut * (1.0 - coldFactor * 0.20) + (hotFactor * 600);
     filter.frequency.setValueAtTime(peakCut, now);
     filter.frequency.exponentialRampToValueAtTime(baseCut, now + dur * 0.88);
-    filter.Q.setValueAtTime(isScreamer ? 6.2 : (isAccent ? 4.5 : 2.8), now);
+    const baseQ = isScreamer ? 6.2 : (isAccent ? 4.5 : 2.8);
+    filter.Q.setValueAtTime(baseQ + hotFactor * 1.8, now);
 
     const gain = ctx.createGain();
     const peakGain = vel * (isScreamer ? 0.28 : (isAccent ? 0.24 : 0.18));
@@ -723,6 +755,29 @@ class TekuInstruments {
     // 2. Metallic Crash & DJ Scratch flair
     this.triggerCrash(now);
     this.triggerDJScratch('baby_scratch', now);
+  }
+
+  /**
+   * Visceral Flat-Out WOT Attack Detonation
+   * Fires immediate 808 Sub-Drop, Dual Rave Stabs, Chirp Scratch, and Crash
+   */
+  triggerFlatOutImpact(time, rootMidi = 50) {
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+
+    // 1. Massive 808 Sub-Drop boom
+    this.triggerDropImpact(now);
+
+    // 2. Dual-octave Industrial Rave Chord Stab impact
+    this.triggerStab(now, rootMidi, 1.0);
+    this.triggerStab(now + 0.02, rootMidi + 12, 0.85);
+
+    // 3. Fast Chirp Scratch & Crash Stinger
+    this.triggerDJScratch('chirp', now);
+    this.triggerCrash(now);
+
+    // 4. Fast high-Q pitch riser pulse for instant adrenaline
+    this.triggerRiser(now, 0.35);
   }
 }
 
