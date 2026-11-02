@@ -1,11 +1,11 @@
 /**
  * TEKU DRIVE // INSTRUMENTS MODULE
  * Pure musical synthesizers calibrated to Teku-Ising acoustic DNA:
- * - Rolling Raw Sub/Mid Bass (Centerpiece, >94% energy under 250 Hz)
- * - Breakbeat Drum Kit (Kick, Snare, Ghost, Swung Hats, Crash)
- * - Industrial Rave Stabs
- * - Shirako DJ Turntable Vinyl Scratches
- * - Transition FX (Risers, Tape-stops, Sub drops)
+ * - Rolling Sustained Sub/Mid Bass (True ADSR sustain hold, >94% energy under 250 Hz)
+ * - Big Beat / Nu-Skool Breakbeat Drum Kit (Kick, Snare, Ghost, Swung Hats, Crash)
+ * - Teku Mid-Synth Hook Ostinato (50s-85s Teku-Ising motif)
+ * - Industrial Rave Minor Chord Stabs
+ * - Shirako DJ Turntable Vinyl Scratches & 808 Sub Drops
  */
 
 class TekuInstruments {
@@ -13,20 +13,20 @@ class TekuInstruments {
     this.ctx = ctx;
     this.mixer = mixer;
     this.lastBassFreq = null;
+    this.lastHookFreq = null;
   }
 
   // ==========================================
   // 1. THE TEKU RAW BASSLINE (Centerpiece Voice)
   // ==========================================
-  triggerBass(freq, time, duration, vel = 0.85, isAccent = false, hasSlide = false) {
+  triggerBass(freq, time, duration, vel = 0.85, isAccent = false, hasSlide = false, cutoffBoost = 0) {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
+    const dur = Math.max(0.08, duration || 0.22);
 
     // ========================================================
     // A. PHYSICAL SUB-BASS FOUNDATION (The 42 - 82 Hz Sweet Spot)
     // ========================================================
-    // Fold frequency down into the physical sub-bass range (42 - 82 Hz)
-    // Never allows subsonic inaudible rumble (<40 Hz) or weak bass
     const targetFreq = (hasSlide && this.lastBassFreq) ? this.lastBassFreq : freq;
     let subStartFreq = targetFreq;
     while (subStartFreq > 82) subStartFreq *= 0.5;
@@ -41,34 +41,35 @@ class TekuInstruments {
     subSine.type = 'sine';
     subSine.frequency.setValueAtTime(subStartFreq, now);
 
-    // 2. Secondary Triangle Sub Oscillator (Analog acoustic body warmth)
+    // 2. Secondary Triangle Sub Oscillator (Warm 2nd/3rd harmonic body)
     const subTri = ctx.createOscillator();
     subTri.type = 'triangle';
     subTri.frequency.setValueAtTime(subStartFreq, now);
 
     if (hasSlide) {
-      subSine.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.08);
-      subTri.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.08);
+      subSine.frequency.exponentialRampToValueAtTime(subEndFreq, now + Math.min(0.09, dur * 0.45));
+      subTri.frequency.exponentialRampToValueAtTime(subEndFreq, now + Math.min(0.09, dur * 0.45));
     }
 
-    // Dedicated Sub Lowpass Filter (gentle 115 Hz cutoff, flat 0.707 Q, no mid-peaking)
+    // Dedicated Sub Lowpass Filter (120 Hz Butterworth flat Q=0.707)
     const subFilter = ctx.createBiquadFilter();
     subFilter.type = 'lowpass';
-    subFilter.frequency.setValueAtTime(115, now);
+    subFilter.frequency.setValueAtTime(120, now);
     subFilter.Q.setValueAtTime(0.707, now);
 
-    // Sub Amplitude VCA (Massive sub presence, punchy 5ms attack, solid sustain)
+    // TRUE SUSTAINED SUB ADSR ENVELOPE (Holds full pressure across the note!)
     const subGain = ctx.createGain();
-    const subPeak = Math.min(1.40, isAccent ? vel * 1.55 : vel * 1.30);
+    const subPeak = Math.min(1.45, isAccent ? vel * 1.55 : vel * 1.35);
+    const holdEnd = now + dur * 0.82;
     subGain.gain.setValueAtTime(0.001, now);
-    subGain.gain.linearRampToValueAtTime(subPeak, now + 0.005);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 1.08);
+    subGain.gain.linearRampToValueAtTime(subPeak, now + 0.006);
+    subGain.gain.linearRampToValueAtTime(subPeak * 0.88, holdEnd);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.99);
 
     subSine.connect(subFilter);
     subTri.connect(subFilter);
     subFilter.connect(subGain);
 
-    // Connect Sub directly to uncompromised subBassBus (rock-solid mono, full clean headroom)
     if (this.mixer.subBassBus) {
       subGain.connect(this.mixer.subBassBus);
     } else {
@@ -76,44 +77,67 @@ class TekuInstruments {
     }
 
     // ========================================================
-    // B. TEKU / ROLAND TB-303 MID-BASS GRIT (Harmonics 90 - 450 Hz)
+    // B. TEKU / BIG BEAT MID-BASS GRIT (Harmonic Growl 85 - 650 Hz)
     // ========================================================
+    // Keep mid-bass fundamental in the punchy 65 - 145 Hz register
+    let midStartFreq = targetFreq;
+    while (midStartFreq < 65) midStartFreq *= 2.0;
+    let midEndFreq = freq;
+    while (midEndFreq < 65) midEndFreq *= 2.0;
+
     const saw1 = ctx.createOscillator();
     const saw2 = ctx.createOscillator();
+    const pulse = ctx.createOscillator();
     saw1.type = 'sawtooth';
     saw2.type = 'sawtooth';
+    pulse.type = 'square';
 
-    saw1.frequency.setValueAtTime(targetFreq, now);
-    saw2.frequency.setValueAtTime(targetFreq, now);
+    saw1.frequency.setValueAtTime(midStartFreq, now);
+    saw2.frequency.setValueAtTime(midStartFreq, now);
+    pulse.frequency.setValueAtTime(midStartFreq * 0.5, now);
 
     if (hasSlide) {
-      saw1.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
-      saw2.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
+      const slideTime = now + Math.min(0.09, dur * 0.45);
+      saw1.frequency.exponentialRampToValueAtTime(midEndFreq, slideTime);
+      saw2.frequency.exponentialRampToValueAtTime(midEndFreq, slideTime);
+      pulse.frequency.exponentialRampToValueAtTime(midEndFreq * 0.5, slideTime);
     }
     this.lastBassFreq = freq;
 
-    // Analog chorus detune (+/- 5 cents)
-    saw1.detune.setValueAtTime(5, now);
-    saw2.detune.setValueAtTime(-5, now);
+    // Wide analog detune (+/- 7 cents)
+    saw1.detune.setValueAtTime(7, now);
+    saw2.detune.setValueAtTime(-7, now);
 
-    // Resonant Lowpass Filter for the mid-grit sweep
-    const midFilter = ctx.createBiquadFilter();
-    midFilter.type = 'lowpass';
-    const baseCutoff = isAccent ? 460 : 300;
-    midFilter.frequency.setValueAtTime(baseCutoff * 1.8, now);
-    midFilter.frequency.exponentialRampToValueAtTime(baseCutoff, now + duration * 0.65);
-    midFilter.Q.setValueAtTime(isAccent ? 2.4 : 1.8, now);
+    // 24dB/oct Cascaded Lowpass Filter with Envelope Sweep
+    const midFilter1 = ctx.createBiquadFilter();
+    const midFilter2 = ctx.createBiquadFilter();
+    midFilter1.type = 'lowpass';
+    midFilter2.type = 'lowpass';
 
-    // Mid-Saw VCA (balanced so it adds bite without drowning out the sub-bass)
+    const baseCutoff = (isAccent ? 380 : 250) + cutoffBoost;
+    const peakCutoff = isAccent ? baseCutoff * 2.4 : baseCutoff * 1.7;
+
+    midFilter1.frequency.setValueAtTime(peakCutoff, now);
+    midFilter1.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.70);
+    midFilter1.Q.setValueAtTime(isAccent ? 3.2 : 2.0, now);
+
+    midFilter2.frequency.setValueAtTime(peakCutoff * 1.1, now);
+    midFilter2.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.70);
+    midFilter2.Q.setValueAtTime(isAccent ? 1.8 : 1.2, now);
+
+    // Sustained Mid-Bass VCA
     const midGain = ctx.createGain();
-    const midPeak = isAccent ? vel * 0.42 : vel * 0.32;
+    const midPeak = isAccent ? vel * 0.52 : vel * 0.38;
     midGain.gain.setValueAtTime(0.001, now);
     midGain.gain.linearRampToValueAtTime(midPeak, now + 0.006);
-    midGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    midGain.gain.linearRampToValueAtTime(midPeak * 0.75, holdEnd);
+    midGain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.99);
 
-    saw1.connect(midFilter);
-    saw2.connect(midFilter);
-    midFilter.connect(midGain);
+    saw1.connect(midFilter1);
+    saw2.connect(midFilter1);
+    pulse.connect(midFilter1);
+    midFilter1.connect(midFilter2);
+    midFilter2.connect(midGain);
 
     if (this.mixer.midBassBus) {
       midGain.connect(this.mixer.midBassBus);
@@ -121,78 +145,155 @@ class TekuInstruments {
       midGain.connect(this.mixer.bassBus);
     }
 
-    // Start all 4 oscillators together
+    // Start & Stop all oscillators cleanly
+    const stopTime = now + dur + 0.02;
     subSine.start(now);
     subTri.start(now);
     saw1.start(now);
     saw2.start(now);
+    pulse.start(now);
 
-    const stopTime = now + duration + 0.04;
     subSine.stop(stopTime);
     subTri.stop(stopTime);
     saw1.stop(stopTime);
     saw2.stop(stopTime);
+    pulse.stop(stopTime);
   }
 
   // ==========================================
-  // 2. BREAKBEAT DRUMS
+  // 2. TEKU MID-SYNTH HOOK / OSTINATO (50s-85s Motif)
+  // ==========================================
+  triggerHook(freq, time, duration, vel = 0.55, isAccent = false, hasSlide = false) {
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+    const dur = Math.max(0.08, duration || 0.22);
+
+    // Keep hook in the dark, gritty mid register (180 - 520 Hz, never high squeaky chiptune)
+    let hookFreq = freq;
+    while (hookFreq < 175) hookFreq *= 2.0;
+    while (hookFreq > 520) hookFreq *= 0.5;
+
+    const startFreq = (hasSlide && this.lastHookFreq) ? this.lastHookFreq : hookFreq;
+    this.lastHookFreq = hookFreq;
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    osc1.type = 'sawtooth';
+    osc2.type = 'square';
+
+    osc1.frequency.setValueAtTime(startFreq, now);
+    osc2.frequency.setValueAtTime(startFreq, now);
+    osc1.detune.setValueAtTime(9, now);
+    osc2.detune.setValueAtTime(-9, now);
+
+    if (hasSlide) {
+      osc1.frequency.exponentialRampToValueAtTime(hookFreq, now + 0.06);
+      osc2.frequency.exponentialRampToValueAtTime(hookFreq, now + 0.06);
+    }
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    const cut = isAccent ? 1450 : 950;
+    filter.frequency.setValueAtTime(cut * 1.6, now);
+    filter.frequency.exponentialRampToValueAtTime(cut * 0.65, now + dur * 0.85);
+    filter.Q.setValueAtTime(3.5, now);
+
+    const gain = ctx.createGain();
+    const peak = vel * (isAccent ? 0.34 : 0.24);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(peak, now + 0.008);
+    gain.gain.linearRampToValueAtTime(peak * 0.70, now + dur * 0.78);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.mixer.stabBus);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + dur + 0.02);
+    osc2.stop(now + dur + 0.02);
+  }
+
+  // ==========================================
+  // 3. BIG BEAT / BREAKBEAT DRUM KIT
   // ==========================================
   triggerKick(time, vel = 1.0) {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
 
-    // Pitch envelope: 165 Hz punch dropping to 44 Hz sub-boom
+    // 1. Sub-Punch Body (175 Hz transient -> 48 Hz chest thump)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+    osc.type = 'sine';
 
-    osc.frequency.setValueAtTime(165, now);
-    osc.frequency.exponentialRampToValueAtTime(44, now + 0.042);
+    osc.frequency.setValueAtTime(175, now);
+    osc.frequency.exponentialRampToValueAtTime(52, now + 0.038);
+    osc.frequency.exponentialRampToValueAtTime(44, now + 0.26);
 
-    gain.gain.setValueAtTime(vel * 1.15, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
+    gain.gain.setValueAtTime(vel * 1.25, now);
+    gain.gain.linearRampToValueAtTime(vel * 0.95, now + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+    // 2. Beater Click Transient (Punchy mid-snap at 950 Hz)
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.setValueAtTime(920, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(120, now + 0.018);
+
+    clickGain.gain.setValueAtTime(vel * 0.55, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
 
     osc.connect(gain);
+    clickOsc.connect(clickGain);
     gain.connect(this.mixer.drumBus);
+    clickGain.connect(this.mixer.drumBus);
 
-    // Sidechain Ducking: Momemtarily duck the bass bus on kick impact!
+    // Sidechain Ducking: Momentarily duck the bass bus on kick impact
     this.mixer.triggerSidechain(now);
 
     osc.start(now);
-    osc.stop(now + 0.32);
+    clickOsc.start(now);
+    osc.stop(now + 0.30);
+    clickOsc.stop(now + 0.025);
   }
 
   triggerSnare(time, vel = 1.0) {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
 
-    // 1. Tonal Body (180 Hz drop to 80 Hz)
+    // 1. Fat Breakbeat Tonal Body (210 Hz drop to 105 Hz)
     const osc = ctx.createOscillator();
     const oscGain = ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
+    osc.frequency.setValueAtTime(210, now);
+    osc.frequency.exponentialRampToValueAtTime(105, now + 0.065);
 
-    oscGain.gain.setValueAtTime(vel * 0.75, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    oscGain.gain.setValueAtTime(vel * 0.85, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     osc.connect(oscGain);
 
-    // 2. Snappy Noise Wire (1,800 Hz Bandpass)
-    const bufferSize = Math.floor(ctx.sampleRate * 0.18);
+    // 2. Crisp Breakbeat Snare Wire Crack (Wideband noise + 2.1kHz resonance)
+    const bufferSize = Math.floor(ctx.sampleRate * 0.20);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+    }
 
     const noise = ctx.createBufferSource();
     noise.buffer = buffer;
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1800, now);
-    filter.Q.setValueAtTime(2.4, now);
+    filter.frequency.setValueAtTime(2100, now);
+    filter.Q.setValueAtTime(1.4, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(vel * 0.90, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    noiseGain.gain.setValueAtTime(vel * 0.95, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
 
     noise.connect(filter);
     filter.connect(noiseGain);
@@ -202,18 +303,18 @@ class TekuInstruments {
 
     osc.start(now);
     noise.start(now);
-    osc.stop(now + 0.14);
-    noise.stop(now + 0.20);
+    osc.stop(now + 0.15);
+    noise.stop(now + 0.21);
   }
 
   triggerGhostSnare(time) {
-    this.triggerSnare(time, 0.25);
+    this.triggerSnare(time, 0.28);
   }
 
   triggerHat(time, isOpen = false, isAccent = false) {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
-    const dur = isOpen ? 0.22 : 0.045;
+    const dur = isOpen ? 0.20 : 0.048;
 
     const bufferSize = Math.floor(ctx.sampleRate * dur);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -225,10 +326,10 @@ class TekuInstruments {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'highpass';
-    filter.frequency.setValueAtTime(isOpen ? 7200 : 8800, now);
+    filter.frequency.setValueAtTime(isOpen ? 6400 : 8200, now);
 
     const gain = ctx.createGain();
-    const vol = isAccent ? 0.38 : (isOpen ? 0.32 : 0.18);
+    const vol = isAccent ? 0.34 : (isOpen ? 0.30 : 0.16);
     gain.gain.setValueAtTime(vol, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
@@ -271,41 +372,41 @@ class TekuInstruments {
   }
 
   // ==========================================
-  // 3. INDUSTRIAL RAVE STABS (Sparse, Dark Minor Chords)
+  // 4. INDUSTRIAL RAVE STABS (Dark Minor Chords)
   // ==========================================
-  triggerStab(time, rootMidi = 50) { // D3 base
+  triggerStab(time, rootMidi = 50, vel = 0.85) {
     const ctx = this.ctx;
     const now = time || ctx.currentTime;
-    const chordNotes = [rootMidi, rootMidi + 3, rootMidi + 7]; // Minor Triad
+    const chordNotes = [rootMidi, rootMidi + 3, rootMidi + 7, rootMidi + 10]; // Minor 7th Rave Stab
 
     chordNotes.forEach((midi, idx) => {
       const osc = ctx.createOscillator();
       osc.type = 'sawtooth';
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
       osc.frequency.setValueAtTime(freq, now);
-      osc.detune.setValueAtTime((idx - 1) * 8, now);
+      osc.detune.setValueAtTime((idx - 1.5) * 9, now);
 
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1600, now);
-      filter.frequency.exponentialRampToValueAtTime(450, now + 0.24);
-      filter.Q.setValueAtTime(4.0, now);
+      filter.frequency.setValueAtTime(2200, now);
+      filter.frequency.exponentialRampToValueAtTime(420, now + 0.22);
+      filter.Q.setValueAtTime(3.6, now);
 
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.28, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      gain.gain.setValueAtTime(0.24 * vel, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.mixer.stabBus);
 
       osc.start(now);
-      osc.stop(now + 0.30);
+      osc.stop(now + 0.27);
     });
   }
 
   // ==========================================
-  // 4. SHIRAKO TAKAMOTO TURNTABLE VINYL SCRATCHES
+  // 5. SHIRAKO TAKAMOTO TURNTABLE VINYL SCRATCHES
   // ==========================================
   triggerDJScratch(type = 'baby_scratch', time = null) {
     const ctx = this.ctx;
@@ -321,7 +422,6 @@ class TekuInstruments {
     filter.Q.setValueAtTime(8.0, now);
 
     if (type === 'baby_scratch') {
-      // Forward push then backward pull
       osc.frequency.setValueAtTime(480, now);
       osc.frequency.linearRampToValueAtTime(1850, now + 0.10);
       osc.frequency.linearRampToValueAtTime(320, now + 0.22);
@@ -334,15 +434,13 @@ class TekuInstruments {
       gain.gain.linearRampToValueAtTime(0.42, now + 0.04);
       gain.gain.linearRampToValueAtTime(0.35, now + 0.12);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
-
     } else if (type === 'chirp') {
       osc.frequency.setValueAtTime(1800, now);
       osc.frequency.exponentialRampToValueAtTime(600, now + 0.11);
       filter.frequency.setValueAtTime(2400, now);
       gain.gain.setValueAtTime(0.48, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
-
-    } else { // 'tear'
+    } else {
       osc.frequency.setValueAtTime(550, now);
       osc.frequency.linearRampToValueAtTime(1400, now + 0.12);
       osc.frequency.linearRampToValueAtTime(900, now + 0.20);
@@ -360,7 +458,7 @@ class TekuInstruments {
   }
 
   // ==========================================
-  // 5. TRANSITION RISERS & DROPS
+  // 6. TRANSITION RISERS & DROPS
   // ==========================================
   triggerRiser(time, duration = 1.2) {
     const ctx = this.ctx;
@@ -381,7 +479,7 @@ class TekuInstruments {
 
     gain.gain.setValueAtTime(0.01, now);
     gain.gain.exponentialRampToValueAtTime(0.45, now + duration - 0.05);
-    gain.gain.setValueAtTime(0.001, now + duration); // Cut instantly right before drop downbeat!
+    gain.gain.setValueAtTime(0.001, now + duration);
 
     osc.connect(filter);
     filter.connect(gain);

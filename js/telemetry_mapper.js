@@ -106,29 +106,32 @@ class TekuTelemetryMapper {
       this.gradients.drumsFull = Math.pow(t, 1.25);
     }
 
-    // C. Industrial Stabs Swell (40 to 76 km/h + Energy Boost)
+    // C. Industrial Stabs Swell (32 to 74 km/h + Energy Boost)
     if (s <= 4.0) {
       this.gradients.stabs = 0.0;
     } else {
       let stabBase = 0.0;
-      if (s > 40.0) {
-        stabBase = Math.min(1.0, (s - 40.0) / 36.0);
+      if (s > 32.0) {
+        stabBase = Math.min(1.0, (s - 32.0) / 42.0);
       }
-      this.gradients.stabs = Math.min(1.0, (stabBase * 0.7) + (this.energyScore * 0.3));
+      this.gradients.stabs = Math.min(1.0, (stabBase * 0.72) + (this.energyScore * 0.28));
     }
 
-    // D. Peak Hook Swell (72 to 110 km/h or RPM > 2900)
+    // D. Teku Synth Hook Ostinato Swell (38 to 82 km/h or RPM > 2350)
     if (s <= 4.0) {
       this.gradients.hook = 0.0;
     } else {
-      let hookSpeed = s > 72.0 ? Math.min(1.0, (s - 72.0) / 38.0) : 0.0;
-      let hookRpm = this.smoothed.rpm > 2900 ? Math.min(1.0, (this.smoothed.rpm - 2900) / 800.0) : 0.0;
+      let hookSpeed = s > 38.0 ? Math.pow(Math.min(1.0, (s - 38.0) / 44.0), 1.25) : 0.0;
+      let hookRpm = this.smoothed.rpm > 2350 ? Math.min(1.0, (this.smoothed.rpm - 2350) / 1100.0) : 0.0;
       this.gradients.hook = Math.max(hookSpeed, hookRpm);
     }
 
     // E. Continuous Drum Lowpass Filter Cutoff Sweep (320 Hz when stopped -> 14,000 Hz at 85 km/h)
     const speedRatio = Math.min(1.0, Math.max(0, s / 85.0));
     this.gradients.drumCutoff = 320 + Math.pow(speedRatio, 1.25) * (14000 - 320);
+
+    // E2. Continuous Bass Filter Cutoff Boost (0 Hz at idle -> +620 Hz at peak energy)
+    this.gradients.bassCutoffBoost = Math.round(Math.pow(this.energyScore, 1.15) * 620);
 
     // F. Continuous Thermal Gradient (0.0 at <=40°C, 0.5 at 88°C, 1.0 at >=104°C)
     const curTemp = this.smoothed.temp;

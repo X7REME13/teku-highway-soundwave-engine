@@ -33,10 +33,14 @@ class TekuMixer {
     this.compressor.attack.setValueAtTime(0.035, ctx.currentTime); // 35ms allows full 45-75Hz sub wave punch
     this.compressor.release.setValueAtTime(0.18, ctx.currentTime);
 
-    // FFT Analyser for UI Visualizer
+    // High-Resolution FFT Analyser for 30-Band 1/3-Octave Teku Equalizer
     this.analyser = ctx.createAnalyser();
-    this.analyser.fftSize = 256;
-    this.analyser.smoothingTimeConstant = 0.82;
+    this.analyser.fftSize = 4096;
+    this.analyser.smoothingTimeConstant = 0.78;
+    if ('minDecibels' in this.analyser) {
+      this.analyser.minDecibels = -85;
+      this.analyser.maxDecibels = -10;
+    }
 
     this.masterGain.connect(this.compressor);
     this.compressor.connect(this.analyser);

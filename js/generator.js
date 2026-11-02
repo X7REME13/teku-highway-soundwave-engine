@@ -1,7 +1,9 @@
 /**
  * TEKU DRIVE // GENERATOR MODULE
- * Procedural music generation inspired by the Teku-Ising audio DNA
- * Generates bass riffs, breakbeat drum grooves, and chord cycles
+ * Procedural music generation calibrated to Teku-Ising audio DNA:
+ * - Multi-step sustained sub-bass riffs with syncopated pickups (no random 16th-note chaos)
+ * - Authentic Nu-Skool Breakbeat & Big Beat drum grooves
+ * - Hypnotic Mid-Synth Teku Hook Motif & Industrial Stab patterns
  */
 
 if (typeof window === 'undefined' && typeof require !== 'undefined') {
@@ -19,19 +21,29 @@ class TekuGenerator {
   generateNewSession(seed = null) {
     if (seed !== null) this.rng.setSeed(seed);
 
-    // Pick Session Key & BPM (calibrated to Teku-Ising ground truth 136.7 BPM)
+    // Pick Session Key & BPM (calibrated around Teku-Ising 136.7 BPM)
     const key = this.rng.pick(TekuTheory.KEYS);
-    const bpm = this.rng.randInt(132, 138); // Centered around 136.7 native
+    const bpm = this.rng.randInt(132, 138);
 
-    // Bassline Riff Generation (16-step patterns with syncopated breathing room)
-    const bassA = this.generateBassRiff(0.40); // 40% rests for punchy breathing room
-    const bassB = this.generateBassRiff(0.30); // 30% rests for higher tension in phrase B
+    // Pick Riff Archetype & Scale
+    const archetypes = ['teku_ising_signature', 'shirako_big_beat', 'accelecharger_tresillo', 'night_drift_303'];
+    const archetype = this.rng.pick(archetypes);
+    const progNames = Object.keys(TekuTheory.PROGRESSIONS);
+    const progKey = this.rng.pick(progNames);
 
-    // Breakbeat Drum Templates (chopped nu-skool breaks)
+    // Generate Phrase A and Phrase B (Call & Response)
+    const bassA = this.generateBassRiff(archetype, 'A');
+    const bassB = this.generateBassRiff(archetype, 'B');
+
+    // Generate Teku Mid-Synth Hook Motif (interlocks with bassline)
+    const hookMotif = this.generateHookMotif();
+
+    // Generate Breakbeat Drum Grooves
     const drumsA = this.generateBreakbeatPattern('main');
     const drumsB = this.generateBreakbeatPattern('variation');
+    const drumsFill = this.generateBreakbeatPattern('fill');
 
-    // Turnaround Fills
+    // Turnaround Fills (Bar 4 and Bar 8 endings)
     const turnaroundBass = this.generateTurnaroundFill(4);
     const turnaroundClimax = this.generateTurnaroundFill(8);
 
@@ -39,12 +51,15 @@ class TekuGenerator {
       seed: this.rng.seedString,
       key: key,
       baseBpm: bpm,
-      scaleType: 'aeolian', // default cool/warm scale
-      progression: TekuTheory.PROGRESSIONS.classic_teku,
+      archetype: archetype,
+      scaleType: progKey === 'hot_phrygian' ? 'phrygian' : 'aeolian',
+      progression: TekuTheory.PROGRESSIONS[progKey],
       bassA: bassA,
       bassB: bassB,
+      hookMotif: hookMotif,
       drumsA: drumsA,
       drumsB: drumsB,
+      drumsFill: drumsFill,
       turnaroundBass: turnaroundBass,
       turnaroundClimax: turnaroundClimax,
       mutationCount: 0
@@ -54,97 +69,180 @@ class TekuGenerator {
   }
 
   /**
-   * Generates a 16-step Teku rolling bass riff
-   * Uses weighted degrees: Root (0), Subtonic ♭7 (-2/10), 5th (7), Minor 3rd (3), Octave (12)
+   * Helper: Converts a list of note events [{step, len, deg, oct, accent, slide}]
+   * into a 16-step array where held steps are marked as tied rests so notes sustain cleanly.
    */
-  generateBassRiff(restProbability = 0.35) {
-    const pattern = [];
-    const degrees = [0, 0, 0, 10, 12, 7, 3, 5, -2];
-    const degreeWeights = [35, 25, 20, 15, 12, 10, 8, 5, 10];
+  buildStepGrid(events) {
+    const grid = new Array(16).fill(null).map(() => ({
+      deg: 0,
+      oct: 0,
+      len: 0,
+      accent: false,
+      slide: false,
+      rest: true,
+      tied: false
+    }));
 
-    for (let step = 0; step < 16; step++) {
-      // Step 0 (Downbeat) is ALWAYS a solid root note hit
-      if (step === 0) {
-        pattern.push({ deg: 0, oct: 0, accent: true, slide: false, rest: false });
-        continue;
+    for (const ev of events) {
+      if (ev.step < 0 || ev.step >= 16) continue;
+      const len = Math.max(1, Math.min(16 - ev.step, ev.len || 1));
+      grid[ev.step] = {
+        deg: ev.deg || 0,
+        oct: ev.oct || 0,
+        len: len,
+        accent: Boolean(ev.accent),
+        slide: Boolean(ev.slide),
+        rest: false,
+        tied: false
+      };
+      for (let k = 1; k < len; k++) {
+        if (ev.step + k < 16) {
+          grid[ev.step + k] = {
+            deg: ev.deg || 0,
+            oct: ev.oct || 0,
+            len: 0,
+            accent: false,
+            slide: false,
+            rest: true,
+            tied: true
+          };
+        }
       }
-
-      // Step 8 (Beat 3 syncopation) is highly stable
-      if (step === 8) {
-        const deg = this.rng.weighted(degrees, degreeWeights);
-        pattern.push({ deg: deg, oct: 0, accent: true, slide: this.rng.chance(0.25), rest: false });
-        continue;
-      }
-
-      // Off-beat rests give the massive sub-bass room to breathe and hit hard
-      if (this.rng.chance(restProbability)) {
-        pattern.push({ deg: 0, oct: 0, accent: false, slide: false, rest: true });
-        continue;
-      }
-
-      const deg = this.rng.weighted(degrees, degreeWeights);
-      const isAccent = (step % 4 === 2) || (step === 6 || step === 10 || step === 14);
-      const hasSlide = isAccent && this.rng.chance(0.35);
-      const oct = (deg === 12 || (deg === 0 && this.rng.chance(0.20))) ? 1 : 0;
-
-      pattern.push({
-        deg: deg,
-        oct: oct,
-        accent: isAccent,
-        slide: hasSlide,
-        rest: false
-      });
     }
-
-    return pattern;
+    return grid;
   }
 
   /**
-   * Generates procedural breakbeat drum steps (kick, snare, hat, ghost)
+   * Generates a structured, groove-locked 16-step Teku bass riff.
+   * Uses sustained sub notes (2-3 steps long) + tight syncopated 16th pickups.
+   */
+  generateBassRiff(archetype = 'teku_ising_signature', phrase = 'A') {
+    // Pick cohesive tension intervals from the dark minor/phrygian palette
+    const darkIntervals = [-2, 1, 3, 7, 10]; // b7 below, b2 phrygian, b3 minor, 5th, b7
+    const tension1 = this.rng.pick([-2, 1, 3]);
+    const tension2 = this.rng.pick([3, 7, 10, -2]);
+    const turnNote1 = phrase === 'A' ? this.rng.pick([3, 7, 10]) : this.rng.pick([1, 8, 7]);
+    const turnNote2 = phrase === 'A' ? this.rng.pick([-2, 1]) : this.rng.pick([10, -2, 1]);
+
+    let events = [];
+
+    if (archetype === 'teku_ising_signature') {
+      // Extracted directly from Teku-Ising (14s - 35s):
+      // Heavy 3-step sustained root notes with 16th-note syncopated pickups on steps 3, 7, 11, 14, 15
+      events = [
+        { step: 0,  len: 3, deg: 0,        oct: 0, accent: true,  slide: false },
+        { step: 3,  len: 1, deg: tension1, oct: 0, accent: true,  slide: true  },
+        { step: 4,  len: 3, deg: 0,        oct: 0, accent: false, slide: false },
+        { step: 7,  len: 1, deg: tension2, oct: 0, accent: true,  slide: true  },
+        { step: 8,  len: 3, deg: 0,        oct: 0, accent: true,  slide: false },
+        { step: 11, len: 1, deg: 0,        oct: 1, accent: true,  slide: false },
+        { step: 12, len: 2, deg: 0,        oct: 0, accent: false, slide: false },
+        { step: 14, len: 1, deg: turnNote1, oct: 0, accent: true, slide: false },
+        { step: 15, len: 1, deg: turnNote2, oct: 0, accent: true, slide: true  }
+      ];
+    } else if (archetype === 'shirako_big_beat') {
+      // Driving 2-step Big Beat pump with octave & subtonic bounce
+      events = [
+        { step: 0,  len: 2, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 2,  len: 2, deg: 0,         oct: 1, accent: true,  slide: true  },
+        { step: 4,  len: 3, deg: 0,         oct: 0, accent: false, slide: false },
+        { step: 7,  len: 1, deg: tension1,  oct: 0, accent: true,  slide: true  },
+        { step: 8,  len: 2, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 10, len: 2, deg: tension2,  oct: 0, accent: true,  slide: false },
+        { step: 12, len: 2, deg: turnNote1, oct: 0, accent: true,  slide: false },
+        { step: 14, len: 2, deg: turnNote2, oct: 0, accent: true,  slide: true  }
+      ];
+    } else if (archetype === 'accelecharger_tresillo') {
+      // 3 + 3 + 2 Tresillo sub-bass roller (huge sustained sub pressure)
+      events = [
+        { step: 0,  len: 3, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 3,  len: 3, deg: tension1,  oct: 0, accent: true,  slide: true  },
+        { step: 6,  len: 2, deg: 0,         oct: 1, accent: true,  slide: false },
+        { step: 8,  len: 3, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 11, len: 3, deg: tension2,  oct: 0, accent: true,  slide: true  },
+        { step: 14, len: 2, deg: turnNote2, oct: 0, accent: true,  slide: true  }
+      ];
+    } else {
+      // 'night_drift_303': Tight rolling acid bass anchored on root pedal
+      events = [
+        { step: 0,  len: 2, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 2,  len: 1, deg: 0,         oct: 0, accent: false, slide: false },
+        { step: 3,  len: 1, deg: 0,         oct: 1, accent: true,  slide: true  },
+        { step: 4,  len: 2, deg: 0,         oct: 0, accent: false, slide: false },
+        { step: 6,  len: 2, deg: tension1,  oct: 0, accent: true,  slide: true  },
+        { step: 8,  len: 2, deg: 0,         oct: 0, accent: true,  slide: false },
+        { step: 10, len: 1, deg: 0,         oct: 0, accent: false, slide: false },
+        { step: 11, len: 1, deg: tension2,  oct: 0, accent: true,  slide: true  },
+        { step: 12, len: 2, deg: turnNote1, oct: 0, accent: true,  slide: false },
+        { step: 14, len: 2, deg: turnNote2, oct: 0, accent: true,  slide: true  }
+      ];
+    }
+
+    return this.buildStepGrid(events);
+  }
+
+  /**
+   * Generates the dark mid-range Teku Synth Hook / Ostinato motif
+   * (Heard in Teku-Ising at 50s - 85s, locking into the 3+3+2 syncopated groove)
+   */
+  generateHookMotif() {
+    const hookDegrees = [0, 3, 7, 10, 8, 7, 3, 1];
+    const d1 = this.rng.pick([7, 3, 0]);
+    const d2 = this.rng.pick([8, 10, 7]);
+    const d3 = this.rng.pick([3, 5, 7]);
+    const d4 = this.rng.pick([1, -2, 3]);
+
+    const events = [
+      { step: 0,  len: 3, deg: d1, oct: 1, accent: true,  slide: false },
+      { step: 3,  len: 3, deg: d2, oct: 1, accent: true,  slide: true  },
+      { step: 6,  len: 2, deg: d3, oct: 1, accent: false, slide: false },
+      { step: 8,  len: 3, deg: d1, oct: 1, accent: true,  slide: false },
+      { step: 11, len: 3, deg: d3, oct: 1, accent: true,  slide: true  },
+      { step: 14, len: 2, deg: d4, oct: 1, accent: true,  slide: true  }
+    ];
+    return this.buildStepGrid(events);
+  }
+
+  /**
+   * Generates authentic Nu-Skool Breakbeat / Big Beat drum patterns
+   * Combines heavy syncopated kicks, punchy backbeat snares, and crisp 16th hats
    */
   generateBreakbeatPattern(type = 'main') {
     const steps = [];
 
-    // Authentic AcceleRacers Half-Time Breakbeat:
-    // Beat 1: Step 0 (Heavy Kick)
-    // Beat 2: Step 4 (Ghost kick or syncopated off-beat)
-    // Beat 3: Step 8 (Snappy Snare Downbeat - half-time anchor!)
-    // Beat 4: Step 12 (Syncopated Breakbeat Kick or Snare ghost)
     for (let i = 0; i < 16; i++) {
       const step = {
         kick: false,
         snare: false,
         ghostSnare: false,
-        hat: false,
+        hat: true,
         openHat: false,
-        accent: false
+        accent: (i % 2 === 0)
       };
 
-      // Closed Hi-Hats: Swung 16th pattern
-      step.hat = true;
-      if (i % 2 === 1) step.accent = true;
-
-      // Half-time Snare hits solidly on Step 8 (Beat 3)
-      if (i === 8) {
-        step.snare = true;
-      }
-
-      // Main Kick on Step 0 (Beat 1)
-      if (i === 0) {
-        step.kick = true;
-      }
-
-      // Breakbeat Syncopations
       if (type === 'main') {
-        if (i === 6 && this.rng.chance(0.60)) step.kick = true;
-        if (i === 10 && this.rng.chance(0.70)) step.kick = true;
-        if (i === 12 && this.rng.chance(0.50)) step.ghostSnare = true;
-        if (i === 14 && this.rng.chance(0.40)) step.openHat = true;
-      } else { // Variation
-        if (i === 3 && this.rng.chance(0.50)) step.kick = true;
-        if (i === 11 && this.rng.chance(0.65)) step.kick = true;
-        if (i === 15 && this.rng.chance(0.60)) step.ghostSnare = true;
-        if (i === 6 || i === 14) step.openHat = true;
+        // Driving Breakbeat: Kick on 0, 3 (or 6), 10; Snare on 4 & 12
+        if (i === 0 || i === 10) step.kick = true;
+        if (i === 3 && this.rng.chance(0.75)) step.kick = true;
+        if (i === 6 && !steps[3]?.kick) step.kick = true;
+        if (i === 4 || i === 12) step.snare = true;
+        if (i === 7 || i === 9 || i === 15) {
+          if (this.rng.chance(0.65)) step.ghostSnare = true;
+        }
+        if (i === 2 || i === 14) step.openHat = true;
+      } else if (type === 'variation') {
+        // Syncopated Big Beat Variation
+        if (i === 0 || i === 6 || i === 11) step.kick = true;
+        if (i === 14 && this.rng.chance(0.5)) step.kick = true;
+        if (i === 4 || i === 12) step.snare = true;
+        if (i === 2 || i === 7 || i === 15) step.ghostSnare = true;
+        if (i === 6 || i === 10 || i === 14) step.openHat = true;
+      } else {
+        // Turnaround Break Fill (Bar 4 / Bar 8)
+        if (i === 0 || i === 3 || i === 6) step.kick = true;
+        if (i === 4 || i === 8 || i === 11 || i === 12 || i === 14 || i === 15) step.snare = true;
+        if (i === 9 || i === 10 || i === 13) step.ghostSnare = true;
+        if (i === 2 || i === 6 || i === 12) step.openHat = true;
       }
 
       steps.push(step);
@@ -153,36 +251,37 @@ class TekuGenerator {
     return steps;
   }
 
-  /** Generates turnaround fills for bar 4 and bar 8 */
+  /** Generates turnaround fills for bar 4 (4 steps) and bar 8 (8 steps) */
   generateTurnaroundFill(length = 4) {
     const fill = [];
+    const walkDegrees = length === 4 ? [3, 1, 0, -2] : [7, 7, 5, 3, 3, 1, 0, -2];
     for (let i = 0; i < length; i++) {
       fill.push({
-        deg: this.rng.pick([0, 10, 12, 7, 3]),
-        oct: this.rng.chance(0.4) ? 1 : 0,
-        accent: true,
+        deg: walkDegrees[i % walkDegrees.length],
+        oct: (i % 3 === 0 && this.rng.chance(0.35)) ? 1 : 0,
+        len: 1,
+        accent: (i % 2 === 0) || (i === length - 1),
         slide: i === length - 1,
-        rest: false
+        rest: false,
+        tied: false
       });
     }
     return fill;
   }
 
-  /** 8-Bar Evolutionary Mutation: evolves 1-2 steps to feel like a live DJ working the tune */
+  /** 8-Bar Evolutionary Mutation: mutates turnaround/pickup intervals while keeping the groove locked */
   mutateSession() {
     if (!this.session) return;
     this.session.mutationCount++;
 
-    const stepToMutate = this.rng.randInt(1, 15);
-    if (stepToMutate !== 0 && stepToMutate !== 8) {
-      const isRest = this.rng.chance(0.30);
-      this.session.bassA[stepToMutate] = {
-        deg: this.rng.pick([0, 10, 12, 7, 3, -2]),
-        oct: this.rng.chance(0.25) ? 1 : 0,
-        accent: this.rng.chance(0.40),
-        slide: this.rng.chance(0.25),
-        rest: isRest
-      };
+    // Evolve pickup/turnaround degrees on steps 3, 7, 14, 15 without breaking multi-step sustain
+    const candidateSteps = [3, 7, 11, 14, 15];
+    const targetStep = this.rng.pick(candidateSteps);
+    const note = this.session.bassA[targetStep];
+    if (note && !note.rest && note.len === 1) {
+      note.deg = this.rng.pick([0, 1, 3, 7, 10, -2]);
+      note.oct = this.rng.chance(0.25) ? 1 : 0;
+      note.slide = this.rng.chance(0.50);
     }
   }
 }
