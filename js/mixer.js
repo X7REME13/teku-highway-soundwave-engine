@@ -90,10 +90,39 @@ class TekuMixer {
     this.drumBus.connect(this.drumFilter);
     this.drumFilter.connect(this.panner);
 
-    // --- 4. STAB BUS (With Ping-Pong Delay Send) ---
+    // --- 4. STAB BUS ---
     this.stabBus = ctx.createGain();
-    this.stabBus.gain.setValueAtTime(0.70, ctx.currentTime);
+    this.stabBus.gain.setValueAtTime(0.75, ctx.currentTime);
     this.stabBus.connect(this.panner);
+
+    // --- 4B. TRANCE & UPPER MADNESS BUS (With Dotted-16th Stereo Echo Delay) ---
+    this.tranceBus = ctx.createGain();
+    this.tranceBus.gain.setValueAtTime(0.85, ctx.currentTime);
+    this.tranceBus.connect(this.panner);
+
+    if (ctx.createDelay) {
+      this.delayNode = ctx.createDelay(1.0);
+      this.delayNode.delayTime.setValueAtTime(0.33, ctx.currentTime); // Dotted 16th at 136 BPM
+
+      this.delayFeedback = ctx.createGain();
+      this.delayFeedback.gain.setValueAtTime(0.38, ctx.currentTime);
+
+      this.delayFilter = ctx.createBiquadFilter();
+      this.delayFilter.type = 'bandpass';
+      this.delayFilter.frequency.setValueAtTime(1800, ctx.currentTime);
+      this.delayFilter.Q.setValueAtTime(0.7, ctx.currentTime);
+
+      this.delayWet = ctx.createGain();
+      this.delayWet.gain.setValueAtTime(0.36, ctx.currentTime);
+
+      this.tranceBus.connect(this.delayNode);
+      this.stabBus.connect(this.delayNode);
+      this.delayNode.connect(this.delayFilter);
+      this.delayFilter.connect(this.delayFeedback);
+      this.delayFeedback.connect(this.delayNode);
+      this.delayFilter.connect(this.delayWet);
+      this.delayWet.connect(this.panner);
+    }
 
     // --- 5. FX BUS ---
     this.fxBus = ctx.createGain();

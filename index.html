@@ -660,6 +660,7 @@
   <div class="main-controls">
     <button class="primary" id="btn-audio">Start Audio Engine</button>
     <button id="btn-replay">Replay Clio CSV Run (75s)</button>
+    <button id="btn-trance-bridge">Test Trance Bridge (Puente)</button>
     <button id="btn-chill-shift">Test Chill Gear-Shift @ 2.4k</button>
     <button id="btn-stomp">Test Throttle Stomp (Attack)</button>
   </div>
@@ -687,6 +688,9 @@
       HOOK: <strong id="label-grad-hook" style="color: #00ffaa;">0%</strong>
     </div>
     <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      UPPER: <strong id="label-grad-upper" style="color: #ff44cc;">0%</strong>
+    </div>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
       CUTOFF: <strong id="label-grad-cutoff" style="color: var(--teku-cyan);">320 Hz</strong>
     </div>
     <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
@@ -708,7 +712,7 @@
   <!-- MUSICAL STATUS BAR -->
   <div class="musical-status-bar">
     <div class="music-item"><span>Status:</span><span id="label-mode-name">STOPPED (Raw Sub-Bass Riff)</span></div>
-    <div class="music-item"><span>Cycle:</span><span id="label-bar-cycle">Bar 1 of 8</span></div>
+    <div class="music-item"><span>Cycle:</span><span id="label-bar-cycle">Bar 1 of 16 (GROOVE)</span></div>
     <div class="music-item"><span>Chord:</span><span id="label-chord">A Minor</span></div>
     <div class="music-item"><span>Energy:</span><span id="label-agg-score">0.00</span></div>
   </div>

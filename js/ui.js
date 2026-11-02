@@ -10,6 +10,7 @@ const engine = new TekuMusicEngine();
 // DOM Element Selectors
 const btnAudio = document.getElementById('btn-audio');
 const btnReplay = document.getElementById('btn-replay');
+const btnTranceBridge = document.getElementById('btn-trance-bridge');
 const btnChillShift = document.getElementById('btn-chill-shift');
 const btnStomp = document.getElementById('btn-stomp');
 
@@ -41,6 +42,7 @@ const btnRerollSeed = document.getElementById('btn-reroll-seed');
 const labelGradientDrums = document.getElementById('label-grad-drums');
 const labelGradientStabs = document.getElementById('label-grad-stabs');
 const labelGradientHook = document.getElementById('label-grad-hook');
+const labelGradientUpper = document.getElementById('label-grad-upper');
 const labelGradientCutoff = document.getElementById('label-grad-cutoff');
 const labelGradientDrive = document.getElementById('label-grad-drive');
 
@@ -91,6 +93,9 @@ function updateUI() {
   }
   if (labelGradientHook) {
     labelGradientHook.textContent = `${Math.round((st.gradients.hook || 0) * 100)}%`;
+  }
+  if (labelGradientUpper) {
+    labelGradientUpper.textContent = `${Math.round((st.gradients.upperMadness || 0) * 100)}%`;
   }
   if (labelGradientCutoff) {
     labelGradientCutoff.textContent = `${Math.round(st.gradients.drumCutoff)} Hz`;
@@ -230,6 +235,19 @@ if (btnRerollSeed) {
   });
 }
 
+// Test Trance Bridge (Puente Atmosférico -> Snare Build-up -> Apex Drop)
+if (btnTranceBridge) {
+  btnTranceBridge.addEventListener('click', () => {
+    if (!engine.isRunning) btnAudio.click();
+    sliderSpd.value = 58;
+    sliderRpm.value = 2650;
+    sliderTps.value = 28;
+    updateUI();
+    engine.triggerBridgeNow();
+    log('>>> ENTERING TRANCE BRIDGE (Bar 9/16): Supersaw Pad + Echo Arp + Deep Sub Wave -> Bar 13 Snare Build-Up -> Bar 15 Drop! <<<');
+  });
+}
+
 // Test Chill Gear-Shift @ 2.4k RPM
 btnChillShift.addEventListener('click', () => {
   if (!engine.isRunning) btnAudio.click();
@@ -291,15 +309,15 @@ const tripKeyframes = [
   { t: 13.8, rpm: 1550, spd: 24, tps: 8,  g: 0.0,   temp: 86, stage: "STAGE 2: SHIFT TO 2nd GEAR // SHIRAKO VINYL SCRATCH STINGER" },
   { t: 18.0, rpm: 2400, spd: 36, tps: 48, g: -0.03, temp: 87, stage: "STAGE 3: 36 KM/H CITY CRUISE // FULL BREAKBEAT SNARE & GHOSTS" },
   { t: 19.0, rpm: 1650, spd: 38, tps: 10, g: 0.0,   temp: 87, stage: "STAGE 3: SHIFT TO 3rd GEAR // DJ SCRATCH STINGER" },
-  { t: 24.0, rpm: 2300, spd: 46, tps: 32, g: 0.0,   temp: 88, stage: "STAGE 3: BOULEVARD FLOW // TEKU HOOK & BREAKBEAT GROOVE" },
+  { t: 24.0, rpm: 2300, spd: 46, tps: 32, g: 0.0,   temp: 88, stage: "STAGE 3: BOULEVARD FLOW // TEKU HOOK & TECH-TRANCE ARP SWELL" },
   { t: 28.0, rpm: 2450, spd: 48, tps: 35, g: 0.26,  temp: 88, stage: "STAGE 3: ENTERING ROUNDABOUT // STEREO PANNING RIGHT" },
   { t: 33.0, rpm: 2500, spd: 48, tps: 35, g: -0.34, temp: 88, stage: "STAGE 3: ROUNDABOUT APEX // STEREO AUTO-PAN SWEEP (-0.34G LEFT)" },
-  { t: 37.0, rpm: 2350, spd: 50, tps: 28, g: 0.02,  temp: 88, stage: "STAGE 3: EXITING ROUNDABOUT // PAN RETURNS TO CENTER" },
-  { t: 41.0, rpm: 2500, spd: 54, tps: 40, g: 0.0,   temp: 89, stage: "STAGE 4: ON-RAMP ACCELERATION // DRUM CUTOFF SWEEPS TO 14kHz" },
+  { t: 37.0, rpm: 1950, spd: 48, tps: 12, g: 0.02,  temp: 88, stage: "STAGE 3B: TRANCE BRIDGE (PUENTE) // SUPERSAW PAD & ECHO ARP BREATHER" },
+  { t: 41.0, rpm: 2500, spd: 54, tps: 40, g: 0.0,   temp: 89, stage: "STAGE 4: ON-RAMP BUILD-UP // SNARE ROLL & FILTER SWEEP TO 14kHz" },
   { t: 43.0, rpm: 3200, spd: 62, tps: 88, g: 0.12,  temp: 91, stage: "STAGE 4: THROTTLE STOMP // 1.2s RISER INTO 808 SUB DROP!" },
-  { t: 48.0, rpm: 3680, spd: 74, tps: 92, g: 0.08,  temp: 94, stage: "STAGE 4: PEAK HIGHWAY SPRINT // TEKU HOOK, STABS & TUBE OVERDRIVE" },
-  { t: 53.0, rpm: 3400, spd: 76, tps: 60, g: 0.0,   temp: 96, stage: "STAGE 4: OVERHEAT >95°C // THICK 5.5x ASYMMETRIC TUBE SATURATION" },
-  { t: 57.0, rpm: 2400, spd: 65, tps: 18, g: -0.02, temp: 93, stage: "STAGE 5: LIFT-OFF THROTTLE // DRUM CUTOFF LOWPASS DUCK" },
+  { t: 48.0, rpm: 3680, spd: 78, tps: 92, g: 0.08,  temp: 94, stage: "STAGE 4: UPPER MADNESS SPRINT // ACID SCREAMER ARP & 32nd HAT RATCHETS" },
+  { t: 53.0, rpm: 3400, spd: 82, tps: 60, g: 0.0,   temp: 96, stage: "STAGE 4: OVERHEAT >95°C // THICK 5.5x ASYMMETRIC TUBE SATURATION" },
+  { t: 57.0, rpm: 2200, spd: 65, tps: 14, g: -0.02, temp: 93, stage: "STAGE 5: COASTING TRANCE BRIDGE // EUPHORIC PAD & SUB WAVE" },
   { t: 61.0, rpm: 1800, spd: 40, tps: 8,  g: -0.06, temp: 91, stage: "STAGE 5: MODERATE BRAKING // GRADUAL BREAKDOWN TO CITY GROOVE" },
   { t: 64.0, rpm: 1400, spd: 22, tps: 6,  g: -0.08, temp: 90, stage: "STAGE 5: DECELERATING // DRUMS LOWPASS FILTER SWEPT DOWN" },
   { t: 67.0, rpm: 1100, spd: 14, tps: 4,  g: -0.05, temp: 89, stage: "STAGE 5: SMOOTH GRADIENT CROSSFADE // SNARE RECEDING" },
@@ -396,13 +414,14 @@ btnReplay.addEventListener('click', () => {
 // Periodic Sequencer Bar & Chord Status Polling
 setInterval(() => {
   if (!engine.isRunning) return;
-  const bar = engine.currentBar;
+  const bar = engine.bar || 1;
   const session = engine.generator.session;
   const chordIdx = Math.floor((bar - 1) / 2) % session.progression.length;
   const chord = session.progression[chordIdx];
+  const sec = (engine.arranger && engine.arranger.sectionName) ? engine.arranger.sectionName : 'GROOVE';
 
   if (labelBarCycle) {
-    labelBarCycle.textContent = `Bar ${bar} of 8 (${chord.name})`;
+    labelBarCycle.textContent = `Bar ${bar} of 16 (${sec})`;
   }
   if (labelChord) {
     labelChord.textContent = `${session.key.name} // ${chord.label}`;

@@ -217,6 +217,140 @@ class TekuInstruments {
   }
 
   // ==========================================
+  // 2B. TECH-TRANCE UPPER MADNESS ARP & ACID SCREAMER (800 Hz - 10 kHz)
+  // ==========================================
+  triggerTranceArp(freq, time, duration, vel = 0.70, isAccent = false, isScreamer = false, hasSlide = false) {
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+    const dur = Math.max(0.06, duration || 0.14);
+
+    // Clamp into the exciting upper Tech-Trance register (620 Hz - 3,600 Hz fundamental, harmonics to 14 kHz)
+    let arpFreq = freq;
+    while (arpFreq < 620) arpFreq *= 2.0;
+    while (arpFreq > 3600) arpFreq *= 0.5;
+
+    const startFreq = (hasSlide && this.lastArpFreq) ? this.lastArpFreq : arpFreq;
+    this.lastArpFreq = arpFreq;
+
+    // 3 Detuned Hypersaw/Acid Voices for wide Y2K Tech-Trance sheen
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const osc3 = ctx.createOscillator();
+    osc1.type = 'sawtooth';
+    osc2.type = 'sawtooth';
+    osc3.type = isScreamer ? 'sawtooth' : 'square';
+
+    osc1.frequency.setValueAtTime(startFreq, now);
+    osc2.frequency.setValueAtTime(startFreq, now);
+    osc3.frequency.setValueAtTime(isScreamer ? startFreq * 2.0 : startFreq, now); // Octave shimmer on screamers!
+
+    osc1.detune.setValueAtTime(14, now);
+    osc2.detune.setValueAtTime(-14, now);
+    osc3.detune.setValueAtTime(7, now);
+
+    if (hasSlide) {
+      const slideTime = now + 0.045;
+      osc1.frequency.exponentialRampToValueAtTime(arpFreq, slideTime);
+      osc2.frequency.exponentialRampToValueAtTime(arpFreq, slideTime);
+      osc3.frequency.exponentialRampToValueAtTime(isScreamer ? arpFreq * 2.0 : arpFreq, slideTime);
+    }
+
+    // High-Q Acid / Trance Pluck Filter (Sweeps from 7.5 kHz down to 1.4 kHz)
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    const peakCut = isScreamer ? 9200 : (isAccent ? 6800 : 4800);
+    const baseCut = isScreamer ? 2400 : 1350;
+    filter.frequency.setValueAtTime(peakCut, now);
+    filter.frequency.exponentialRampToValueAtTime(baseCut, now + dur * 0.88);
+    filter.Q.setValueAtTime(isScreamer ? 6.2 : (isAccent ? 4.5 : 2.8), now);
+
+    const gain = ctx.createGain();
+    const peakGain = vel * (isScreamer ? 0.28 : (isAccent ? 0.24 : 0.18));
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(peakGain, now + 0.005);
+    gain.gain.linearRampToValueAtTime(peakGain * 0.65, now + dur * 0.65);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    osc3.connect(filter);
+    filter.connect(gain);
+
+    if (this.mixer.tranceBus) {
+      gain.connect(this.mixer.tranceBus);
+    } else {
+      gain.connect(this.mixer.stabBus);
+    }
+
+    const stopTime = now + dur + 0.02;
+    osc1.start(now);
+    osc2.start(now);
+    osc3.start(now);
+    osc1.stop(stopTime);
+    osc2.stop(stopTime);
+    osc3.stop(stopTime);
+  }
+
+  // ==========================================
+  // 2C. EUPHORIC TRANCE ATMOSPHERIC PAD (Anti-Fatigue Bridge / Breakdown)
+  // ==========================================
+  triggerTrancePad(rootMidi = 50, time = null, duration = 1.8, vel = 0.75, filterOpenness = 0.5) {
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+    const dur = Math.max(0.4, duration);
+
+    // Lush Minor 9th / Add11 Trance Chord Voicing (Root, m3, 5th, m7, 9th) in Octave 4/5
+    const intervals = [12, 15, 19, 22, 26];
+    const padFilter = ctx.createBiquadFilter();
+    padFilter.type = 'lowpass';
+
+    // Smooth atmospheric filter sweep across the bridge/build-up (750 Hz -> 5,800 Hz)
+    const startCut = 750 + (filterOpenness * 3200);
+    const endCut = Math.min(6800, startCut * 1.45);
+    padFilter.frequency.setValueAtTime(startCut, now);
+    padFilter.frequency.exponentialRampToValueAtTime(endCut, now + dur * 0.90);
+    padFilter.Q.setValueAtTime(1.4, now);
+
+    const padGain = ctx.createGain();
+    const peak = vel * 0.14; // Balanced across 5 voices
+    padGain.gain.setValueAtTime(0.001, now);
+    padGain.gain.linearRampToValueAtTime(peak, now + Math.min(0.25, dur * 0.25)); // Breathing Trance swell attack
+    padGain.gain.linearRampToValueAtTime(peak * 0.85, now + dur * 0.78);
+    padGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    padFilter.connect(padGain);
+    if (this.mixer.tranceBus) {
+      padGain.connect(this.mixer.tranceBus);
+    } else {
+      padGain.connect(this.mixer.stabBus);
+    }
+
+    intervals.forEach((semi, idx) => {
+      const oscA = ctx.createOscillator();
+      const oscB = ctx.createOscillator();
+      oscA.type = 'sawtooth';
+      oscB.type = 'sawtooth';
+
+      const freq = 440 * Math.pow(2, (rootMidi + semi - 69) / 12);
+      oscA.frequency.setValueAtTime(freq, now);
+      oscB.frequency.setValueAtTime(freq, now);
+
+      // Wide Supersaw detune spread (-18c to +18c)
+      const spread = (idx - 2) * 6;
+      oscA.detune.setValueAtTime(spread + 11, now);
+      oscB.detune.setValueAtTime(spread - 11, now);
+
+      oscA.connect(padFilter);
+      oscB.connect(padFilter);
+
+      oscA.start(now);
+      oscB.start(now);
+      oscA.stop(now + dur + 0.03);
+      oscB.stop(now + dur + 0.03);
+    });
+  }
+
+  // ==========================================
   // 3. BIG BEAT / BREAKBEAT DRUM KIT
   // ==========================================
   triggerKick(time, vel = 1.0) {
@@ -339,6 +473,38 @@ class TekuInstruments {
 
     noise.start(now);
     noise.stop(now + dur + 0.01);
+  }
+
+  triggerHatRatchet(time, vel = 0.8) {
+    const ctx = this.ctx;
+    const now = time || ctx.currentTime;
+    // Double 32nd-note metallic hi-hat sizzle (9.5 kHz highpass) for upper spectrum sparkle
+    [0, 0.052].forEach((offset, i) => {
+      const t = now + offset;
+      const dur = 0.038;
+      const bufferSize = Math.floor(ctx.sampleRate * dur);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let j = 0; j < bufferSize; j++) data[j] = Math.random() * 2 - 1;
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(9500, t);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(vel * (i === 0 ? 0.26 : 0.34), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.mixer.drumBus);
+
+      noise.start(t);
+      noise.stop(t + dur + 0.01);
+    });
   }
 
   triggerCrash(time) {

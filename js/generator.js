@@ -47,6 +47,10 @@ class TekuGenerator {
     const turnaroundBass = this.generateTurnaroundFill(4);
     const turnaroundClimax = this.generateTurnaroundFill(8);
 
+    // High-Register Tech-Trance / Acid Arpeggio ("Locura Arriba") & Bridge Sub Pattern
+    const tranceArp = this.generateTranceArp();
+    const bridgeBass = this.generateBridgeBass();
+
     this.session = {
       seed: this.rng.seedString,
       key: key,
@@ -56,7 +60,9 @@ class TekuGenerator {
       progression: TekuTheory.PROGRESSIONS[progKey],
       bassA: bassA,
       bassB: bassB,
+      bridgeBass: bridgeBass,
       hookMotif: hookMotif,
+      tranceArp: tranceArp,
       drumsA: drumsA,
       drumsB: drumsB,
       drumsFill: drumsFill,
@@ -199,6 +205,50 @@ class TekuGenerator {
       { step: 8,  len: 3, deg: d1, oct: 1, accent: true,  slide: false },
       { step: 11, len: 3, deg: d3, oct: 1, accent: true,  slide: true  },
       { step: 14, len: 2, deg: d4, oct: 1, accent: true,  slide: true  }
+    ];
+    return this.buildStepGrid(events);
+  }
+
+  /**
+   * Generates a 16-step High-Register Tech-Trance / Acid Arpeggio ("Locura Arriba")
+   * Operates in Octave +2 / +3 with rhythmic trance-gate accents & octave jumps
+   */
+  generateTranceArp() {
+    const arpTemplates = [
+      // Classic Y2K Tech-Trance Rolling 16th Arpeggio
+      [0, 3, 7, 12, 7, 3, 10, 12, 0, 3, 7, 15, 12, 10, 7, 3],
+      // Shirako Acid Screamer Syncopated Arp
+      [0, 12, 3, 10, 7, 12, 1, 7, 0, 12, 3, 15, 10, 7, 3, 1],
+      // Euphoric Minor-9th Trance Gate Sequence
+      [0, 7, 12, 14, 15, 12, 7, 3, 0, 7, 10, 12, 15, 14, 10, 7]
+    ];
+    const seq = this.rng.pick(arpTemplates);
+    const pattern = [];
+    for (let i = 0; i < 16; i++) {
+      const deg = seq[i];
+      const isOffbeatAccent = (i % 4 === 2) || (i === 3 || i === 7 || i === 11 || i === 14 || i === 15);
+      pattern.push({
+        deg: deg,
+        oct: (deg >= 12) ? 2 : (this.rng.chance(0.35) ? 3 : 2),
+        len: 1,
+        accent: isOffbeatAccent,
+        screamer: (i === 3 || i === 7 || i === 11 || i === 15),
+        slide: (i % 4 === 3),
+        rest: (i === 1 || i === 5 || i === 9) && this.rng.chance(0.30) // Slight trance-gate breathing
+      });
+    }
+    return pattern;
+  }
+
+  /**
+   * Generates a spacious, long-sustained Sub-Bass pattern for the Trance Bridge (Bars 9-12)
+   * Lets the ears rest from the 16th-note mid-grit while keeping deep sub-bass pressure
+   */
+  generateBridgeBass() {
+    const events = [
+      { step: 0,  len: 8, deg: 0,  oct: 0, accent: true,  slide: false },
+      { step: 8,  len: 6, deg: 0,  oct: 0, accent: false, slide: false },
+      { step: 14, len: 2, deg: -2, oct: 0, accent: true,  slide: true  }
     ];
     return this.buildStepGrid(events);
   }

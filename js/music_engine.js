@@ -149,6 +149,14 @@ class TekuMusicEngine {
     this.timerID = setTimeout(() => this.scheduler(), this.lookaheadMs);
   }
 
+  triggerBridgeNow() {
+    this.bar = 9;
+    this.currentStep = 0;
+    if (this.arranger) {
+      this.arranger.currentBar = 9;
+    }
+  }
+
   advanceStep() {
     const secondsPerBeat = 60.0 / this.bpm;
     const secondsPer16th = secondsPerBeat / 4.0;
@@ -158,9 +166,11 @@ class TekuMusicEngine {
     if (this.currentStep >= this.stepCount) {
       this.currentStep = 0;
       this.bar++;
-      if (this.bar > 8) {
+      if (this.bar > 16) {
         this.bar = 1;
-        // Evolutionary 8-bar mutation: slightly mutates 1-2 steps like a DJ working the track
+      }
+      // Evolutionary 8-bar mutation: slightly mutates 1-2 steps every 8 bars like a DJ working the track
+      if (this.bar % 8 === 1) {
         this.generator.mutateSession();
       }
     }

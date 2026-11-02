@@ -24,8 +24,10 @@ class TekuTelemetryMapper {
       bass: 1.0,         // Always 100% active (The continuous foundation)
       drumsKickHat: 0.0, // Swells in smoothly between 4 and 20 km/h
       drumsFull: 0.0,    // Swells in between 18 and 48 km/h
-      stabs: 0.0,        // Swells in between 42 and 76 km/h (boosted by energy)
-      hook: 0.0,         // Swells in between 72 and 110 km/h (or RPM > 2900)
+      stabs: 0.0,        // Swells in between 32 and 74 km/h (boosted by energy)
+      hook: 0.0,         // Swells in between 38 and 82 km/h (or RPM > 2350)
+      upperMadness: 0.0, // High-register Tech-Trance Arp & Acid madness (22 to 85 km/h + RPM/Throttle)
+      tranceBridge: 0.0, // Anti-fatigue Trance Bridge swell when coasting at speed or during bridge bars
       drumCutoff: 300,   // Lowpass sweep from 300 Hz up to 14000 Hz
       thermal: 0.5       // 0.0 (cold) -> 0.5 (warm 88C) -> 1.0 (hot 105C)
     };
@@ -124,6 +126,23 @@ class TekuTelemetryMapper {
       let hookSpeed = s > 38.0 ? Math.pow(Math.min(1.0, (s - 38.0) / 44.0), 1.25) : 0.0;
       let hookRpm = this.smoothed.rpm > 2350 ? Math.min(1.0, (this.smoothed.rpm - 2350) / 1100.0) : 0.0;
       this.gradients.hook = Math.max(hookSpeed, hookRpm);
+    }
+
+    // D2. Upper Madness Gradient ("Locura Arriba" - Tech-Trance Arp, Acid Screamer & 32nd Hat Ratchets)
+    if (s <= 4.0) {
+      this.gradients.upperMadness = 0.0;
+    } else {
+      const speedMadness = s > 22.0 ? Math.pow(Math.min(1.0, (s - 22.0) / 62.0), 1.15) : 0.0;
+      const rpmMadness = this.smoothed.rpm > 1950 ? Math.min(1.0, (this.smoothed.rpm - 1950) / 1450.0) : 0.0;
+      this.gradients.upperMadness = Math.min(1.0, Math.max(speedMadness * 0.78 + this.energyScore * 0.35, rpmMadness));
+    }
+
+    // D3. Anti-Fatigue Trance Bridge Gradient (Swells smoothly when coasting at speed with low throttle)
+    if (s > 24.0 && this.smoothed.throttle < 19.0) {
+      const coastFactor = Math.min(1.0, (19.0 - this.smoothed.throttle) / 10.0) * Math.min(1.0, (s - 24.0) / 25.0);
+      this.gradients.tranceBridge = Math.min(1.0, (this.gradients.tranceBridge || 0) * 0.75 + coastFactor * 0.25);
+    } else {
+      this.gradients.tranceBridge = Math.max(0.0, (this.gradients.tranceBridge || 0) * 0.70);
     }
 
     // E. Continuous Drum Lowpass Filter Cutoff Sweep (320 Hz when stopped -> 14,000 Hz at 85 km/h)
