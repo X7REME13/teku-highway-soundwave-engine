@@ -1,0 +1,4 @@
+# Ignore large audio binaries
+reference/*.mp3
+reference/*.wav
+reference/*.jpg
