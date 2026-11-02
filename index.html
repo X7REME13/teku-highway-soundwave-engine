@@ -2324,24 +2324,78 @@
       line-height: 0.9;
     }
 
+    .c4-dic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.45);
+      border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.58rem;
+      font-weight: 800;
+      color: rgba(255, 170, 0, 0.9);
+      letter-spacing: 1.5px;
+    }
+
+    .c4-delco-tag {
+      font-size: 0.5rem;
+      color: rgba(255, 170, 0, 0.5);
+      letter-spacing: 1px;
+    }
+
+    .c4-bay-center {
+      padding: 0;
+      background: radial-gradient(circle at 50% 50%, #080d14 0%, #010306 100%);
+    }
+
     /* C4 Center Bay (Driver Information Center) */
     .c4-dic-grid {
       display: grid;
       grid-template-columns: 1.05fr 0.8fr 1.05fr;
       grid-template-rows: 1fr 1fr;
-      gap: 6px;
-      height: 100%;
+      gap: 0;
+      height: calc(100% - 22px);
     }
 
     .c4-dic-cell {
-      border: 1px solid rgba(255, 170, 0, 0.45);
-      background: rgba(255, 170, 0, 0.03);
-      padding: 4px 6px;
+      border: none;
+      background: rgba(255, 170, 0, 0.015);
+      padding: 5px 8px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border-radius: 2px;
       position: relative;
+      transition: background 0.15s ease;
+    }
+
+    .c4-cell-drive {
+      border-right: 1px solid rgba(255, 170, 0, 0.18);
+      border-bottom: 1px solid rgba(255, 170, 0, 0.18);
+    }
+
+    .c4-fuel-col {
+      grid-row: span 2;
+      align-items: center;
+      text-align: center;
+      padding: 4px 2px;
+      background: rgba(0, 230, 118, 0.02);
+      border-right: 1px solid rgba(255, 170, 0, 0.18);
+    }
+
+    .c4-cell-temp {
+      border-bottom: 1px solid rgba(255, 170, 0, 0.18);
+    }
+
+    .c4-cell-tempo {
+      border-right: 1px solid rgba(255, 170, 0, 0.18);
+    }
+
+    .c4-cell-g {
+      cursor: pointer;
+    }
+    .c4-cell-g:hover, .c4-cell-g:active {
+      background: rgba(255, 170, 0, 0.08);
     }
 
     .c4-cell-head {
@@ -2550,19 +2604,20 @@
 
     .c4-gear-box {
       font-family: 'Rajdhani', monospace;
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 900;
       color: #ffaa00;
-      border: 1.5px solid rgba(255, 170, 0, 0.7);
-      padding: 1px 7px;
-      border-radius: 3px;
-      background: rgba(255, 170, 0, 0.12);
-      box-shadow: 0 0 10px rgba(255, 170, 0, 0.35);
+      border: 1px solid rgba(255, 170, 0, 0.6);
+      padding: 1px 6px;
+      border-radius: 2px;
+      background: rgba(255, 170, 0, 0.1);
+      box-shadow: 0 0 8px rgba(255, 170, 0, 0.3);
       position: absolute;
-      left: 45%;
-      top: 62%;
+      left: 36%;
+      top: 68%;
       transform: translate(-50%, -50%);
       z-index: 3;
+      letter-spacing: 1px;
     }
 
     .c4-tach-val-dock {
@@ -2835,48 +2890,55 @@
     /* Responsive cockpit layouts for C4 & Z31 */
     @media (max-width: 768px) {
       .c4-cluster-panel {
-        padding: 8px 8px 16px 8px;
+        padding: 8px 8px 12px 8px;
       }
       .c4-bezel {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
         gap: 6px;
       }
       .c4-bay-speed {
         grid-column: 1;
         grid-row: 1;
-        min-height: 160px;
+        min-height: 165px;
         padding: 4px;
       }
       .c4-bay-tach {
         grid-column: 2;
         grid-row: 1;
-        min-height: 160px;
+        min-height: 165px;
         padding: 4px;
       }
       .c4-bay-center {
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: auto;
-        padding: 6px 8px;
+        padding: 0;
+        border-radius: 4px;
       }
       .c4-dic-grid {
         display: grid;
         grid-template-columns: 1.15fr 0.85fr 1.15fr;
         grid-template-rows: 1fr 1fr;
-        gap: 4px;
+        gap: 0;
+        height: auto;
+      }
+      .c4-dic-cell {
+        padding: 6px 8px;
       }
       .c4-speed-digital-dock .dseg-wrap,
       .c4-tach-val-dock .dseg-wrap {
-        font-size: 2.2rem;
+        font-size: 2.3rem;
       }
       .c4-dic-num {
-        font-size: 1.35rem;
+        font-size: 1.4rem;
       }
       .c4-gear-box {
         font-size: 0.95rem;
         padding: 1px 5px;
+        left: 36%;
+        top: 68%;
       }
       .c4-steering-cutout {
         display: none;
@@ -2886,14 +2948,21 @@
         bottom: auto;
         left: auto;
         transform: none;
-        margin: 6px auto 0 auto;
+        margin: 8px auto 0 auto;
         display: flex;
         justify-content: center;
+        grid-column: 1 / -1;
       }
       .c4-year-plaque {
         font-size: 0.75rem;
-        padding: 1px 12px;
+        font-weight: 900;
+        letter-spacing: 2.5px;
+        padding: 2px 16px;
         transform: none;
+        background: linear-gradient(180deg, #374151 0%, #111827 100%);
+        color: #f3f4f6;
+        border: 1px solid #4b5563;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.9);
       }
       .z31-main-grid {
         grid-template-columns: 45px 1fr 45px;
@@ -2908,12 +2977,12 @@
     /* Mobile Landscape / Car Mount Viewport */
     @media (max-height: 520px) and (orientation: landscape) {
       .c4-cluster-panel {
-        padding: 6px 6px 14px 6px;
+        padding: 6px 6px 10px 6px;
       }
       .c4-bezel {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
         gap: 4px;
       }
       .c4-bay-speed {
@@ -2932,13 +3001,16 @@
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: auto;
-        padding: 4px 6px;
+        padding: 0;
       }
       .c4-dic-grid {
         display: grid;
         grid-template-columns: 1.15fr 0.85fr 1.15fr;
         grid-template-rows: 1fr 1fr;
-        gap: 3px;
+        gap: 0;
+      }
+      .c4-dic-cell {
+        padding: 4px 6px;
       }
       .c4-speed-digital-dock .dseg-wrap,
       .c4-tach-val-dock .dseg-wrap {
@@ -2958,10 +3030,11 @@
         margin: 4px auto 0 auto;
         display: flex;
         justify-content: center;
+        grid-column: 1 / -1;
       }
       .c4-year-plaque {
-        font-size: 0.72rem;
-        padding: 1px 10px;
+        font-size: 0.7rem;
+        padding: 1px 12px;
         transform: none;
       }
     }
@@ -3117,60 +3190,60 @@
           <div class="c4-bay-title">SPEEDOMETER</div>
           <svg id="c4-speed-ladder" viewBox="0 0 200 160" class="c4-speed-svg" xmlns="http://www.w3.org/2000/svg">
             <g class="c4-ribbon-group">
-              <rect x="16.0" y="146.0" width="46.0" height="5.0" rx="1" class="c4-ladder-bar bar-1" />
-              <rect x="18.1" y="139.2" width="46.6" height="5.0" rx="1" class="c4-ladder-bar bar-2" />
-              <rect x="20.9" y="132.3" width="47.3" height="5.0" rx="1" class="c4-ladder-bar bar-3" />
-              <rect x="24.2" y="125.5" width="47.9" height="5.0" rx="1" class="c4-ladder-bar bar-4" />
-              <rect x="27.7" y="118.6" width="48.5" height="5.0" rx="1" class="c4-ladder-bar bar-5" />
-              <rect x="31.5" y="111.8" width="49.2" height="5.0" rx="1" class="c4-ladder-bar bar-6" />
-              <rect x="35.4" y="104.9" width="49.8" height="5.0" rx="1" class="c4-ladder-bar bar-7" />
-              <rect x="39.5" y="98.1" width="50.4" height="5.0" rx="1" class="c4-ladder-bar bar-8" />
-              <rect x="43.8" y="91.3" width="51.1" height="5.0" rx="1" class="c4-ladder-bar bar-9" />
-              <rect x="48.2" y="84.4" width="51.7" height="5.0" rx="1" class="c4-ladder-bar bar-10" />
-              <rect x="52.8" y="77.6" width="52.3" height="5.0" rx="1" class="c4-ladder-bar bar-11" />
-              <rect x="57.4" y="70.7" width="52.9" height="5.0" rx="1" class="c4-ladder-bar bar-12" />
-              <rect x="62.2" y="63.9" width="53.6" height="5.0" rx="1" class="c4-ladder-bar bar-13" />
-              <rect x="67.0" y="57.1" width="54.2" height="5.0" rx="1" class="c4-ladder-bar bar-14" />
-              <rect x="72.0" y="50.2" width="54.8" height="5.0" rx="1" class="c4-ladder-bar bar-15" />
-              <rect x="77.0" y="43.4" width="55.5" height="5.0" rx="1" class="c4-ladder-bar bar-16" />
-              <rect x="82.1" y="36.5" width="56.1" height="5.0" rx="1" class="c4-ladder-bar bar-17" />
-              <rect x="87.4" y="29.7" width="56.7" height="5.0" rx="1" class="c4-ladder-bar bar-18" />
-              <rect x="92.6" y="22.8" width="57.4" height="5.0" rx="1" class="c4-ladder-bar bar-19" />
-              <rect x="98.0" y="16.0" width="58.0" height="5.0" rx="1" class="c4-ladder-bar bar-20" />
+              <rect x="14.0" y="144.0" width="38.0" height="4.5" rx="1" class="c4-ladder-bar bar-1" />
+              <rect x="16.0" y="137.0" width="39.0" height="4.5" rx="1" class="c4-ladder-bar bar-2" />
+              <rect x="18.5" y="130.0" width="40.0" height="4.5" rx="1" class="c4-ladder-bar bar-3" />
+              <rect x="21.5" y="123.0" width="41.0" height="4.5" rx="1" class="c4-ladder-bar bar-4" />
+              <rect x="25.0" y="116.0" width="42.0" height="4.5" rx="1" class="c4-ladder-bar bar-5" />
+              <rect x="29.0" y="109.0" width="43.0" height="4.5" rx="1" class="c4-ladder-bar bar-6" />
+              <rect x="33.5" y="102.0" width="44.0" height="4.5" rx="1" class="c4-ladder-bar bar-7" />
+              <rect x="38.5" y="95.0" width="45.0" height="4.5" rx="1" class="c4-ladder-bar bar-8" />
+              <rect x="44.0" y="88.0" width="46.0" height="4.5" rx="1" class="c4-ladder-bar bar-9" />
+              <rect x="50.0" y="81.0" width="47.0" height="4.5" rx="1" class="c4-ladder-bar bar-10" />
+              <rect x="56.0" y="74.0" width="48.0" height="4.5" rx="1" class="c4-ladder-bar bar-11" />
+              <rect x="62.0" y="67.0" width="49.0" height="4.5" rx="1" class="c4-ladder-bar bar-12" />
+              <rect x="68.0" y="60.0" width="50.0" height="4.5" rx="1" class="c4-ladder-bar bar-13" />
+              <rect x="74.0" y="53.0" width="51.0" height="4.5" rx="1" class="c4-ladder-bar bar-14" />
+              <rect x="80.0" y="46.0" width="52.0" height="4.5" rx="1" class="c4-ladder-bar bar-15" />
+              <rect x="86.0" y="39.0" width="53.0" height="4.5" rx="1" class="c4-ladder-bar bar-16" />
+              <rect x="92.0" y="32.0" width="54.0" height="4.5" rx="1" class="c4-ladder-bar bar-17" />
+              <rect x="98.0" y="26.0" width="55.0" height="4.5" rx="1" class="c4-ladder-bar bar-18" />
+              <rect x="104.0" y="20.0" width="56.0" height="4.5" rx="1" class="c4-ladder-bar bar-19" />
+              <rect x="110.0" y="15.0" width="56.0" height="4.5" rx="1" class="c4-ladder-bar bar-20" />
             </g>
             <g class="c4-mph-scale">
-              <line x1="8.0" y1="148.5" x2="14.0" y2="148.5" class="c4-tick" />
-              <text x="5.5" y="151.5" class="c4-scale-txt mph">5</text>
-              <line x1="12.9" y1="134.8" x2="18.9" y2="134.8" class="c4-tick" />
-              <text x="10.4" y="137.8" class="c4-scale-txt mph">15</text>
-              <line x1="23.5" y1="114.3" x2="29.5" y2="114.3" class="c4-tick" />
-              <text x="21.0" y="117.3" class="c4-scale-txt mph">25</text>
-              <line x1="31.5" y1="100.6" x2="37.5" y2="100.6" class="c4-tick" />
-              <text x="29.0" y="103.6" class="c4-scale-txt mph">35</text>
-              <line x1="44.8" y1="80.1" x2="50.8" y2="80.1" class="c4-tick" />
-              <text x="42.3" y="83.1" class="c4-scale-txt mph">45</text>
-              <line x1="59.0" y1="59.6" x2="65.0" y2="59.6" class="c4-tick" />
-              <text x="56.5" y="62.6" class="c4-scale-txt mph">55</text>
-              <line x1="69.0" y1="45.9" x2="75.0" y2="45.9" class="c4-tick" />
-              <text x="66.5" y="48.9" class="c4-scale-txt mph">65</text>
-              <line x1="79.4" y1="32.2" x2="85.4" y2="32.2" class="c4-tick" />
-              <text x="76.9" y="35.2" class="c4-scale-txt mph">75</text>
-              <line x1="90.0" y1="18.5" x2="96.0" y2="18.5" class="c4-tick" />
-              <text x="87.5" y="21.5" class="c4-scale-txt mph">85</text>
+              <line x1="8.0" y1="146.5" x2="13.0" y2="146.5" class="c4-tick" />
+              <text x="5.5" y="149.5" class="c4-scale-txt mph">5</text>
+              <line x1="12.0" y1="132.5" x2="17.5" y2="132.5" class="c4-tick" />
+              <text x="9.5" y="135.5" class="c4-scale-txt mph">15</text>
+              <line x1="18.0" y1="118.5" x2="24.0" y2="118.5" class="c4-tick" />
+              <text x="15.5" y="121.5" class="c4-scale-txt mph">25</text>
+              <line x1="26.0" y1="104.5" x2="32.5" y2="104.5" class="c4-tick" />
+              <text x="23.5" y="107.5" class="c4-scale-txt mph">35</text>
+              <line x1="36.0" y1="90.5" x2="43.0" y2="90.5" class="c4-tick" />
+              <text x="33.5" y="93.5" class="c4-scale-txt mph">45</text>
+              <line x1="48.0" y1="76.5" x2="55.0" y2="76.5" class="c4-tick" />
+              <text x="45.5" y="79.5" class="c4-scale-txt mph">55</text>
+              <line x1="60.0" y1="62.5" x2="67.0" y2="62.5" class="c4-tick" />
+              <text x="57.5" y="65.5" class="c4-scale-txt mph">65</text>
+              <line x1="72.0" y1="48.5" x2="79.0" y2="48.5" class="c4-tick" />
+              <text x="69.5" y="51.5" class="c4-scale-txt mph">75</text>
+              <line x1="84.0" y1="34.5" x2="91.0" y2="34.5" class="c4-tick" />
+              <text x="81.5" y="37.5" class="c4-scale-txt mph">85</text>
             </g>
             <g class="c4-kmh-scale">
-              <line x1="66.7" y1="141.7" x2="72.7" y2="141.7" class="c4-tick" />
-              <text x="75.2" y="144.7" class="c4-scale-txt kmh">20</text>
-              <line x1="82.6" y1="114.3" x2="88.6" y2="114.3" class="c4-tick" />
-              <text x="91.1" y="117.3" class="c4-scale-txt kmh">40</text>
-              <line x1="96.9" y1="93.8" x2="102.9" y2="93.8" class="c4-tick" />
-              <text x="105.4" y="96.8" class="c4-scale-txt kmh">60</text>
-              <line x1="112.4" y1="73.2" x2="118.4" y2="73.2" class="c4-tick" />
-              <text x="120.9" y="76.2" class="c4-scale-txt kmh">80</text>
-              <line x1="134.5" y1="45.9" x2="140.5" y2="45.9" class="c4-tick" />
-              <text x="143.0" y="48.9" class="c4-scale-txt kmh">100</text>
-              <line x1="158.0" y1="18.5" x2="164.0" y2="18.5" class="c4-tick" />
-              <text x="166.5" y="21.5" class="c4-scale-txt kmh">120</text>
+              <line x1="59.0" y1="130.0" x2="63.0" y2="130.0" class="c4-tick" />
+              <text x="66.0" y="133.0" class="c4-scale-txt kmh">20</text>
+              <line x1="78.0" y1="102.0" x2="82.0" y2="102.0" class="c4-tick" />
+              <text x="85.0" y="105.0" class="c4-scale-txt kmh">40</text>
+              <line x1="97.5" y1="81.0" x2="101.5" y2="81.0" class="c4-tick" />
+              <text x="104.5" y="84.0" class="c4-scale-txt kmh">60</text>
+              <line x1="118.5" y1="60.0" x2="122.5" y2="60.0" class="c4-tick" />
+              <text x="125.5" y="63.0" class="c4-scale-txt kmh">80</text>
+              <line x1="146.5" y1="32.0" x2="150.5" y2="32.0" class="c4-tick" />
+              <text x="153.5" y="35.0" class="c4-scale-txt kmh">100</text>
+              <line x1="166.5" y1="15.0" x2="170.5" y2="15.0" class="c4-tick" />
+              <text x="173.5" y="18.0" class="c4-scale-txt kmh">120</text>
             </g>
           </svg>
           <div class="c4-speed-digital-dock">
@@ -3185,9 +3258,13 @@
 
         <!-- CENTER BAY: DRIVER INFORMATION CENTER (DIC) -->
         <div class="c4-bay c4-bay-center">
+          <div class="c4-dic-header">
+            <span>DRIVER INFORMATION CENTER</span>
+            <span class="c4-delco-tag">DELCO ELECTRONICS</span>
+          </div>
           <div class="c4-dic-grid">
             <!-- Cell: Tube Drive Saturation -->
-            <div class="c4-dic-cell">
+            <div class="c4-dic-cell c4-cell-drive">
               <div class="c4-cell-head">
                 <span class="c4-icon">⚡</span>
                 <span class="c4-label">TUBE DRIVE</span>
@@ -3220,7 +3297,7 @@
             </div>
 
             <!-- Cell: Coolant Temperature -->
-            <div class="c4-dic-cell">
+            <div class="c4-dic-cell c4-cell-temp">
               <div class="c4-cell-head">
                 <span class="c4-warn-block" id="c4-temp-warn-block"></span>
                 <span class="c4-label">COOLANT TEMP</span>
@@ -3236,7 +3313,7 @@
             </div>
 
             <!-- Cell: Tempo BPM -->
-            <div class="c4-dic-cell">
+            <div class="c4-dic-cell c4-cell-tempo">
               <div class="c4-cell-head">
                 <span class="c4-label">TEMPO // CLOCK</span>
               </div>
@@ -3248,7 +3325,7 @@
             </div>
 
             <!-- Cell: Instant G -->
-            <div class="c4-dic-cell">
+            <div class="c4-dic-cell c4-cell-g" id="c4-g-meter-cell" title="Tap to Calibrate / Zero G-Force">
               <div class="c4-cell-head">
                 <span class="c4-label">INSTANT LAT G</span>
               </div>
@@ -3259,7 +3336,7 @@
                 </div>
                 <span class="c4-deg">G</span>
               </div>
-              <div class="c4-sub-label">CORNERING</div>
+              <div class="c4-sub-label" id="c4-g-sub">TAP TO ZERO</div>
             </div>
           </div>
         </div>
@@ -3274,39 +3351,39 @@
           </div>
           <svg id="c4-tach-ladder" viewBox="0 0 200 160" class="c4-tach-svg" xmlns="http://www.w3.org/2000/svg">
             <g class="c4-tach-group">
-              <rect x="16.0" y="124.0" width="5.8" height="22.0" rx="1" class="c4-tbar t1" />
-              <rect x="26.6" y="111.5" width="5.8" height="22.5" rx="1" class="c4-tbar t2" />
-              <rect x="35.1" y="99.1" width="5.8" height="22.9" rx="1" class="c4-tbar t3" />
-              <rect x="43.0" y="87.1" width="5.8" height="23.4" rx="1" class="c4-tbar t4" />
-              <rect x="50.5" y="75.7" width="5.8" height="23.8" rx="1" class="c4-tbar t5" />
-              <rect x="57.7" y="64.9" width="5.8" height="24.3" rx="1" class="c4-tbar t6" />
-              <rect x="64.7" y="55.0" width="5.8" height="24.8" rx="1" class="c4-tbar t7" />
-              <rect x="71.5" y="46.2" width="5.8" height="25.2" rx="1" class="c4-tbar t8" />
-              <rect x="78.2" y="38.4" width="5.8" height="25.7" rx="1" class="c4-tbar t9" />
-              <rect x="84.8" y="31.9" width="5.8" height="26.2" rx="1" class="c4-tbar t10" />
-              <rect x="91.2" y="26.8" width="5.8" height="26.6" rx="1" class="c4-tbar t11" />
-              <rect x="97.6" y="23.0" width="5.8" height="27.1" rx="1" class="c4-tbar t12" />
-              <rect x="103.8" y="20.8" width="5.8" height="27.5" rx="1" class="c4-tbar t13" />
-              <rect x="110.0" y="20.0" width="5.8" height="28.0" rx="1" class="c4-tbar t14" />
-              <rect x="117.4" y="22.3" width="5.8" height="27.5" rx="1" class="c4-tbar t15 yellow" />
-              <rect x="124.8" y="25.7" width="5.8" height="27.0" rx="1" class="c4-tbar t16 yellow" />
-              <rect x="132.2" y="29.6" width="5.8" height="26.5" rx="1" class="c4-tbar t17 yellow" />
-              <rect x="139.6" y="34.0" width="5.8" height="26.0" rx="1" class="c4-tbar t18 yellow" />
-              <rect x="147.0" y="38.7" width="5.8" height="25.5" rx="1" class="c4-tbar t19 red" />
-              <rect x="154.4" y="43.7" width="5.8" height="25.0" rx="1" class="c4-tbar t20 red" />
-              <rect x="161.8" y="48.9" width="5.8" height="24.5" rx="1" class="c4-tbar t21 red" />
-              <rect x="169.2" y="54.4" width="5.8" height="24.0" rx="1" class="c4-tbar t22 red" />
-              <rect x="176.6" y="60.1" width="5.8" height="23.5" rx="1" class="c4-tbar t23 red" />
-              <rect x="184.0" y="66.0" width="5.8" height="23.0" rx="1" class="c4-tbar t24 red" />
+              <rect x="16.0" y="126.0" width="5.6" height="22.0" rx="1" class="c4-tbar t1" />
+              <rect x="26.4" y="114.5" width="5.6" height="22.5" rx="1" class="c4-tbar t2" />
+              <rect x="35.0" y="103.0" width="5.6" height="23.0" rx="1" class="c4-tbar t3" />
+              <rect x="43.0" y="92.0" width="5.6" height="23.5" rx="1" class="c4-tbar t4" />
+              <rect x="50.5" y="81.5" width="5.6" height="24.0" rx="1" class="c4-tbar t5" />
+              <rect x="57.7" y="71.5" width="5.6" height="24.5" rx="1" class="c4-tbar t6" />
+              <rect x="64.7" y="62.5" width="5.6" height="25.0" rx="1" class="c4-tbar t7" />
+              <rect x="71.5" y="54.5" width="5.6" height="25.5" rx="1" class="c4-tbar t8" />
+              <rect x="78.2" y="47.5" width="5.6" height="26.0" rx="1" class="c4-tbar t9" />
+              <rect x="84.8" y="41.5" width="5.6" height="26.5" rx="1" class="c4-tbar t10" />
+              <rect x="91.2" y="37.0" width="5.6" height="27.0" rx="1" class="c4-tbar t11" />
+              <rect x="97.6" y="34.0" width="5.6" height="27.5" rx="1" class="c4-tbar t12" />
+              <rect x="103.8" y="32.5" width="5.6" height="28.0" rx="1" class="c4-tbar t13" />
+              <rect x="110.0" y="32.0" width="5.6" height="28.0" rx="1" class="c4-tbar t14" />
+              <rect x="117.4" y="33.5" width="5.6" height="27.5" rx="1" class="c4-tbar t15 yellow" />
+              <rect x="124.8" y="36.0" width="5.6" height="27.0" rx="1" class="c4-tbar t16 yellow" />
+              <rect x="132.2" y="39.5" width="5.6" height="26.5" rx="1" class="c4-tbar t17 yellow" />
+              <rect x="139.6" y="44.0" width="5.6" height="26.0" rx="1" class="c4-tbar t18 yellow" />
+              <rect x="147.0" y="49.0" width="5.6" height="25.5" rx="1" class="c4-tbar t19 red" />
+              <rect x="154.4" y="54.5" width="5.6" height="25.0" rx="1" class="c4-tbar t20 red" />
+              <rect x="161.8" y="60.5" width="5.6" height="24.5" rx="1" class="c4-tbar t21 red" />
+              <rect x="169.2" y="66.5" width="5.6" height="24.0" rx="1" class="c4-tbar t22 red" />
+              <rect x="176.6" y="72.5" width="5.6" height="23.5" rx="1" class="c4-tbar t23 red" />
+              <rect x="184.0" y="78.5" width="5.6" height="23.0" rx="1" class="c4-tbar t24 red" />
             </g>
             <g class="c4-tach-scale-marks">
-              <text x="18.9" y="119.0" class="c4-scale-txt">0</text>
-              <text x="53.4" y="70.7" class="c4-scale-txt">10</text>
-              <text x="74.4" y="41.2" class="c4-scale-txt">20</text>
-              <text x="94.1" y="21.8" class="c4-scale-txt">30</text>
+              <text x="18.9" y="120.0" class="c4-scale-txt">0</text>
+              <text x="53.4" y="70.0" class="c4-scale-txt">10</text>
+              <text x="74.4" y="41.0" class="c4-scale-txt">20</text>
+              <text x="94.1" y="21.0" class="c4-scale-txt">30</text>
               <text x="112.9" y="15.0" class="c4-scale-txt">40</text>
-              <text x="142.5" y="29.0" class="c4-scale-txt">50</text>
-              <text x="186.9" y="61.0" class="c4-scale-txt">60</text>
+              <text x="142.5" y="26.0" class="c4-scale-txt">50</text>
+              <text x="186.9" y="58.0" class="c4-scale-txt">60</text>
             </g>
           </svg>
           <div class="c4-gear-box" id="c4-gear-box">[ D ]</div>
@@ -3322,7 +3399,7 @@
 
       <!-- Steering Column Cutout & Authentic 1987 Plaque -->
       <div class="c4-bottom-notch-wrap">
-        <div class="c4-year-plaque">1987</div>
+        <div class="c4-year-plaque">CORVETTE // 1987</div>
         <div class="c4-steering-cutout"></div>
       </div>
     </div>
@@ -3616,16 +3693,16 @@
         </div>
       </div>
 
-      <!-- Cornering G Card with Slider -->
-      <div class="card">
+      <!-- Cornering G Card with Slider & IMU Diagnostics -->
+      <div class="card" id="card-motion">
         <div class="card-title">
-          <span>Manual Lateral Force</span>
+          <span>Vehicle IMU & Lateral Force</span>
           <span class="card-unit"><span id="val-g-demo">0.00</span> G</span>
         </div>
         <input type="range" id="slider-g" min="-0.40" max="0.40" step="0.02" value="0.0">
-        <div class="card-title">
-          <span>Dynamic Stereo Pan</span>
-          <span style="color: var(--teku-cyan);">Sub-Bass Mono Center</span>
+        <div class="card-title" style="margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span id="lab-imu-status" style="color: var(--teku-cyan); font-size: 0.75rem;">IMU: ACTIVE (50Hz)</span>
+          <button id="btn-calibrate-g" type="button" style="background: rgba(0, 240, 255, 0.15); border: 1px solid var(--teku-cyan); color: #fff; font-family: 'Rajdhani', monospace; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 2px; cursor: pointer;">CALIBRATE ZERO</button>
         </div>
       </div>
 
@@ -3739,6 +3816,7 @@
 <script src="js/arranger.js"></script>
 <script src="js/music_engine.js"></script>
 <script src="js/telemetry_logger.js"></script>
+<script src="js/motion_sensor.js"></script>
 <script src="js/obd_bluetooth.js"></script>
 <script src="js/ui.js"></script>
 

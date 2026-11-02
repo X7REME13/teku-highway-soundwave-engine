@@ -23,6 +23,49 @@ const logger = (typeof TekuTelemetryLogger !== 'undefined') ? new TekuTelemetryL
 // Initialize Web Bluetooth OBD-II Manager
 const obd = (typeof TekuOBDBluetooth !== 'undefined') ? new TekuOBDBluetooth(engine, logger) : null;
 
+// Initialize Vehicle Dynamics IMU Motion Sensor (Smartphone Gyroscope & Accelerometer)
+const motionSensor = (typeof TekuMotionSensor !== 'undefined') ? new TekuMotionSensor(engine, (g, stats) => {
+  if (sliderG) sliderG.value = g.toFixed(2);
+  if (valG) valG.textContent = g.toFixed(2);
+  const valGDemo = document.getElementById('val-g-demo');
+  if (valGDemo) valGDemo.textContent = g.toFixed(2);
+  if (valC4G) valC4G.textContent = Math.abs(g).toFixed(2);
+  const valZ31G = document.getElementById('val-z31-g');
+  if (valZ31G) valZ31G.textContent = Math.abs(g).toFixed(2);
+  const zTurnL = document.getElementById('z31-arrow-left');
+  const zTurnR = document.getElementById('z31-arrow-right');
+  if (zTurnL) zTurnL.classList.toggle('lit', g < -0.10);
+  if (zTurnR) zTurnR.classList.toggle('lit', g > 0.10);
+
+  const gPip = document.getElementById('g-pip-dot');
+  if (gPip) gPip.style.left = `${Math.min(95, Math.max(5, 50 + (g / 0.35) * 45))}%`;
+
+  if (labelPan) {
+    if (Math.abs(g) < 0.05) {
+      labelPan.textContent = 'Center';
+    } else if (g < 0) {
+      labelPan.textContent = `Hard Left (${Math.round((Math.abs(g) / 0.35) * 100)}%)`;
+    } else {
+      labelPan.textContent = `Hard Right (${Math.round((g / 0.35) * 100)}%)`;
+    }
+  }
+
+  // Update Lab IMU badge/readouts if present
+  const imuStatusEl = document.getElementById('lab-imu-status');
+  if (imuStatusEl) {
+    if (!stats.isSecureContext && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      imuStatusEl.textContent = 'INSECURE ORIGIN (HTTP)';
+      imuStatusEl.style.color = '#ffaa00';
+    } else if (stats.sampleRateHz > 0) {
+      imuStatusEl.textContent = `IMU: ${stats.sensorType.toUpperCase()} (${stats.sampleRateHz}Hz)`;
+      imuStatusEl.style.color = 'var(--teku-cyan)';
+    } else {
+      imuStatusEl.textContent = 'IMU: LISTENING (50Hz)';
+      imuStatusEl.style.color = 'var(--teku-cyan)';
+    }
+  }
+}) : null;
+
 const sliderRpm = document.getElementById('slider-rpm');
 const sliderSpd = document.getElementById('slider-spd');
 const sliderTps = document.getElementById('slider-tps');
@@ -450,10 +493,37 @@ sliderTps.addEventListener('input', updateUI);
 sliderG.addEventListener('input', updateUI);
 if (sliderTemp) sliderTemp.addEventListener('input', updateUI);
 
+// Calibration Handler for Vehicle Phone Mount
+function calibrateGZero() {
+  if (motionSensor) {
+    motionSensor.requestPermission();
+    motionSensor.calibrateZero();
+    if (!motionSensor.isSecureContext && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      showHudToast('Chrome on Android requires HTTPS or localhost for motion sensors', '⚠️');
+    } else {
+      showHudToast('G-Force Zero Calibrated (0.00 G)', '🎯');
+    }
+  } else {
+    sliderG.value = 0.0;
+    updateUI();
+    showHudToast('G-Force Reset to 0.00 G', '🎯');
+  }
+}
+
+const c4GMeterCell = document.getElementById('c4-g-meter-cell');
+if (c4GMeterCell) c4GMeterCell.addEventListener('click', calibrateGZero);
+
+const gMeterMini = document.querySelector('.g-meter-mini');
+if (gMeterMini) gMeterMini.addEventListener('click', calibrateGZero);
+
+const btnCalibrateG = document.getElementById('btn-calibrate-g');
+if (btnCalibrateG) btnCalibrateG.addEventListener('click', calibrateGZero);
+
 // Start / Stop Audio Engine
 btnAudio.addEventListener('click', () => {
   const btnAudioText = document.getElementById('btn-audio-text');
   if (!engine.isRunning) {
+    if (motionSensor) motionSensor.requestPermission();
     engine.start();
     updateUI();
     if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
@@ -617,6 +687,7 @@ if (obd) {
 // Bluetooth Connect Button
 if (btnBluetooth && obd) {
   btnBluetooth.addEventListener('click', async () => {
+    if (motionSensor) motionSensor.requestPermission();
     if (obd.isConnected) {
       obd.disconnect();
       btnBluetooth.textContent = '📶 Connect OBD-II (BLE)';
@@ -720,6 +791,7 @@ if (logger) {
 
 if (btnDownloadLogs && logger) {
   btnDownloadLogs.addEventListener('click', () => {
+    if (motionSensor) motionSensor.requestPermission();
     if (logger.records.length === 0) {
       updateUI();
     }

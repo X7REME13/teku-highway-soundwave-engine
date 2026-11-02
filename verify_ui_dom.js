@@ -53,7 +53,7 @@ assert(manifest.display === 'standalone', 'Manifest display mode is "standalone"
 assert(manifest.icons.some(i => i.src.includes('icon-192')), 'Manifest has 192x192 icon');
 assert(manifest.icons.some(i => i.src.includes('icon-512')), 'Manifest has 512x512 icon');
 assert(manifest.icons.some(i => i.purpose === 'maskable'), 'Manifest has maskable icon for Android');
-assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4'), 'Service worker cache key bumped to v2/v3/v4');
+assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5'), 'Service worker cache key bumped to v2/v3/v4/v5');
 assert(swContent.includes('teku-logo.png'), 'Authentic Teku logo cached in Service Worker');
 
 // 4. Retro Digital Cluster HUDs (Corvette C4 & Nissan 300ZX Z31)
@@ -110,7 +110,7 @@ assert(htmlContent.includes('id="btn-lab-clear-logs"'), 'Lab clear logs button #
 assert(htmlContent.includes('id="teku-hud-toast"'), 'HUD toast container #teku-hud-toast exists');
 assert(htmlContent.includes('js/telemetry_logger.js'), 'index.html loads js/telemetry_logger.js');
 assert(swContent.includes('js/telemetry_logger.js'), 'Service worker caches js/telemetry_logger.js');
-assert(swContent.includes('teku-soundwaves-v4'), 'Service worker cache bumped to v4');
+assert(swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5'), 'Service worker cache bumped to v4/v5');
 assert(uiJsContent.includes('window.downloadTekuLogs'), 'Exposes window.downloadTekuLogs for console/quick actions');
 
 // Unit test TekuTelemetryLogger
@@ -135,6 +135,27 @@ assert(json.metadata.vehicle.includes('Renault Clio Mio'), 'JSON includes Clio M
 
 testLogger.clear();
 assert(testLogger.records.length === 0 && testLogger.events.length === 0, 'clear() resets logger buffers');
+
+// 8. Smartphone IMU Motion Sensor & C4 Cluster Redesign
+console.log('\nTEST 8: Verifying Smartphone IMU Motion Sensor & Delco C4 Redesign:');
+assert(htmlContent.includes('js/motion_sensor.js'), 'index.html loads js/motion_sensor.js');
+assert(swContent.includes('js/motion_sensor.js'), 'Service worker caches js/motion_sensor.js');
+assert(uiJsContent.includes('new TekuMotionSensor'), 'ui.js initializes TekuMotionSensor instance');
+assert(htmlContent.includes('id="c4-g-meter-cell"'), 'C4 G-force meter cell #c4-g-meter-cell exists for tap-to-zero');
+assert(htmlContent.includes('id="btn-calibrate-g"'), 'Lab view has #btn-calibrate-g button');
+assert(htmlContent.includes('CORVETTE // 1987'), 'C4 has authentic CORVETTE // 1987 plaque');
+assert(uiJsContent.includes('calibrateGZero'), 'ui.js defines calibrateGZero mount handler');
+
+// Unit test TekuMotionSensor
+const { TekuMotionSensor } = require('./js/motion_sensor.js');
+let dispatchedG = 0;
+const testSensor = new TekuMotionSensor(null, (g) => { dispatchedG = g; });
+assert(testSensor.isSupported !== undefined, 'TekuMotionSensor checks platform sensor support');
+testSensor.processLinearAccel(1.962, 0); // 1.962 m/s² = 0.20 G in portrait
+assert(dispatchedG > 0.03, 'TekuMotionSensor processes linear acceleration into lateral G');
+assert(testSensor.smoothedLateralG > 0.03, 'Smoothed lateral G updated with automotive lowpass');
+testSensor.calibrateZero();
+assert(Math.abs(testSensor.smoothedLateralG) < 0.01, 'calibrateZero() cancels mount bias to 0.00 G');
 
 console.log('\n====================================================');
 if (failed === 0) {
