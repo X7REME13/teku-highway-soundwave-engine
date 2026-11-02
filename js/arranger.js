@@ -160,6 +160,9 @@ class TekuArranger {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuArranger = TekuArranger;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuArranger };
 }

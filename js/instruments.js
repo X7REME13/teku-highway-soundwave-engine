@@ -350,6 +350,9 @@ class TekuInstruments {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuInstruments = TekuInstruments;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuInstruments };
 }

@@ -56,6 +56,9 @@ const TekuTheory = {
   }
 };
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuTheory = TekuTheory;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuTheory };
 }

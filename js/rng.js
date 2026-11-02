@@ -63,6 +63,9 @@ class TekuRNG {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuRNG = TekuRNG;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuRNG };
 }

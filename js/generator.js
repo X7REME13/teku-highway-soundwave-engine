@@ -4,11 +4,9 @@
  * Generates bass riffs, breakbeat drum grooves, and chord cycles
  */
 
-if (typeof TekuRNG === 'undefined' && typeof require !== 'undefined') {
-  var { TekuRNG } = require('./rng.js');
-}
-if (typeof TekuTheory === 'undefined' && typeof require !== 'undefined') {
-  var { TekuTheory } = require('./theory.js');
+if (typeof window === 'undefined' && typeof require !== 'undefined') {
+  if (typeof TekuRNG === 'undefined') require('./rng.js');
+  if (typeof TekuTheory === 'undefined') require('./theory.js');
 }
 
 class TekuGenerator {
@@ -189,6 +187,9 @@ class TekuGenerator {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuGenerator = TekuGenerator;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuGenerator };
 }

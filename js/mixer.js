@@ -142,6 +142,9 @@ class TekuMixer {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuMixer = TekuMixer;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuMixer };
 }

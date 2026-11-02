@@ -152,6 +152,9 @@ class TekuTelemetryMapper {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuTelemetryMapper = TekuTelemetryMapper;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuTelemetryMapper };
 }

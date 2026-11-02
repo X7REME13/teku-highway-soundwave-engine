@@ -4,14 +4,14 @@
  * Fully continuous gradient mapping from OBD vehicle telemetry to musical sound.
  */
 
-if (typeof TekuRNG === 'undefined' && typeof require !== 'undefined') {
-  var { TekuRNG } = require('./rng.js');
-  var { TekuTheory } = require('./theory.js');
-  var { TekuGenerator } = require('./generator.js');
-  var { TekuMixer } = require('./mixer.js');
-  var { TekuInstruments } = require('./instruments.js');
-  var { TekuTelemetryMapper } = require('./telemetry_mapper.js');
-  var { TekuArranger } = require('./arranger.js');
+if (typeof window === 'undefined' && typeof require !== 'undefined') {
+  if (typeof TekuRNG === 'undefined') require('./rng.js');
+  if (typeof TekuTheory === 'undefined') require('./theory.js');
+  if (typeof TekuGenerator === 'undefined') require('./generator.js');
+  if (typeof TekuMixer === 'undefined') require('./mixer.js');
+  if (typeof TekuInstruments === 'undefined') require('./instruments.js');
+  if (typeof TekuTelemetryMapper === 'undefined') require('./telemetry_mapper.js');
+  if (typeof TekuArranger === 'undefined') require('./arranger.js');
 }
 
 class TekuMusicEngine {
@@ -167,6 +167,9 @@ class TekuMusicEngine {
   }
 }
 
+if (typeof globalThis !== 'undefined') {
+  globalThis.TekuMusicEngine = TekuMusicEngine;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { TekuMusicEngine };
 }
