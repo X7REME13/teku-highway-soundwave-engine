@@ -9,10 +9,16 @@ const engine = new TekuMusicEngine();
 
 // DOM Element Selectors
 const btnAudio = document.getElementById('btn-audio');
+const btnBluetooth = document.getElementById('btn-bluetooth');
+const btnInstallPwa = document.getElementById('btn-install-pwa');
 const btnReplay = document.getElementById('btn-replay');
 const btnTranceBridge = document.getElementById('btn-trance-bridge');
 const btnChillShift = document.getElementById('btn-chill-shift');
 const btnStomp = document.getElementById('btn-stomp');
+const obdBadge = document.getElementById('obd-badge');
+
+// Initialize Web Bluetooth OBD-II Manager
+const obd = (typeof TekuOBDBluetooth !== 'undefined') ? new TekuOBDBluetooth(engine) : null;
 
 const sliderRpm = document.getElementById('slider-rpm');
 const sliderSpd = document.getElementById('slider-spd');
@@ -245,6 +251,95 @@ if (btnTranceBridge) {
     updateUI();
     engine.triggerBridgeNow();
     log('>>> ENTERING TRANCE BRIDGE (Bar 9/16): Supersaw Pad + Echo Arp + Deep Sub Wave -> Bar 13 Snare Build-Up -> Bar 15 Drop! <<<');
+  });
+}
+
+// Web Bluetooth OBD-II Event Setup
+if (obd) {
+  obd.onStatus = (status, details) => {
+    if (obdBadge) {
+      obdBadge.textContent = `OBD: ${status}`;
+      if (status === 'CONNECTED' || status.startsWith('LIVE')) {
+        obdBadge.className = 'badge-mode flow';
+      } else if (status === 'SCANNING' || status === 'CONNECTING' || status === 'HANDSHAKE') {
+        obdBadge.className = 'badge-mode coasting';
+      } else if (status === 'ERROR') {
+        obdBadge.className = 'badge-mode attack';
+      } else {
+        obdBadge.className = 'badge-mode idle';
+      }
+    }
+    log(`[OBD-II BLE] ${status}: ${details}`);
+  };
+
+  obd.onTelemetry = (data) => {
+    sliderRpm.value = data.rpm;
+    sliderSpd.value = data.speed;
+    sliderTps.value = data.throttle;
+    sliderG.value = data.lateralG.toFixed(2);
+    if (sliderTemp) sliderTemp.value = data.temp;
+
+    valRpm.textContent = data.rpm;
+    valSpd.textContent = data.speed;
+    valTps.textContent = data.throttle;
+    valG.textContent = data.lateralG.toFixed(2);
+    if (valTemp) valTemp.textContent = data.temp;
+
+    if (obdBadge) {
+      obdBadge.textContent = `LIVE: ${data.pidLatencyMs}ms`;
+      obdBadge.className = 'badge-mode flow';
+    }
+
+    updateShiftLights(data.rpm);
+  };
+}
+
+// Bluetooth Connect Button
+if (btnBluetooth && obd) {
+  btnBluetooth.addEventListener('click', async () => {
+    if (obd.isConnected) {
+      obd.disconnect();
+      btnBluetooth.textContent = '📶 Connect OBD-II (BLE)';
+      btnBluetooth.style.borderColor = '#00f0ff';
+      btnBluetooth.style.color = '#00f0ff';
+      log('OBD-II BLE disconnected.');
+    } else {
+      if (!engine.isRunning) btnAudio.click();
+      try {
+        btnBluetooth.textContent = '⏳ Connecting...';
+        await obd.connect();
+        btnBluetooth.textContent = '🔌 Disconnect OBD-II';
+        btnBluetooth.style.borderColor = '#00ffaa';
+        btnBluetooth.style.color = '#00ffaa';
+        log('OBD-II Bluetooth connected and streaming live vehicle telemetry!');
+      } catch (err) {
+        btnBluetooth.textContent = '📶 Connect OBD-II (BLE)';
+        btnBluetooth.style.borderColor = '#00f0ff';
+        btnBluetooth.style.color = '#00f0ff';
+        log(`OBD-II connection failed: ${err.message}`);
+      }
+    }
+  });
+}
+
+// PWA Install Prompt Listener
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (btnInstallPwa) {
+    btnInstallPwa.style.display = 'inline-block';
+  }
+});
+
+if (btnInstallPwa) {
+  btnInstallPwa.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    log(`PWA Install choice: ${outcome}`);
+    deferredInstallPrompt = null;
+    btnInstallPwa.style.display = 'none';
   });
 }
 

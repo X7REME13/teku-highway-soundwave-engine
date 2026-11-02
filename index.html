@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEKU // HIGHWAY SOUNDWAVE ENGINE</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00f0ff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -689,7 +695,8 @@
     </div>
     
     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+        <span class="badge-mode idle" id="obd-badge" style="font-size: 0.70rem; padding: 3px 8px;">OBD: OFFLINE</span>
         <a href="https://github.com/X7REME13/teku-highway-soundwave-engine" target="_blank" rel="noopener noreferrer" class="repo-badge-link" title="View Source on GitHub">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: -2px; margin-right: 5px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GITHUB REPO
@@ -717,6 +724,8 @@
   <!-- MAIN COCKPIT CONTROLS -->
   <div class="main-controls">
     <button class="primary" id="btn-audio">Start Audio Engine</button>
+    <button id="btn-bluetooth" style="border-color: #00f0ff; color: #00f0ff; background: rgba(0, 240, 255, 0.12);">📶 Connect OBD-II (BLE)</button>
+    <button id="btn-install-pwa" style="display: none; border-color: var(--teku-orange); color: var(--teku-orange); background: rgba(255, 119, 0, 0.15);">📲 Install Teku App</button>
     <button id="btn-replay">Replay Clio CSV Run (75s)</button>
     <button id="btn-trance-bridge">Test Trance Bridge (Puente)</button>
     <button id="btn-chill-shift">Test Chill Gear-Shift @ 2.4k</button>
@@ -891,6 +900,18 @@
 <script src="js/telemetry_mapper.js"></script>
 <script src="js/arranger.js"></script>
 <script src="js/music_engine.js"></script>
+<script src="js/obd_bluetooth.js"></script>
 <script src="js/ui.js"></script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('[TEKU PWA] Service Worker registered:', reg.scope))
+        .catch((err) => console.warn('[TEKU PWA] Service Worker registration failed:', err));
+    });
+  }
+</script>
 </body>
 </html>

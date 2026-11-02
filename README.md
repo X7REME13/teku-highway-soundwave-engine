@@ -118,11 +118,34 @@ Continuous driving music can cause ear fatigue if mid-bass grit and aggressive d
 ## 🕹️ Controls & Testing in Cockpit
 
 1. **Start Audio Engine:** Boots AudioContext and lookahead clock.
-2. **Replay Clio CSV Run (75s):** Autonomous realistic simulation of a 75-second driving route through city stoplights, roundabout cornering, highway sprints, high-temp saturation, and coasting.
-3. **Test Trance Bridge (Puente):** Jumps straight to Bar 9/16 to audition the atmospheric breakdown, snare build-up, and drop release.
-4. **Test Chill Gear-Shift @ 2.4k:** Tests upshift RPM drop and vinyl scratch stinger.
-5. **Test Throttle Stomp:** Tests high-$\Delta\text{TPS}$ pedal attack, 808 drop, and riser.
-6. **Reroll Seed:** Generates a new harmonic session (Key, BPM, scale mode, bassline archetype).
+2. **Connect OBD-II (BLE):** Scans for nearby Bluetooth Low Energy OBD-II dongles via the Web Bluetooth API.
+3. **Replay Clio CSV Run (75s):** Autonomous realistic simulation of a 75-second driving route through city stoplights, roundabout cornering, highway sprints, high-temp saturation, and coasting.
+4. **Test Trance Bridge (Puente):** Jumps straight to Bar 9/16 to audition the atmospheric breakdown, snare build-up, and drop release.
+5. **Test Chill Gear-Shift @ 2.4k:** Tests upshift RPM drop and vinyl scratch stinger.
+6. **Test Throttle Stomp:** Tests high-$\Delta\text{TPS}$ pedal attack, 808 drop, and riser.
+7. **Reroll Seed:** Generates a new harmonic session (Key, BPM, scale mode, bassline archetype).
+
+---
+
+## 📱 Android PWA & In-Car Bluetooth OBD-II Setup
+
+### 1. Install as Android PWA (Offline In-Car Operation)
+1. Open **[https://x7reme13.github.io/teku-highway-soundwave-engine/](https://x7reme13.github.io/teku-highway-soundwave-engine/)** in Chrome on Android.
+2. Tap the **"📲 Install Teku App"** button (or tap Chrome's three dots menu $\rightarrow$ **"Add to Home screen"** / **"Install App"**).
+3. The app installs with the high-resolution **Teku Emblem** icon and runs in standalone full-screen landscape or portrait mode.
+4. **Offline Capability:** Thanks to `sw.js` (Service Worker), all audio synthesis modules, equalizers, and graphics are fully cached locally—the engine boots instantly inside your car without requiring cellular data!
+
+### 2. Connect Your Bluetooth OBD-II Scanner
+1. Plug your **Bluetooth Low Energy (BLE) OBD-II dongle** (e.g. *Veepeak OBDCheck BLE*, *Vgate iCar Pro BLE*, *Carista*, *LELink*, or any standard Nordic/HM-10 UART ELM327 BLE scanner) into your vehicle's OBD port.
+2. Turn vehicle ignition to ON.
+3. Open the Teku App on Android and tap **"📶 Connect OBD-II (BLE)"**.
+4. In the native browser Bluetooth pair sheet, select your dongle (e.g. `OBDII`, `VEEPEAK`, `IOS-VLINK`).
+5. **Automatic Handshake:** The engine initializes the ELM327 protocol (`ATZ -> ATE0 -> ATL0 -> ATH0 -> ATSP0`) and starts streaming Mode 01 PIDs at high speed:
+   - **`010C`**: Engine RPM (driving bass harmonic growl & tachometer LEDs)
+   - **`010D`**: Ground Speed (driving Kick/Breakbeat swells & 14kHz drum lowpass filter sweep)
+   - **`0111`**: Throttle Position TPS (driving risers & drops on throttle stabs)
+   - **`0105`**: Engine Coolant Temp (driving continuous asymmetric tube saturation)
+6. **Live Gyroscope Cornering Pan:** The Android phone's internal accelerometer (`devicemotion`) automatically calculates real lateral turning forces in real time, auto-panning high frequencies into the apex of corners while keeping the sub-bass strictly in mono center!
 
 ---
 
