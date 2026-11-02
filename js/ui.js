@@ -17,8 +17,11 @@ const btnChillShift = document.getElementById('btn-chill-shift');
 const btnStomp = document.getElementById('btn-stomp');
 const obdBadge = document.getElementById('obd-badge');
 
+// Initialize In-Car Telemetry & Diagnostic Logger
+const logger = (typeof TekuTelemetryLogger !== 'undefined') ? new TekuTelemetryLogger(engine) : null;
+
 // Initialize Web Bluetooth OBD-II Manager
-const obd = (typeof TekuOBDBluetooth !== 'undefined') ? new TekuOBDBluetooth(engine) : null;
+const obd = (typeof TekuOBDBluetooth !== 'undefined') ? new TekuOBDBluetooth(engine, logger) : null;
 
 const sliderRpm = document.getElementById('slider-rpm');
 const sliderSpd = document.getElementById('slider-spd');
@@ -231,6 +234,27 @@ function updateUI() {
   // Update Retro Digital Clusters (1987 Corvette C4 & 1984 Nissan 300ZX Z31)
   updateC4HUD(spd, rpm, tps, g, temp, st);
   updateZ31HUD(spd, rpm, tps, g, temp, st);
+
+  // Record simulation/manual telemetry when OBD hardware is not connected
+  if (logger && (!obd || !obd.isConnected)) {
+    const now = Date.now();
+    if (now - (logger._lastUiRecord || 0) > 150) {
+      logger._lastUiRecord = now;
+      logger.recordTelemetry({
+        speed: spd,
+        rpm,
+        throttle: tps,
+        lateralG: g,
+        coolantTemp: temp,
+        audioMode: badgeClass.toUpperCase(),
+        bpm: engine.bpm,
+        energy: st.energy,
+        drumCutoff: st.gradients.drumCutoff,
+        tubeDrive: (2.2 + (st.gradients.thermal || 0) * 3.3),
+        pidLatencyMs: 0
+      });
+    }
+  }
 }
 
 // 8-LED Tachometer Shift Lights Controller
@@ -581,18 +605,12 @@ if (obd) {
     sliderG.value = data.lateralG.toFixed(2);
     if (sliderTemp) sliderTemp.value = data.temp;
 
-    valRpm.textContent = data.rpm;
-    valSpd.textContent = data.speed;
-    valTps.textContent = data.throttle;
-    valG.textContent = data.lateralG.toFixed(2);
-    if (valTemp) valTemp.textContent = data.temp;
+    updateUI();
 
     if (obdBadge) {
       obdBadge.textContent = `LIVE: ${data.pidLatencyMs}ms`;
       obdBadge.className = 'badge-mode flow';
     }
-
-    updateShiftLights(data.rpm);
   };
 }
 
@@ -622,6 +640,134 @@ if (btnBluetooth && obd) {
       }
     }
   });
+}
+
+// ============================================================
+// HUD TOAST NOTIFICATION CONTROLLER
+// ============================================================
+const toastEl = document.getElementById('teku-hud-toast');
+const toastIcon = document.getElementById('toast-icon');
+const toastMsg = document.getElementById('toast-msg');
+const toastAction = document.getElementById('toast-action');
+const toastClose = document.getElementById('toast-close');
+let toastTimer = null;
+
+function showHudToast(msg, icon = '💾', actionText = null, actionCb = null, durationMs = 4500) {
+  if (!toastEl) return;
+  if (toastTimer) clearTimeout(toastTimer);
+
+  if (toastIcon) toastIcon.textContent = icon;
+  if (toastMsg) toastMsg.textContent = msg;
+
+  if (actionText && actionCb && toastAction) {
+    toastAction.textContent = actionText;
+    toastAction.style.display = 'inline-block';
+    toastAction.onclick = () => {
+      actionCb();
+      hideHudToast();
+    };
+  } else if (toastAction) {
+    toastAction.style.display = 'none';
+  }
+
+  toastEl.style.display = 'flex';
+
+  if (durationMs > 0) {
+    toastTimer = setTimeout(() => hideHudToast(), durationMs);
+  }
+}
+
+function hideHudToast() {
+  if (!toastEl) return;
+  toastEl.style.display = 'none';
+  if (toastTimer) {
+    clearTimeout(toastTimer);
+    toastTimer = null;
+  }
+}
+
+if (toastClose) {
+  toastClose.addEventListener('click', hideHudToast);
+}
+
+// ============================================================
+// TELEMETRY & DIAGNOSTIC LOGGER CONTROLLER
+// ============================================================
+const btnDownloadLogs = document.getElementById('btn-download-logs');
+const logCountBadge = document.getElementById('log-count-badge');
+const logStatsSummary = document.getElementById('log-stats-summary');
+const btnLabDownloadCsv = document.getElementById('btn-lab-download-csv');
+const btnLabDownloadJson = document.getElementById('btn-lab-download-json');
+const btnLabClearLogs = document.getElementById('btn-lab-clear-logs');
+
+if (logger) {
+  logger.onUpdate = (stats) => {
+    if (logCountBadge) {
+      logCountBadge.textContent = stats.count;
+    }
+    if (logStatsSummary) {
+      logStatsSummary.textContent = `${stats.count} samples (${stats.durationFormatted})`;
+    }
+    if (btnDownloadLogs) {
+      if (stats.count > 0) {
+        btnDownloadLogs.classList.add('has-data');
+      } else {
+        btnDownloadLogs.classList.remove('has-data');
+      }
+    }
+  };
+}
+
+if (btnDownloadLogs && logger) {
+  btnDownloadLogs.addEventListener('click', () => {
+    if (logger.records.length === 0) {
+      updateUI();
+    }
+    const filename = logger.downloadCSV();
+    log(`[LOGGER] Exported ${logger.records.length} telemetry points to ${filename}`);
+    showHudToast(
+      `Exported ${logger.records.length} points to CSV!`,
+      '💾',
+      'GET JSON',
+      () => logger.downloadJSON()
+    );
+  });
+}
+
+if (btnLabDownloadCsv && logger) {
+  btnLabDownloadCsv.addEventListener('click', () => {
+    if (logger.records.length === 0) updateUI();
+    const filename = logger.downloadCSV();
+    log(`[LOGGER] Exported CSV: ${filename}`);
+    showHudToast(`Downloaded ${logger.records.length} telemetry samples to CSV!`);
+  });
+}
+
+if (btnLabDownloadJson && logger) {
+  btnLabDownloadJson.addEventListener('click', () => {
+    const filename = logger.downloadJSON();
+    log(`[LOGGER] Exported JSON: ${filename}`);
+    showHudToast('Downloaded diagnostic bundle to JSON!');
+  });
+}
+
+if (btnLabClearLogs && logger) {
+  btnLabClearLogs.addEventListener('click', () => {
+    logger.clear();
+    log('[LOGGER] Telemetry and diagnostic buffer cleared.');
+    showHudToast('Telemetry buffer cleared.', '🗑');
+  });
+}
+
+// Global Console Utilities for Developers & In-Car Testing
+if (typeof window !== 'undefined') {
+  window.tekuLogger = logger;
+  window.downloadTekuLogs = (fmt = 'csv') => {
+    if (!logger) return;
+    if (fmt === 'json') return logger.downloadJSON();
+    return logger.downloadCSV();
+  };
+  window.clearTekuLogs = () => logger?.clear();
 }
 
 // ============================================================

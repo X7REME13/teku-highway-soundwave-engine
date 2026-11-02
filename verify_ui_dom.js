@@ -53,7 +53,7 @@ assert(manifest.display === 'standalone', 'Manifest display mode is "standalone"
 assert(manifest.icons.some(i => i.src.includes('icon-192')), 'Manifest has 192x192 icon');
 assert(manifest.icons.some(i => i.src.includes('icon-512')), 'Manifest has 512x512 icon');
 assert(manifest.icons.some(i => i.purpose === 'maskable'), 'Manifest has maskable icon for Android');
-assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3'), 'Service worker cache key bumped to v2/v3');
+assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4'), 'Service worker cache key bumped to v2/v3/v4');
 assert(swContent.includes('teku-logo.png'), 'Authentic Teku logo cached in Service Worker');
 
 // 4. Retro Digital Cluster HUDs (Corvette C4 & Nissan 300ZX Z31)
@@ -100,9 +100,45 @@ assert(uiJsContent.includes('sliderTps.value = 100'), 'btnStomp sets TPS to 100%
 assert(uiJsContent.includes('sliderRpm.value = 3800'), 'btnStomp revs engine to 3,800 RPM');
 assert(uiJsContent.includes('FLAT-OUT FLOOR STOMP'), 'Visceral flat-out attack message logged');
 
+// 7. In-Car Telemetry & Diagnostic Logger
+console.log('\nTEST 7: Verifying In-Car Telemetry & Diagnostic Logger:');
+assert(htmlContent.includes('id="btn-download-logs"'), 'Log download header button #btn-download-logs exists');
+assert(htmlContent.includes('id="log-count-badge"'), 'Log count badge #log-count-badge exists');
+assert(htmlContent.includes('id="btn-lab-download-csv"'), 'Lab CSV download button #btn-lab-download-csv exists');
+assert(htmlContent.includes('id="btn-lab-download-json"'), 'Lab JSON download button #btn-lab-download-json exists');
+assert(htmlContent.includes('id="btn-lab-clear-logs"'), 'Lab clear logs button #btn-lab-clear-logs exists');
+assert(htmlContent.includes('id="teku-hud-toast"'), 'HUD toast container #teku-hud-toast exists');
+assert(htmlContent.includes('js/telemetry_logger.js'), 'index.html loads js/telemetry_logger.js');
+assert(swContent.includes('js/telemetry_logger.js'), 'Service worker caches js/telemetry_logger.js');
+assert(swContent.includes('teku-soundwaves-v4'), 'Service worker cache bumped to v4');
+assert(uiJsContent.includes('window.downloadTekuLogs'), 'Exposes window.downloadTekuLogs for console/quick actions');
+
+// Unit test TekuTelemetryLogger
+const { TekuTelemetryLogger } = require('./js/telemetry_logger.js');
+const testLogger = new TekuTelemetryLogger();
+testLogger.recordTelemetry({ speed: 42, rpm: 2200, throttle: 42, lateralG: 0.12, coolantTemp: 88, pidLatencyMs: 45 });
+assert(testLogger.records.length === 1, 'TekuTelemetryLogger records telemetry sample');
+assert(testLogger.records[0].gear === '3', 'Estimates 3rd gear for 42 km/h');
+
+const csv = testLogger.toCSV();
+assert(csv.includes('timestamp_iso,elapsed_sec,speed_kmh,rpm,tps_pct,lateral_g,coolant_temp_c,gear'), 'CSV contains standard header');
+assert(csv.includes('42,2200,42,0.12,88,"3"'), 'CSV contains formatted telemetry row');
+
+testLogger.recordEvent('OBD_TX', 'ATSP5');
+testLogger.recordEvent('OBD_RX', 'OK');
+assert(testLogger.events.length === 2, 'Records OBD AT commands and responses');
+
+const json = JSON.parse(testLogger.toJSON());
+assert(json.summary.totalSamples === 1, 'JSON contains summary totalSamples');
+assert(json.diagnosticEvents.length === 2, 'JSON contains diagnostic events');
+assert(json.metadata.vehicle.includes('Renault Clio Mio'), 'JSON includes Clio Mio metadata');
+
+testLogger.clear();
+assert(testLogger.records.length === 0 && testLogger.events.length === 0, 'clear() resets logger buffers');
+
 console.log('\n====================================================');
 if (failed === 0) {
-  console.log('>>> ALL DOM, FULLSCREEN, PWA & HUD TESTS PASSED! <<<');
+  console.log('>>> ALL DOM, FULLSCREEN, PWA & LOGGER TESTS PASSED! <<<');
   console.log('====================================================\n');
   process.exit(0);
 } else {

@@ -3,7 +3,7 @@
  * Caches application shell for offline in-car operation without cell data.
  */
 
-const CACHE_NAME = 'teku-soundwaves-v3';
+const CACHE_NAME = 'teku-soundwaves-v4';
 
 const STATIC_ASSETS = [
   './',
@@ -24,6 +24,7 @@ const STATIC_ASSETS = [
   './js/telemetry_mapper.js',
   './js/arranger.js',
   './js/music_engine.js',
+  './js/telemetry_logger.js',
   './js/obd_bluetooth.js',
   './js/ui.js'
 ];

@@ -853,6 +853,108 @@
       transform: translateY(-1px);
     }
 
+    /* HEADER TELEMETRY LOG DOWNLOAD PILL */
+    .btn-log-pill {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 5px 8px;
+      background: rgba(255, 170, 0, 0.1);
+      border: 1px solid rgba(255, 170, 0, 0.6);
+      color: #ffaa00;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-log-pill:hover {
+      background: rgba(255, 170, 0, 0.25);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 170, 0, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .btn-log-pill.has-data {
+      border-color: #00ffaa;
+      color: #00ffaa;
+      box-shadow: 0 0 10px rgba(0, 255, 170, 0.35);
+    }
+
+    .log-badge {
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 0px 4px;
+      border-radius: 2px;
+      color: var(--teku-white);
+      min-width: 1.8ch;
+      text-align: center;
+    }
+
+    /* HUD TOAST NOTIFICATION */
+    .teku-hud-toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(3, 7, 16, 0.96);
+      border: 1px solid var(--teku-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.2);
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      padding: 8px 16px;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      pointer-events: auto;
+      max-width: 90vw;
+      animation: toast-slide 0.25s ease-out;
+    }
+
+    @keyframes toast-slide {
+      from { transform: translate(-50%, -15px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .teku-hud-toast button {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      cursor: pointer;
+    }
+
+    #toast-action {
+      background: rgba(0, 240, 255, 0.18);
+      border: 1px solid var(--teku-cyan);
+      color: var(--teku-cyan);
+    }
+
+    #toast-action:hover {
+      background: var(--teku-cyan);
+      color: #010409;
+    }
+
+    #toast-close {
+      background: transparent;
+      border: none;
+      color: var(--teku-silver);
+      font-size: 0.85rem;
+      padding: 0 4px;
+    }
+    #toast-close:hover {
+      color: #fff;
+    }
+
     /* PWA MOBILE INSTALL BANNER & MODAL */
     .pwa-mobile-banner {
       position: fixed;
@@ -1689,10 +1791,10 @@
         padding: 8px 12px;
         gap: 8px;
       }
-      .fs-label, .pwa-text, .lab-btn-label {
+      .fs-label, .pwa-text, .lab-btn-label, .log-btn-label {
         display: none !important;
       }
-      .btn-fullscreen-toggle, .btn-install-pill, .btn-ble-pill, .btn-lab-toggle {
+      .btn-fullscreen-toggle, .btn-install-pill, .btn-ble-pill, .btn-lab-toggle, .btn-log-pill {
         padding: 5px 6px !important;
       }
       .brand-group {
@@ -1726,6 +1828,16 @@
       .shift-light-bar {
         padding: 4px 8px;
         gap: 5px;
+      }
+      .teku-micro-telemetry {
+        padding: 5px 6px;
+        gap: 8px;
+      }
+      .micro-label {
+        font-size: 0.52rem;
+      }
+      .micro-val {
+        font-size: 0.60rem;
       }
       .led {
         height: 7px;
@@ -2890,6 +3002,11 @@
         <span class="pwa-dot">⚡</span>
         <span class="pwa-text">INSTALL</span>
       </button>
+      <button class="btn-log-pill" id="btn-download-logs" type="button" title="Download Driving Session Telemetry Logs (CSV)">
+        <span class="log-icon">💾</span>
+        <span class="log-btn-label">LOGS</span>
+        <span class="log-badge" id="log-count-badge">0</span>
+      </button>
       <button class="btn-ble-pill" id="btn-bluetooth" type="button" title="Connect OBD-II Bluetooth">
         <span class="ble-dot" id="ble-status-dot"></span>
         <span id="obd-badge">OBD BLE</span>
@@ -3526,6 +3643,28 @@
       </div>
     </div>
 
+    <!-- IN-CAR SESSION LOGGER & EXPORT SUITE -->
+    <div class="card" id="card-logger">
+      <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #ffaa00;">💾 In-Car Telemetry & Diagnostic Logger</span>
+        <span class="card-unit" id="log-stats-summary">0 samples (00:00)</span>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+        <button class="btn-soundboard orange" id="btn-lab-download-csv" type="button" style="flex: 1; min-width: 140px;">
+          📥 DOWNLOAD CSV (Excel/Tuner)
+        </button>
+        <button class="btn-soundboard cyan" id="btn-lab-download-json" type="button" style="flex: 1; min-width: 140px;">
+          📥 DOWNLOAD JSON (Diagnostics)
+        </button>
+        <button class="btn-soundboard magenta" id="btn-lab-clear-logs" type="button" style="flex: 0.5; min-width: 80px;">
+          🗑 CLEAR
+        </button>
+      </div>
+      <div style="font-size: 0.72rem; color: var(--teku-silver); margin-top: 8px; letter-spacing: 0.5px;">
+        High-frequency in-car logging: Speed, RPM, Throttle, Lat G, Coolant, Gear, Audio Mode, BPM, Tube Drive & raw ELM327 BLE traffic.
+      </div>
+    </div>
+
     <!-- TELEMETRY LOG CARD -->
     <div class="card">
       <div class="card-title">
@@ -3583,6 +3722,14 @@
   </div>
 </div>
 
+<!-- TEKU HUD TOAST NOTIFICATION CONTAINER -->
+<div id="teku-hud-toast" class="teku-hud-toast" style="display: none;">
+  <span id="toast-icon">💾</span>
+  <span id="toast-msg">Telemetry exported!</span>
+  <button id="toast-action" type="button" style="display: none;">ACTION</button>
+  <button id="toast-close" type="button" title="Dismiss">✕</button>
+</div>
+
 <script src="js/rng.js"></script>
 <script src="js/theory.js"></script>
 <script src="js/generator.js"></script>
@@ -3591,6 +3738,7 @@
 <script src="js/telemetry_mapper.js"></script>
 <script src="js/arranger.js"></script>
 <script src="js/music_engine.js"></script>
+<script src="js/telemetry_logger.js"></script>
 <script src="js/obd_bluetooth.js"></script>
 <script src="js/ui.js"></script>
 

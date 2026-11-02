@@ -8,8 +8,9 @@
  */
 
 class TekuOBDBluetooth {
-  constructor(engine) {
+  constructor(engine, logger = null) {
     this.engine = engine;
+    this.logger = logger;
     this.device = null;
     this.server = null;
     this.rxChar = null; // Characteristic to WRITE commands to dongle
@@ -62,6 +63,13 @@ class TekuOBDBluetooth {
     this.onTelemetry = () => {};
   }
 
+  reportStatus(status, details) {
+    if (this.logger) {
+      this.logger.recordEvent('BLE_STATUS', `${status}: ${details}`);
+    }
+    this.onStatus(status, details);
+  }
+
   isSupported() {
     return Boolean(typeof navigator !== 'undefined' && navigator.bluetooth);
   }
@@ -74,7 +82,7 @@ class TekuOBDBluetooth {
       throw new Error('Web Bluetooth is not supported on this browser. Use Chrome on Android or enable chrome://flags/#enable-web-bluetooth.');
     }
 
-    this.onStatus('SCANNING', 'Searching for Bluetooth OBD-II scanners...');
+    this.reportStatus('SCANNING', 'Searching for Bluetooth OBD-II scanners...');
 
     try {
       this.device = await navigator.bluetooth.requestDevice({
@@ -89,22 +97,22 @@ class TekuOBDBluetooth {
 
       this.device.addEventListener('gattserverdisconnected', () => this.handleDisconnect());
 
-      this.onStatus('CONNECTING', `Connecting to GATT server on ${this.device.name || 'OBD-II Device'}...`);
+      this.reportStatus('CONNECTING', `Connecting to GATT server on ${this.device.name || 'OBD-II Device'}...`);
       this.server = await this.device.gatt.connect();
 
       await this.discoverCharacteristics();
-      this.onStatus('HANDSHAKE', 'Initializing ELM327 protocol handshake...');
+      this.reportStatus('HANDSHAKE', 'Initializing ELM327 protocol handshake...');
       await this.handshakeELM327();
 
       this.isConnected = true;
-      this.onStatus('CONNECTED', `Connected to ${this.device.name || 'OBD-II'} (${this.activeProtocol})`);
+      this.reportStatus('CONNECTED', `Connected to ${this.device.name || 'OBD-II'} (${this.activeProtocol})`);
 
       // Start continuous telemetry polling
       this.startPolling();
       return true;
     } catch (err) {
       this.handleDisconnect();
-      this.onStatus('ERROR', err.message);
+      this.reportStatus('ERROR', err.message);
       throw err;
     }
   }
@@ -173,6 +181,10 @@ class TekuOBDBluetooth {
   async sendCommand(cmd, timeoutMs = 1200) {
     if (!this.rxChar) throw new Error('Not connected');
 
+    if (this.logger) {
+      this.logger.recordEvent('OBD_TX', cmd);
+    }
+
     const encoder = new TextEncoder();
     const data = encoder.encode(cmd + '\r');
 
@@ -180,12 +192,18 @@ class TekuOBDBluetooth {
       const timer = setTimeout(() => {
         if (this.pendingResolver) {
           this.pendingResolver = null;
+          if (this.logger) {
+            this.logger.recordEvent('OBD_TIMEOUT', `Timeout (${timeoutMs}ms) for command: ${cmd}`);
+          }
           reject(new Error(`Timeout waiting for response to: ${cmd}`));
         }
       }, timeoutMs);
 
       this.pendingResolver = (resp) => {
         clearTimeout(timer);
+        if (this.logger) {
+          this.logger.recordEvent('OBD_RX', resp.trim());
+        }
         resolve(resp);
       };
 
@@ -198,6 +216,9 @@ class TekuOBDBluetooth {
       } catch (err) {
         clearTimeout(timer);
         this.pendingResolver = null;
+        if (this.logger) {
+          this.logger.recordEvent('OBD_ERR', err.message);
+        }
         reject(err);
       }
     });
@@ -233,7 +254,7 @@ class TekuOBDBluetooth {
 
       for (const proto of protocolsToTry) {
         try {
-          this.onStatus('HANDSHAKE', `Testing protocol: ${proto.name}...`);
+          this.reportStatus('HANDSHAKE', `Testing protocol: ${proto.name}...`);
           await this.sendCommand(proto.id, 1000);
 
           // Test wakeup response on PID 0100 (Supported PIDs query)
@@ -241,6 +262,9 @@ class TekuOBDBluetooth {
           if (testResp && (testResp.includes('4100') || testResp.includes('41 00'))) {
             protocolEstablished = true;
             this.activeProtocol = proto.name;
+            if (this.logger) {
+              this.logger.recordEvent('OBD_PROTOCOL_LOCKED', proto.name);
+            }
             break;
           }
         } catch (e) {
@@ -252,6 +276,9 @@ class TekuOBDBluetooth {
         // Fallback to ATSP0 so any vehicle can still attempt connection
         await this.sendCommand('ATSP0', 1000).catch(() => {});
         this.activeProtocol = 'Generic OBD-II (Auto)';
+        if (this.logger) {
+          this.logger.recordEvent('OBD_PROTOCOL_FALLBACK', this.activeProtocol);
+        }
       }
     } finally {
       this.isHandshaking = false;
@@ -302,6 +329,19 @@ class TekuOBDBluetooth {
             this.telemetry.lateralG,
             this.telemetry.temp
           );
+        }
+
+        // Push into Driving Session Logger
+        if (this.logger) {
+          this.logger.recordTelemetry({
+            speed: this.telemetry.speed,
+            rpm: this.telemetry.rpm,
+            throttle: this.telemetry.throttle,
+            lateralG: this.telemetry.lateralG,
+            coolantTemp: this.telemetry.temp,
+            pidLatencyMs: this.telemetry.pidLatencyMs,
+            activeProtocol: this.activeProtocol
+          });
         }
 
         this.onTelemetry(this.telemetry);
@@ -413,7 +453,7 @@ class TekuOBDBluetooth {
     this.rxChar = null;
     this.txChar = null;
     this.server = null;
-    this.onStatus('DISCONNECTED', 'Bluetooth disconnected.');
+    this.reportStatus('DISCONNECTED', 'Bluetooth disconnected.');
   }
 
   sleep(ms) {
