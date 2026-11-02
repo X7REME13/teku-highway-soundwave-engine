@@ -81,9 +81,31 @@ function updateUI() {
   valG.textContent = g.toFixed(2);
   if (valTemp) valTemp.textContent = temp;
 
+  // Sync Demo Lab labels if present
+  const valRpmDemo = document.getElementById('val-rpm-demo');
+  const valSpdDemo = document.getElementById('val-spd-demo');
+  const valTpsDemo = document.getElementById('val-tps-demo');
+  const valGDemo = document.getElementById('val-g-demo');
+  const valTempDemo = document.getElementById('val-temp-demo');
+  if (valRpmDemo) valRpmDemo.textContent = rpm;
+  if (valSpdDemo) valSpdDemo.textContent = spd;
+  if (valTpsDemo) valTpsDemo.textContent = tps;
+  if (valGDemo) valGDemo.textContent = g.toFixed(2);
+  if (valTempDemo) valTempDemo.textContent = temp;
+
   // Ingest into Engine (computes continuous gradients & events)
   engine.updateTelemetry(rpm, spd, tps, g, temp);
   const st = engine.telemetryState;
+
+  // Update Cockpit Digital Readouts
+  const labelTempo = document.getElementById('label-tempo');
+  if (labelTempo) labelTempo.textContent = Math.round(engine.bpm || 136);
+
+  const labelThermalDrive = document.getElementById('label-thermal-drive');
+  if (labelThermalDrive) {
+    const driveAmount = (2.2 + st.gradients.thermal * 3.3).toFixed(1);
+    labelThermalDrive.textContent = `${driveAmount}x Drive`;
+  }
 
   // Update Status Displays
   if (labelAggScore) labelAggScore.textContent = st.energy.toFixed(2);
@@ -152,12 +174,28 @@ function updateUI() {
   }
 
   if (modeBadge) {
-    modeBadge.textContent = badgeClass.toUpperCase();
-    modeBadge.className = `badge-mode ${badgeClass}`;
+    if (spd <= 0) {
+      modeBadge.textContent = 'IDLE // 0 KM/H';
+      modeBadge.className = 'badge-mode idle';
+    } else {
+      modeBadge.textContent = `${badgeClass.toUpperCase()} // ${spd} KM/H`;
+      modeBadge.className = `badge-mode ${badgeClass}`;
+    }
   }
   if (labelModeName) {
     labelModeName.textContent = modeName;
   }
+
+  // Live animated visual meters for 2000s Teku Canopy
+  const spdBarFill = document.getElementById('spd-bar-fill');
+  const rpmBarFill = document.getElementById('rpm-bar-fill');
+  const tpsBarFill = document.getElementById('tps-bar-fill');
+  const gPipDot = document.getElementById('g-pip-dot');
+
+  if (spdBarFill) spdBarFill.style.width = `${Math.min(100, Math.round((spd / 60) * 100))}%`;
+  if (rpmBarFill) rpmBarFill.style.width = `${Math.min(100, Math.round((rpm / 4000) * 100))}%`;
+  if (tpsBarFill) tpsBarFill.style.width = `${Math.min(100, tps)}%`;
+  if (gPipDot) gPipDot.style.left = `${Math.min(95, Math.max(5, 50 + (g / 0.35) * 45))}%`;
 
   // Update Tachometer LEDs
   updateShiftLights(rpm);
@@ -215,17 +253,26 @@ if (sliderTemp) sliderTemp.addEventListener('input', updateUI);
 
 // Start / Stop Audio Engine
 btnAudio.addEventListener('click', () => {
+  const btnAudioText = document.getElementById('btn-audio-text');
   if (!engine.isRunning) {
     engine.start();
     updateUI();
     if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
-    btnAudio.textContent = 'Stop Audio Engine';
+    if (btnAudioText) {
+      btnAudioText.textContent = 'MUTE TEKU SOUND SYSTEM';
+    } else {
+      btnAudio.textContent = 'Stop Audio Engine';
+    }
     btnAudio.classList.remove('primary');
     btnAudio.classList.add('active');
     log(`Teku Music Engine started. Session: ${formatSessionTag()}`);
   } else {
     engine.stop();
-    btnAudio.textContent = 'Start Audio Engine';
+    if (btnAudioText) {
+      btnAudioText.textContent = 'PUMP UP THE BASSLINE';
+    } else {
+      btnAudio.textContent = 'Start Audio Engine';
+    }
     btnAudio.classList.remove('active');
     btnAudio.classList.add('primary');
     log('Teku Music Engine stopped.');
@@ -239,6 +286,78 @@ if (btnRerollSeed) {
     if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
     log(`>>> Rerolled Session: ${formatSessionTag()} <<<`);
   });
+}
+
+// Multi-View Switcher (Cockpit HUD vs Motorola Razr Flex vs Demo & Sim Lab)
+const tabCockpit = document.getElementById('tab-cockpit');
+const tabRazr = document.getElementById('tab-razr');
+const tabDemo = document.getElementById('tab-demo');
+const viewCockpit = document.getElementById('view-cockpit');
+const viewDemo = document.getElementById('view-demo');
+const btnBackCockpit = document.getElementById('btn-back-cockpit');
+
+let currentView = 'cockpit';
+
+function switchView(target) {
+  currentView = target;
+  if (target === 'demo') {
+    if (viewCockpit) {
+      viewCockpit.style.display = 'none';
+      viewCockpit.classList.remove('razr-flex-active');
+    }
+    if (viewDemo) viewDemo.style.display = 'flex';
+    if (tabCockpit) tabCockpit.classList.remove('active');
+    if (tabRazr) tabRazr.classList.remove('active');
+    if (tabDemo) tabDemo.classList.add('active');
+  } else if (target === 'razr') {
+    if (viewCockpit) {
+      viewCockpit.style.display = 'flex';
+      viewCockpit.classList.add('razr-flex-active');
+    }
+    if (viewDemo) viewDemo.style.display = 'none';
+    if (tabCockpit) tabCockpit.classList.remove('active');
+    if (tabRazr) tabRazr.classList.add('active');
+    if (tabDemo) tabDemo.classList.remove('active');
+    log('Motorola Razr Flex Mode engaged: Upper Eye-Level HUD + Lower Dash Touch Deck');
+  } else {
+    // Standard Cockpit HUD
+    if (viewCockpit) {
+      viewCockpit.style.display = 'flex';
+      viewCockpit.classList.remove('razr-flex-active');
+    }
+    if (viewDemo) viewDemo.style.display = 'none';
+    if (tabCockpit) tabCockpit.classList.add('active');
+    if (tabRazr) tabRazr.classList.remove('active');
+    if (tabDemo) tabDemo.classList.remove('active');
+  }
+}
+
+if (tabCockpit) tabCockpit.addEventListener('click', () => switchView('cockpit'));
+if (tabRazr) tabRazr.addEventListener('click', () => switchView('razr'));
+if (tabDemo) tabDemo.addEventListener('click', () => switchView('demo'));
+if (btnBackCockpit) btnBackCockpit.addEventListener('click', () => switchView('cockpit'));
+
+// Auto-detect foldable posture if supported by browser/device
+if (typeof window !== 'undefined' && window.matchMedia) {
+  const foldQuery = window.matchMedia('(horizontal-viewport-segments: 2), (vertical-viewport-segments: 2)');
+  if (foldQuery.matches) {
+    switchView('razr');
+  }
+  if (foldQuery.addEventListener) {
+    foldQuery.addEventListener('change', (e) => {
+      if (e.matches) switchView('razr');
+      else if (currentView === 'razr') switchView('cockpit');
+    });
+  }
+}
+
+// URL param/hash view selector for direct linking and testing
+if (typeof window !== 'undefined' && window.location) {
+  if (window.location.hash === '#razr' || window.location.search.includes('view=razr')) {
+    switchView('razr');
+  } else if (window.location.hash === '#demo' || window.location.search.includes('view=demo')) {
+    switchView('demo');
+  }
 }
 
 // Test Trance Bridge (Puente Atmosférico -> Snare Build-up -> Apex Drop)
@@ -257,6 +376,14 @@ if (btnTranceBridge) {
 // Web Bluetooth OBD-II Event Setup
 if (obd) {
   obd.onStatus = (status, details) => {
+    const bleDot = document.getElementById('ble-status-dot');
+    if (bleDot) {
+      if (status === 'CONNECTED' || status.startsWith('LIVE')) {
+        bleDot.className = 'ble-dot live';
+      } else {
+        bleDot.className = 'ble-dot';
+      }
+    }
     if (obdBadge) {
       obdBadge.textContent = `OBD: ${status}`;
       if (status === 'CONNECTED' || status.startsWith('LIVE')) {
@@ -643,6 +770,9 @@ function getSegmentColor(bandIdx, segIdx, totalSegs, isLit) {
 function drawVisualizer() {
   if (!canvas || !canvasCtx) return;
   requestAnimationFrame(drawVisualizer);
+
+  // Skip frame render if Cockpit view is currently hidden
+  if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) return;
 
   const dpr = window.devicePixelRatio || 1;
   const cssW = canvas.clientWidth || 800;

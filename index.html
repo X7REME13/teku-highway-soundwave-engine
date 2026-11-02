@@ -675,6 +675,675 @@
     }
 
     /* ==========================================
+       TEKU 2000s Y2K COCKPIT ARCHITECTURE (ACCELERACERS BASSLINE)
+       ========================================== */
+    .view-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* TEKU COMPACT HEADER (AERODYNAMIC TOP VISOR) */
+    .teku-header {
+      background: linear-gradient(180deg, rgba(8, 18, 40, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-top: 2px solid var(--teku-cyan);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .teku-crest {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 8px var(--teku-cyan));
+    }
+
+    .teku-crest-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .teku-logo-text {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.10rem;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 0 10px var(--teku-cyan), 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    .teku-logo-text em {
+      color: var(--teku-orange);
+      font-style: normal;
+      margin: 0 2px;
+    }
+
+    .teku-groove-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.70rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      padding: 4px 10px;
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid var(--teku-cyan);
+      color: #fff;
+      box-shadow: 0 0 12px var(--teku-cyan-glow);
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ble-pill {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 5px 8px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--teku-cyan);
+      color: var(--teku-cyan);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      transition: all 0.2s ease;
+    }
+
+    .btn-ble-pill:hover {
+      background: rgba(0, 240, 255, 0.25);
+      color: #fff;
+      box-shadow: 0 0 12px var(--teku-cyan);
+    }
+
+    .ble-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #475569;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+
+    .ble-dot.live {
+      background: #00ffaa;
+      box-shadow: 0 0 10px #00ffaa;
+      animation: pulse-ble 1.5s infinite;
+    }
+
+    @keyframes pulse-ble {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+
+    .btn-lab-toggle {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 5px 8px;
+      background: rgba(255, 119, 0, 0.12);
+      border: 1px solid var(--teku-orange);
+      color: var(--teku-orange);
+      cursor: pointer;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      transition: all 0.2s ease;
+    }
+
+    .btn-lab-toggle:hover {
+      background: rgba(255, 119, 0, 0.3);
+      color: #fff;
+      box-shadow: 0 0 12px var(--teku-orange);
+    }
+
+    /* ==========================================
+       TEKU CANOPY: UNIFIED INSTRUMENT CLUSTER
+       ========================================== */
+    .teku-canopy {
+      background: linear-gradient(180deg, rgba(6, 14, 32, 0.95) 0%, rgba(2, 6, 16, 0.98) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-top: 1px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.08);
+      clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Swept LED Shift Lights Array */
+    .shift-light-bar {
+      display: flex;
+      gap: 5px;
+      background: #010308;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 4px 8px;
+      border-radius: 2px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .led {
+      flex: 1;
+      height: 7px;
+      background: #0a1320;
+      border-radius: 1px;
+      transition: all 0.1s ease;
+    }
+
+    .led.cyan.on {
+      background: #00f0ff;
+      box-shadow: 0 0 12px #00f0ff, 0 0 20px rgba(0, 240, 255, 0.8);
+    }
+
+    .led.yellow.on {
+      background: #ffcc00;
+      box-shadow: 0 0 12px #ffcc00, 0 0 20px rgba(255, 204, 0, 0.8);
+    }
+
+    .led.magenta.on {
+      background: #ff0055;
+      box-shadow: 0 0 14px #ff0055, 0 0 24px rgba(255, 0, 85, 0.9);
+    }
+
+    /* Twin Gauges: SPEED & REV COUNTER */
+    .teku-gauges-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .teku-gauge {
+      flex: 1;
+      background: rgba(3, 8, 20, 0.75);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 8px 12px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .teku-gauge.speed-section {
+      border-color: rgba(0, 240, 255, 0.4);
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.06) 0%, rgba(2, 6, 16, 0.9) 100%);
+    }
+
+    .teku-gauge.rpm-section {
+      border-color: rgba(255, 119, 0, 0.4);
+      background: linear-gradient(135deg, rgba(255, 119, 0, 0.06) 0%, rgba(2, 6, 16, 0.9) 100%);
+    }
+
+    .gauge-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .gauge-meta .gauge-name {
+      color: var(--teku-silver);
+    }
+
+    .gauge-meta .gauge-limit {
+      font-size: 0.58rem;
+      padding: 1px 5px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .gauge-number-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 2px 0;
+    }
+
+    .gauge-big-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 3.4rem;
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .gauge-big-num.cyan {
+      color: #00f0ff;
+      text-shadow: 0 0 16px rgba(0, 240, 255, 0.8), 0 0 30px rgba(0, 240, 255, 0.4);
+    }
+
+    .gauge-big-num.orange {
+      color: #ffaa00;
+      text-shadow: 0 0 16px rgba(255, 170, 0, 0.8), 0 0 30px rgba(255, 119, 0, 0.4);
+    }
+
+    .gauge-unit-tag {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.82rem;
+      font-weight: 800;
+      font-style: italic;
+      color: var(--teku-silver);
+      letter-spacing: 1.5px;
+    }
+
+    /* Speed & RPM Progress Track Arcs */
+    .speed-arc-track, .rpm-arc-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .speed-arc-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f0ff, #38bdf8);
+      box-shadow: 0 0 10px #00f0ff;
+      transition: width 0.15s ease-out;
+    }
+
+    .rpm-arc-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffaa00, #ff0055);
+      box-shadow: 0 0 10px #ffaa00;
+      transition: width 0.15s ease-out;
+    }
+
+    /* Cluster Aerodynamic Divider Blade */
+    .cluster-winglet {
+      width: 2px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 240, 255, 0.5) 50%, transparent 100%);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+      align-self: stretch;
+    }
+
+    /* Micro-Telemetry Strip */
+    .teku-micro-telemetry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(2, 5, 14, 0.9);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 6px 8px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.8px;
+      gap: 6px;
+    }
+
+    .micro-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .micro-label {
+      color: var(--teku-silver);
+      font-weight: 700;
+      font-size: 0.58rem;
+      white-space: nowrap;
+    }
+
+    .micro-val {
+      color: #fff;
+      font-weight: 800;
+      white-space: nowrap;
+      font-size: 0.65rem;
+    }
+
+    .micro-bar-shell {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .micro-bar-fill.throttle {
+      height: 100%;
+      background: #00f0ff;
+      box-shadow: 0 0 6px #00f0ff;
+      transition: width 0.15s ease;
+    }
+
+    .g-meter-mini {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .g-pip {
+      position: absolute;
+      top: -2px;
+      width: 8px;
+      height: 8px;
+      background: #ffaa00;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #ffaa00;
+      transform: translateX(-50%);
+      transition: left 0.15s ease;
+    }
+
+    /* ==========================================
+       ACCELECHARGER SOUND SYSTEM DECK
+       ========================================== */
+    .teku-sound-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* The Primary AcceleCharger Ignition Button */
+    .sound-deck-trigger {
+      width: 100%;
+    }
+
+    .btn-accelecharger {
+      width: 100%;
+      padding: 14px 20px;
+      min-height: 52px;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.02rem;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 2px;
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.28) 0%, rgba(2, 6, 16, 0.95) 100%);
+      border: 1px solid var(--teku-cyan);
+      box-shadow: 0 0 20px var(--teku-cyan-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-accelecharger:hover {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.45) 0%, rgba(4, 12, 32, 0.98) 100%);
+      box-shadow: 0 0 30px var(--teku-cyan), inset 0 0 12px rgba(0, 240, 255, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-accelecharger.active {
+      background: linear-gradient(135deg, rgba(255, 119, 0, 0.35) 0%, rgba(2, 6, 16, 0.95) 100%);
+      border-color: var(--teku-orange);
+      box-shadow: 0 0 25px rgba(255, 119, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .accelecharger-icon {
+      font-size: 1.15rem;
+      color: var(--teku-cyan);
+    }
+
+    .btn-accelecharger.active .accelecharger-icon {
+      color: var(--teku-orange);
+    }
+
+    /* Pioneer / Alpine OEL 30-Band Graphic Equalizer */
+    .visualizer-container {
+      background: rgba(1, 4, 10, 0.95);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: inset 0 0 25px rgba(0, 240, 255, 0.06), 0 4px 20px rgba(0, 0, 0, 0.6);
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .eq-sub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--teku-silver);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.12);
+      padding-bottom: 4px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 155px;
+      display: block;
+    }
+
+    /* Head-Unit Track Deck Bar */
+    .teku-track-deck {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(3, 7, 18, 0.9);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 8px 12px;
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.70rem;
+      letter-spacing: 1px;
+      gap: 10px;
+    }
+
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .track-title {
+      color: var(--teku-cyan);
+      font-weight: 800;
+      font-size: 0.68rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-bar-phase {
+      color: var(--teku-silver);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .btn-dice-reroll {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--teku-cyan);
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      padding: 6px 12px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-dice-reroll:hover {
+      background: rgba(0, 240, 255, 0.3);
+      color: #fff;
+      box-shadow: 0 0 12px var(--teku-cyan);
+    }
+
+    /* DEMO LAB STYLES */
+    .demo-lab-header {
+      background: rgba(255, 119, 0, 0.12);
+      border: 1px solid rgba(255, 119, 0, 0.4);
+      padding: 10px 14px;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .demo-lab-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--teku-orange);
+      letter-spacing: 1.5px;
+    }
+
+    .demo-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    /* ==========================================
+       MOTOROLA RAZR FOLDABLE (FLEX 90° & COVER MODES)
+       ========================================== */
+    .razr-hinge-crease {
+      display: none;
+      height: 18px;
+      background: linear-gradient(180deg, #020612 0%, rgba(0, 240, 255, 0.22) 50%, #020612 100%);
+      border-top: 1px dashed rgba(0, 240, 255, 0.55);
+      border-bottom: 1px dashed rgba(255, 119, 0, 0.55);
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.52rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--teku-silver);
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+      user-select: none;
+      margin: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .razr-flex-active .razr-hinge-crease {
+      display: flex !important;
+    }
+
+    .razr-flex-active .teku-canopy {
+      border-bottom: none;
+      clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+    }
+
+    .razr-flex-active .teku-sound-deck {
+      border: 1px solid rgba(255, 119, 0, 0.4);
+      border-top: none;
+      background: rgba(4, 9, 22, 0.95);
+      padding: 10px;
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+    }
+
+    @media (orientation: landscape) {
+      .razr-hinge-crease {
+        display: none !important;
+      }
+    }
+
+    /* RAZR EXTERNAL COVER SCREEN (SQUARE ~380x380 px) */
+    @media (max-width: 440px) and (max-height: 440px) {
+      body {
+        padding: 4px;
+      }
+      .container {
+        gap: 4px;
+      }
+      .teku-header {
+        padding: 3px 8px;
+        min-height: 34px;
+      }
+      .teku-crest {
+        width: 22px;
+        height: 22px;
+      }
+      .teku-logo-text {
+        font-size: 0.85rem;
+      }
+      .btn-lab-toggle, .btn-dice-reroll, .teku-track-deck, .visualizer-container, .teku-micro-telemetry, .shift-light-bar {
+        display: none !important;
+      }
+      .teku-canopy {
+        padding: 4px 6px;
+        gap: 4px;
+      }
+      .gauge-big-num {
+        font-size: 2.2rem;
+      }
+      .gauge-unit-tag {
+        font-size: 0.65rem;
+      }
+      .btn-accelecharger {
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 0.80rem;
+      }
+      .razr-hinge-crease {
+        display: none !important;
+      }
+    }
+
+    /* RAZR ULTRA-TALL UNFOLDED SCREEN (22:9 RATIO ~412x950) */
+    @media (min-height: 860px) and (max-width: 440px) {
+      .container {
+        gap: 12px;
+      }
+      canvas {
+        height: 185px;
+      }
+      .gauge-big-num {
+        font-size: 3.6rem;
+      }
+      .teku-canopy {
+        padding: 14px 16px;
+      }
+      .btn-accelecharger {
+        min-height: 54px;
+        font-size: 1.05rem;
+      }
+    }
+
+    /* ==========================================
        RESPONSIVE ANDROID & MOBILE OPTIMIZATIONS
        ========================================== */
     @media (max-width: 768px) {
@@ -682,166 +1351,208 @@
         padding: 8px 10px;
       }
       .container {
-        gap: 10px;
+        gap: 8px;
       }
       header {
-        padding: 10px 14px;
-        gap: 10px;
+        padding: 8px 12px;
+        gap: 8px;
       }
       .brand-group {
-        gap: 6px;
+        gap: 4px;
         flex-direction: column;
         align-items: flex-start;
       }
       .teku-title {
-        font-size: 1.40rem;
+        font-size: 1.35rem;
         letter-spacing: 2px;
         line-height: 1.15;
         word-break: break-word;
       }
       .kanji-sub {
-        font-size: 0.70rem;
+        font-size: 0.68rem;
         letter-spacing: 1.5px;
       }
       .teku-emblem-wrap {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
       }
       .shirako-quote {
-        font-size: 0.68rem;
-        padding: 3px 8px;
+        font-size: 0.66rem;
+        padding: 2px 6px;
         letter-spacing: 1px;
+      }
+      .view-tab {
+        font-size: 0.74rem;
+        padding: 7px 8px;
       }
       .shift-light-bar {
-        padding: 6px 10px;
-        gap: 6px;
-      }
-      .led {
-        height: 8px;
-      }
-      .main-controls {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-      }
-      .main-controls button {
-        padding: 8px 8px;
-        font-size: 0.68rem;
-        letter-spacing: 1px;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
-      }
-      #btn-audio {
-        grid-column: span 2;
-        font-size: 0.82rem;
-      }
-      .deck-mode-bar {
-        padding: 6px 10px;
-        gap: 6px 12px;
-        font-size: 0.68rem;
-      }
-      .musical-status-bar {
-        padding: 8px 12px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        font-size: 0.70rem;
-      }
-      .vis-overlay-tag {
-        display: none;
-      }
-      canvas {
-        height: 175px;
-      }
-      .grid-dashboard {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      .card {
-        padding: 12px;
-      }
-      .card-value {
-        font-size: 1.9rem;
-      }
-    }
-
-    @media (max-width: 400px) {
-      .teku-title {
-        font-size: 1.18rem;
-        letter-spacing: 1px;
-      }
-      .teku-emblem-wrap {
-        width: 36px;
-        height: 36px;
-      }
-      .main-controls button {
-        font-size: 0.62rem;
-      }
-    }
-
-    /* Android Car-Mount Landscape Mode (e.g. 844x390, 915x412, car dashboards) */
-    @media (max-height: 520px) and (orientation: landscape) {
-      body {
-        padding: 6px 12px;
-      }
-      .container {
-        gap: 8px;
-      }
-      header {
-        padding: 6px 12px;
-        gap: 6px;
-      }
-      .teku-title {
-        font-size: 1.15rem;
-        letter-spacing: 1.5px;
-      }
-      .teku-emblem-wrap {
-        width: 34px;
-        height: 34px;
-      }
-      .shirako-quote {
-        display: none;
-      }
-      .shift-light-bar {
-        padding: 4px 10px;
-        gap: 6px;
+        padding: 4px 8px;
+        gap: 5px;
       }
       .led {
         height: 7px;
       }
-      .main-controls {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
+      .cockpit-actions-bar {
         gap: 6px;
       }
-      #btn-audio {
-        grid-column: span 1;
+      .cockpit-actions-bar .btn-start-audio {
+        font-size: 0.82rem;
+        padding: 10px 10px;
+        min-height: 42px;
       }
-      .main-controls button {
-        padding: 6px 6px;
-        font-size: 0.62rem;
-        letter-spacing: 0.5px;
-        min-height: 34px;
+      .cockpit-actions-bar .btn-ble {
+        font-size: 0.72rem;
+        padding: 8px 10px;
       }
-      canvas {
-        height: 135px;
+      .gauge-digits {
+        font-size: 2.3rem;
+      }
+      .gauge-hero {
+        padding: 10px 12px;
+      }
+      .cockpit-sensors-strip {
+        padding: 6px 10px;
+        font-size: 0.68rem;
+        gap: 6px;
+      }
+      .cockpit-session-bar {
+        padding: 6px 10px;
+        font-size: 0.68rem;
+      }
+      .demo-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+      .demo-actions-grid button {
+        padding: 8px 6px;
+        font-size: 0.66rem;
+        min-height: 38px;
       }
       .vis-overlay-tag {
         display: none;
       }
+      canvas {
+        height: 165px;
+      }
       .grid-dashboard {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 8px;
       }
       .card {
         padding: 10px;
       }
       .card-value {
-        font-size: 1.6rem;
+        font-size: 1.7rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .teku-title {
+        font-size: 1.15rem;
+        letter-spacing: 1px;
+      }
+      .teku-emblem-wrap {
+        width: 34px;
+        height: 34px;
+      }
+      .gauge-digits {
+        font-size: 1.9rem;
+      }
+      .gauge-unit {
+        font-size: 0.72rem;
+      }
+    }
+
+    /* Android Car-Mount Landscape Mode (e.g. 844x390, 915x412, car dashboards) */
+    @media (max-height: 520px) and (orientation: landscape) {
+      body {
+        padding: 4px 8px;
+      }
+      .container {
+        gap: 6px;
+      }
+      header {
+        padding: 4px 10px;
+        gap: 6px;
+      }
+      .teku-title {
+        font-size: 1.10rem;
+        letter-spacing: 1.5px;
+      }
+      .teku-emblem-wrap {
+        width: 30px;
+        height: 30px;
+      }
+      .shirako-quote {
+        display: none;
+      }
+      .view-nav {
+        padding: 2px;
+      }
+      .view-tab {
+        padding: 5px 8px;
+        font-size: 0.68rem;
+      }
+      #view-cockpit {
+        display: grid !important;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 8px;
+      }
+      .cockpit-left-col {
+        gap: 6px;
+      }
+      .cockpit-right-col {
+        gap: 6px;
+      }
+      .shift-light-bar {
+        padding: 3px 6px;
+        gap: 4px;
+      }
+      .led {
+        height: 6px;
+      }
+      .cockpit-actions-bar .btn-start-audio {
+        font-size: 0.76rem;
+        padding: 8px 10px;
+        min-height: 36px;
+      }
+      .cockpit-actions-bar .btn-ble {
+        font-size: 0.68rem;
+        padding: 6px 8px;
+      }
+      .gauge-hero {
+        padding: 8px 10px;
+      }
+      .gauge-digits {
+        font-size: 2.1rem;
+      }
+      .cockpit-sensors-strip {
+        padding: 4px 8px;
+        font-size: 0.65rem;
+      }
+      canvas {
+        height: 130px;
+      }
+      .cockpit-session-bar {
+        padding: 4px 8px;
+        font-size: 0.65rem;
+      }
+      .vis-overlay-tag {
+        display: none;
+      }
+      .demo-actions-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .grid-dashboard {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+      .card {
+        padding: 8px;
+      }
+      .card-value {
+        font-size: 1.5rem;
       }
     }
   </style>
@@ -849,216 +1560,309 @@
 <body>
 
 <div class="container">
-  <!-- TEKU COCKPIT HEADER -->
-  <header>
-    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-      <!-- Authentic Teku Emblem Icon -->
-      <div class="teku-emblem-wrap" title="Teku Soundwave Crest">
-        <img src="favicon.svg" alt="Teku Emblem" class="teku-emblem-img" />
+  <!-- TEKU SLEEK COCKPIT HEADER -->
+  <header class="teku-header">
+    <div class="header-left">
+      <div class="teku-crest" title="Teku Soundwave Crest">
+        <img src="favicon.svg" alt="Teku Emblem" class="teku-crest-icon" />
       </div>
-      <div>
-        <div class="brand-group">
-          <h1 class="teku-title">TEKU<span>//</span>HIGHWAY SOUNDWAVES</h1>
-          <div class="kanji-sub">音波高速道路 // TEKU SOUND SYSTEM</div>
-        </div>
-        <div class="shirako-quote">"YO, LET'S PUMP UP THE BASSLINE!" ⚡</div>
+      <div class="teku-brand">
+        <div class="teku-logo-text">TEKU<em>//</em>SOUNDWAVES</div>
       </div>
     </div>
-    
-    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
-        <span class="badge-mode idle" id="obd-badge" style="font-size: 0.70rem; padding: 3px 8px;">OBD: OFFLINE</span>
-        <a href="https://github.com/X7REME13/teku-highway-soundwave-engine" target="_blank" rel="noopener noreferrer" class="repo-badge-link" title="View Source on GitHub">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: -2px; margin-right: 5px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GITHUB REPO
-        </a>
-        <span class="badge-mode idle" id="mode-badge">IDLE</span>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--teku-silver); letter-spacing: 1px;">
-        VEHICLE: <strong>CLIO MIO 1.2 "DRIFT SPEC"</strong>
-      </div>
+
+    <div class="header-center">
+      <span class="badge-mode idle" id="mode-badge">IDLE // 0 KM/H</span>
+      <span id="label-mode-name" style="display: none;">STOPPED</span>
+      <span id="label-tempo" style="display: none;">136</span>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-ble-pill" id="btn-bluetooth" type="button" title="Connect OBD-II Bluetooth">
+        <span class="ble-dot" id="ble-status-dot"></span>
+        <span id="obd-badge">OBD BLE</span>
+      </button>
+      <button class="btn-lab-toggle" id="tab-demo" type="button" title="Open Simulation & Diagnostic Lab">
+        🧪 <span class="lab-btn-label">LAB</span>
+      </button>
+      <!-- Hidden compatibility buttons/badges for ui.js -->
+      <button id="tab-cockpit" style="display: none;" type="button"></button>
+      <button id="tab-razr" style="display: none;" type="button"></button>
+      <button id="btn-install-pwa" style="display: none;" type="button"></button>
     </div>
   </header>
 
-  <!-- TACHOMETER LED SHIFT LIGHTS -->
-  <div class="shift-light-bar">
-    <div class="led cyan" id="led-1"></div>
-    <div class="led cyan" id="led-2"></div>
-    <div class="led cyan" id="led-3"></div>
-    <div class="led cyan" id="led-4"></div>
-    <div class="led yellow" id="led-5"></div>
-    <div class="led yellow" id="led-6"></div>
-    <div class="led magenta" id="led-7"></div>
-    <div class="led magenta" id="led-8"></div>
-  </div>
-
-  <!-- MAIN COCKPIT CONTROLS -->
-  <div class="main-controls">
-    <button class="primary" id="btn-audio">Start Audio Engine</button>
-    <button id="btn-bluetooth" style="border-color: #00f0ff; color: #00f0ff; background: rgba(0, 240, 255, 0.12);">📶 Connect OBD-II (BLE)</button>
-    <button id="btn-install-pwa" style="display: none; border-color: var(--teku-orange); color: var(--teku-orange); background: rgba(255, 119, 0, 0.15);">📲 Install Teku App</button>
-    <button id="btn-replay">Replay Clio CSV Run (75s)</button>
-    <button id="btn-trance-bridge">Test Trance Bridge (Puente)</button>
-    <button id="btn-chill-shift">Test Chill Gear-Shift @ 2.4k</button>
-    <button id="btn-stomp">Test Throttle Stomp (Attack)</button>
-  </div>
-
-  <!-- SESSION SEED BAR -->
-  <div class="motif-selector-bar">
-    <span class="motif-label">SESSION:</span>
-    <span id="label-session-seed" style="font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: bold; color: var(--teku-cyan); margin-right: 12px;">TEKU-1337 (A Minor, 136 BPM)</span>
-    <button class="btn-motif" id="btn-reroll-seed">REROLL SEED</button>
-  </div>
-
-  <!-- CONTINUOUS GRADIENT MONITOR -->
-  <div class="deck-mode-bar" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-    <span class="motif-label">GRADIENTS:</span>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      BASS: <strong style="color: var(--teku-cyan);">100%</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      DRUMS: <strong id="label-grad-drums" style="color: var(--teku-orange);">0%</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      STABS: <strong id="label-grad-stabs" style="color: var(--teku-magenta);">0%</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      HOOK: <strong id="label-grad-hook" style="color: #00ffaa;">0%</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      UPPER: <strong id="label-grad-upper" style="color: #ff44cc;">0%</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      CUTOFF: <strong id="label-grad-cutoff" style="color: var(--teku-cyan);">320 Hz</strong>
-    </div>
-    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
-      TUBE: <strong id="label-grad-drive" style="color: #ff0055;">3.5x</strong>
-    </div>
-  </div>
-
-  <!-- REPLAY HUD PROGRESS -->
-  <div id="replay-hud" style="display: none;">
-    <div style="display: flex; justify-content: space-between; font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: bold;">
-      <span id="replay-stage-name" style="color: var(--teku-cyan);">STAGE 1: STOPPED // RAW ROLLING SUB-BASSLINE LOOP ONLY</span>
-      <span id="replay-time-label" style="color: var(--teku-silver);">0.0s / 75.0s</span>
-    </div>
-    <div class="progress-bar-shell">
-      <div id="replay-progress-fill"></div>
-    </div>
-  </div>
-
-  <!-- MUSICAL STATUS BAR -->
-  <div class="musical-status-bar">
-    <div class="music-item"><span>Status:</span><span id="label-mode-name">STOPPED (Raw Sub-Bass Riff)</span></div>
-    <div class="music-item"><span>Cycle:</span><span id="label-bar-cycle">Bar 1 of 16 (GROOVE)</span></div>
-    <div class="music-item"><span>Chord:</span><span id="label-chord">A Minor</span></div>
-    <div class="music-item"><span>Energy:</span><span id="label-agg-score">0.00</span></div>
-  </div>
-
-  <!-- BASSLINE 30-BAND EQUALIZER VISUALIZER -->
-  <div class="visualizer-wrapper">
-    <div class="vis-overlay-tag">TEKU BASSLINE MK-II // 30-BAND ISO SPECTRUM EQUALIZER</div>
-    <canvas id="visualizer"></canvas>
-  </div>
-
-  <!-- TELEMETRY GAUGE CARDS -->
-  <div class="grid-dashboard">
-    <!-- Dynamic Driving Energy Card -->
-    <div class="card card-screamer" id="card-screamer">
-      <div class="card-title">
-        <span>Breakbeat Filter & Energy</span>
-        <span class="screamer-badge dormant" id="screamer-status-badge">CRUISE</span>
+  <!-- ============================================================
+       VIEW 1: TEKU TUNER COCKPIT HUD (AUTHENTIC 2000s BASSLINE AESTHETIC)
+       ============================================================ -->
+  <div id="view-cockpit" class="view-panel">
+    <!-- TEKU UNIFIED CANOPY CLUSTER -->
+    <div class="teku-canopy">
+      <!-- SWEPT LED TACHOMETER SHIFT LIGHTS -->
+      <div class="shift-light-bar">
+        <div class="led cyan" id="led-1"></div>
+        <div class="led cyan" id="led-2"></div>
+        <div class="led cyan" id="led-3"></div>
+        <div class="led cyan" id="led-4"></div>
+        <div class="led yellow" id="led-5"></div>
+        <div class="led yellow" id="led-6"></div>
+        <div class="led magenta" id="led-7"></div>
+        <div class="led magenta" id="led-8"></div>
       </div>
-      <div class="card-value" id="val-screamer-cutoff" style="color: var(--teku-orange); font-size: 2.2rem;">320 Hz</div>
-      <div class="screamer-bar-container">
-        <div class="screamer-bar-fill" id="screamer-rpm-fill"></div>
-        <div class="screamer-threshold-line" title="Energy Sweep Threshold"></div>
+
+      <!-- TWIN DIGITAL HERO GAUGES -->
+      <div class="teku-gauges-row">
+        <!-- SPEEDOMETER -->
+        <div class="teku-gauge speed-section">
+          <div class="gauge-meta">
+            <span class="gauge-name">SPEED</span>
+            <span class="gauge-limit">MAX 60</span>
+          </div>
+          <div class="gauge-number-wrap">
+            <span class="gauge-big-num cyan" id="val-spd">0</span>
+            <span class="gauge-unit-tag">KM/H</span>
+          </div>
+          <div class="speed-arc-track">
+            <div class="speed-arc-fill" id="spd-bar-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- AERODYNAMIC DIVIDER BLADE -->
+        <div class="cluster-winglet"></div>
+
+        <!-- REV COUNTER / TACHOMETER -->
+        <div class="teku-gauge rpm-section">
+          <div class="gauge-meta">
+            <span class="gauge-name">REV COUNTER</span>
+            <span class="gauge-limit">SHIFT 2.4K</span>
+          </div>
+          <div class="gauge-number-wrap">
+            <span class="gauge-big-num orange" id="val-rpm">750</span>
+            <span class="gauge-unit-tag">RPM</span>
+          </div>
+          <div class="rpm-arc-track">
+            <div class="rpm-arc-fill" id="rpm-bar-fill" style="width: 18%;"></div>
+          </div>
+        </div>
       </div>
-      <div class="card-title" style="margin-top: 4px;">
-        <span>Dynamic Cutoff Sweep</span>
-        <span id="label-cutoff">320 Hz</span>
+
+      <!-- MICRO-TELEMETRY STRIP (CLEAN HORIZONTAL METERS) -->
+      <div class="teku-micro-telemetry">
+        <div class="micro-item">
+          <span class="micro-label">THROTTLE</span>
+          <div class="micro-bar-shell">
+            <div class="micro-bar-fill throttle" id="tps-bar-fill" style="width: 13%;"></div>
+          </div>
+          <span class="micro-val"><span id="val-tps">13</span>%</span>
+        </div>
+        <div class="micro-item">
+          <span class="micro-label">LAT G</span>
+          <div class="g-meter-mini">
+            <div class="g-pip" id="g-pip-dot" style="left: 50%;"></div>
+          </div>
+          <span class="micro-val"><span id="val-g">0.00</span>G</span>
+        </div>
+        <div class="micro-item" style="flex: 0 0 auto;">
+          <span class="micro-label">COOLANT</span>
+          <span class="micro-val" id="val-temp" style="color: var(--teku-cyan);">88°C</span>
+        </div>
       </div>
     </div>
 
-    <!-- RPM Card -->
-    <div class="card" id="card-rpm">
-      <div class="card-title">
-        <span>Tachometer (Clio 1.2)</span>
-        <span class="card-unit">RPM</span>
+    <!-- MOTOROLA RAZR 90° PHYSICAL HINGE CREASE -->
+    <div class="razr-hinge-crease" id="razr-hinge">
+      <span>⚡ MOTOROLA RAZR 90° // UPPER: HUD | LOWER: DECK ⚡</span>
+    </div>
+
+    <!-- ACCELECHARGER SOUND SYSTEM DECK -->
+    <div class="teku-sound-deck">
+      <!-- GIANT ACCELECHARGER TRIGGER BUTTON -->
+      <div class="sound-deck-trigger">
+        <button class="btn-accelecharger" id="btn-audio" type="button">
+          <span class="accelecharger-icon">▶</span>
+          <span id="btn-audio-text">PUMP UP THE BASSLINE</span>
+        </button>
       </div>
-      <div class="card-value" id="val-rpm">750</div>
-      <input type="range" id="slider-rpm" min="700" max="4200" value="750">
-      <div class="card-title">
-        <span>Bass Tube Saturation</span>
-        <span id="label-thermal-drive">3.5x Drive</span>
+
+      <!-- PIONEER OEL 30-BAND SPECTRUM EQUALIZER -->
+      <div class="visualizer-container">
+        <div class="eq-sub-header">
+          <span class="eq-model">PIONEER OEL // 30-BAND ISO SPECTRUM</span>
+          <span class="eq-band-tags">
+            <span style="color: #00f0ff;">SUB</span> • 
+            <span style="color: #ffaa00;">MID</span> • 
+            <span style="color: #ff3399;">AIR</span>
+          </span>
+        </div>
+        <canvas id="visualizer"></canvas>
+      </div>
+
+      <!-- HEAD-UNIT TRACK DECK BAR -->
+      <div class="teku-track-deck">
+        <div class="track-info">
+          <span class="track-label">TRACK:</span>
+          <span class="track-title" id="label-session-seed">TEKU-1337 // A MINOR (136 BPM)</span>
+          <span class="track-bar-phase" id="label-bar-cycle">BAR 1/16 [GROOVE]</span>
+        </div>
+        <button class="btn-dice-reroll" id="btn-reroll-seed" type="button" title="Reroll Track Seed">
+          🎲 <span>REROLL</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VIEW 2: DEMO & SIMULATION LAB (MANUAL SLIDERS, REPLAY, DIAGNOSTICS)
+       ============================================================ -->
+  <div id="view-demo" class="view-panel" style="display: none;">
+    <div class="demo-lab-header">
+      <div>
+        <div class="demo-lab-title">🧪 DEMO & SIMULATION LAB</div>
+        <div style="font-size: 0.72rem; color: var(--teku-silver); letter-spacing: 0.5px;">Manual OBD Telemetry Sliders, 75s Replay & Audio Bus Diagnostics</div>
+      </div>
+      <button class="btn-reroll-pill" id="btn-back-cockpit" type="button" style="border-color: var(--teku-cyan); color: var(--teku-cyan);">← Back to Cockpit HUD</button>
+    </div>
+
+    <!-- REPLAY HUD PROGRESS -->
+    <div id="replay-hud" style="display: none;">
+      <div style="display: flex; justify-content: space-between; font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: bold;">
+        <span id="replay-stage-name" style="color: var(--teku-cyan);">STAGE 1: STOPPED // RAW ROLLING SUB-BASSLINE LOOP ONLY</span>
+        <span id="replay-time-label" style="color: var(--teku-silver);">0.0s / 75.0s</span>
+      </div>
+      <div class="progress-bar-shell">
+        <div id="replay-progress-fill"></div>
       </div>
     </div>
 
-    <!-- Speed Card -->
+    <!-- SIMULATION ACTION TRIGGERS -->
+    <div class="demo-actions-grid">
+      <button class="primary" id="btn-replay" style="font-size: 0.74rem;">Replay Clio CSV Run (75s)</button>
+      <button id="btn-trance-bridge" style="font-size: 0.74rem;">Test Trance Bridge (Puente)</button>
+      <button id="btn-chill-shift" style="font-size: 0.74rem;">Test Chill Gear-Shift @ 2.4k</button>
+      <button id="btn-stomp" style="font-size: 0.74rem;">Test Throttle Stomp (Attack)</button>
+    </div>
+
+    <!-- CONTINUOUS GRADIENT MONITOR -->
+    <div class="deck-mode-bar" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+      <span class="motif-label">GRADIENTS:</span>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        BASS: <strong style="color: var(--teku-cyan);">100%</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        DRUMS: <strong id="label-grad-drums" style="color: var(--teku-orange);">0%</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        STABS: <strong id="label-grad-stabs" style="color: var(--teku-magenta);">0%</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        HOOK: <strong id="label-grad-hook" style="color: #00ffaa;">0%</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        UPPER: <strong id="label-grad-upper" style="color: #ff44cc;">0%</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        CUTOFF: <strong id="label-grad-cutoff" style="color: var(--teku-cyan);">320 Hz</strong>
+      </div>
+      <div style="font-size: 0.76rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+        TUBE: <strong id="label-grad-drive" style="color: #ff0055;">3.5x</strong>
+      </div>
+    </div>
+
+    <!-- MANUAL TELEMETRY SLIDERS (GRID DASHBOARD) -->
+    <div class="grid-dashboard">
+      <!-- Dynamic Driving Energy Card -->
+      <div class="card card-screamer" id="card-screamer">
+        <div class="card-title">
+          <span>Breakbeat Filter & Energy</span>
+          <span class="screamer-badge dormant" id="screamer-status-badge">CRUISE</span>
+        </div>
+        <div class="card-value" id="val-screamer-cutoff" style="color: var(--teku-orange); font-size: 2.0rem;">320 Hz</div>
+        <div class="screamer-bar-container">
+          <div class="screamer-bar-fill" id="screamer-rpm-fill"></div>
+          <div class="screamer-threshold-line" title="Energy Sweep Threshold"></div>
+        </div>
+        <div class="card-title" style="margin-top: 4px;">
+          <span>Dynamic Cutoff Sweep</span>
+          <span id="label-cutoff">320 Hz</span>
+        </div>
+      </div>
+
+      <!-- RPM Card with Slider -->
+      <div class="card" id="card-rpm">
+        <div class="card-title">
+          <span>Manual RPM Slider</span>
+          <span class="card-unit"><span id="val-rpm-demo">750</span> RPM</span>
+        </div>
+        <input type="range" id="slider-rpm" min="700" max="4200" value="750">
+        <div class="card-title">
+          <span>Shift Threshold: 2,450 RPM</span>
+          <span style="color: var(--teku-cyan);">Clio 1.2 D4F</span>
+        </div>
+      </div>
+
+      <!-- Speed Card with Slider -->
+      <div class="card">
+        <div class="card-title">
+          <span>Manual Speed Slider</span>
+          <span class="card-unit"><span id="val-spd-demo">0</span> KM/H</span>
+        </div>
+        <input type="range" id="slider-spd" min="0" max="130" value="0">
+        <div class="card-title">
+          <span>Legal Speed Cap: 60 km/h</span>
+          <span style="color: var(--teku-cyan);">100% Punch @ 60</span>
+        </div>
+      </div>
+
+      <!-- Throttle Card with Slider -->
+      <div class="card">
+        <div class="card-title">
+          <span>Manual Throttle (TPS)</span>
+          <span class="card-unit"><span id="val-tps-demo">13</span> %</span>
+        </div>
+        <input type="range" id="slider-tps" min="0" max="100" value="13">
+        <div class="card-title">
+          <span>Stab Threshold: >90%/s</span>
+          <span style="color: var(--teku-orange);">Floor Kick Detection</span>
+        </div>
+      </div>
+
+      <!-- Cornering G Card with Slider -->
+      <div class="card">
+        <div class="card-title">
+          <span>Manual Lateral Force</span>
+          <span class="card-unit"><span id="val-g-demo">0.00</span> G</span>
+        </div>
+        <input type="range" id="slider-g" min="-0.40" max="0.40" step="0.02" value="0.0">
+        <div class="card-title">
+          <span>Dynamic Stereo Pan</span>
+          <span style="color: var(--teku-cyan);">Sub-Bass Mono Center</span>
+        </div>
+      </div>
+
+      <!-- Coolant Temp Card with Slider -->
+      <div class="card" id="card-temp">
+        <div class="card-title">
+          <span>Manual Coolant (ECT)</span>
+          <span class="card-unit"><span id="val-temp-demo">88</span> °C</span>
+        </div>
+        <input type="range" id="slider-temp" min="20" max="112" value="88">
+        <div class="card-title">
+          <span>Tube Timbre:</span>
+          <span id="label-thermal-state" style="color: var(--teku-cyan); font-weight: bold;">WARM (88°C)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELEMETRY LOG CARD -->
     <div class="card">
       <div class="card-title">
-        <span>Ground Speed</span>
-        <span class="card-unit">KM/H</span>
+        <span>TEKU Telemetry Log & Shift Telemetry</span>
+        <span id="timeline-clock">T+0.00s</span>
       </div>
-      <div class="card-value" id="val-spd">0</div>
-      <input type="range" id="slider-spd" min="0" max="130" value="0">
-      <div class="card-title">
-        <span>BPM Tempo Pulse</span>
-        <span id="label-tempo">84 BPM</span>
-      </div>
-    </div>
-
-    <!-- Throttle Card -->
-    <div class="card">
-      <div class="card-title">
-        <span>Throttle (TPS)</span>
-        <span class="card-unit">%</span>
-      </div>
-      <div class="card-value" id="val-tps">13</div>
-      <input type="range" id="slider-tps" min="0" max="100" value="13">
-      <div class="card-title">
-        <span>Pedal Attack Rate</span>
-        <span id="label-dtps">0 %/s</span>
-      </div>
-    </div>
-
-    <!-- Cornering G Card -->
-    <div class="card">
-      <div class="card-title">
-        <span>Lateral Force</span>
-        <span class="card-unit">G</span>
-      </div>
-      <div class="card-value" id="val-g">0.00</div>
-      <input type="range" id="slider-g" min="-0.40" max="0.40" step="0.02" value="0.0">
-      <div class="card-title">
-        <span>Stereo Acoustic Pan</span>
-        <span id="label-pan">Center</span>
-      </div>
-    </div>
-
-    <!-- Engine Coolant Temp (ECT) Card -->
-    <div class="card" id="card-temp">
-      <div class="card-title">
-        <span>Coolant Temp (ECT)</span>
-        <span class="card-unit">°C</span>
-      </div>
-      <div class="card-value" id="val-temp" style="color: var(--teku-cyan);">88</div>
-      <input type="range" id="slider-temp" min="20" max="112" value="88">
-      <div class="card-title">
-        <span>Idle Timbre</span>
-        <span id="label-thermal-state" style="color: var(--teku-cyan); font-weight: bold;">WARM // CONTINUOUS ANALOG TUBE PURR (88°C)</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">
-      <span>TEKU Telemetry Log & Shift Telemetry</span>
-      <span id="timeline-clock">T+0.00s</span>
-    </div>
-    <div class="log-box" id="log-output">
+      <div class="log-box" id="log-output">
 [TEKU TUNER LAB] Bassline Sound System armed. Ready for launch.
 [Profile] Clio Mio 1.2 D4F: 750 RPM idle | 2,450 RPM shift point | ±0.35G lateral limit.
+      </div>
     </div>
   </div>
 </div>
