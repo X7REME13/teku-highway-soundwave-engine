@@ -664,37 +664,37 @@
     <button id="btn-stomp">Test Throttle Stomp (Attack)</button>
   </div>
 
-  <!-- TEKU MOTIF SELECTOR -->
+  <!-- SESSION SEED BAR -->
   <div class="motif-selector-bar">
-    <span class="motif-label">TEKU MOTIF:</span>
-    <button class="btn-motif selected" data-motif="auto" id="btn-motif-auto">AUTO-CYCLE (8-BAR)</button>
-    <button class="btn-motif" data-motif="halogen" id="btn-motif-halogen">HALOGEN // i_o SPEC</button>
-    <button class="btn-motif" data-motif="shirako" id="btn-motif-shirako">SHIRAKO // BASSLINE</button>
-    <button class="btn-motif" data-motif="anthem" id="btn-motif-anthem">TEKU-ISING // PATA DE BASS</button>
-    <button class="btn-motif" data-motif="metro" id="btn-motif-metro">METRO // NIGHT RUN</button>
+    <span class="motif-label">SESSION:</span>
+    <span id="label-session-seed" style="font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: bold; color: var(--teku-cyan); margin-right: 12px;">TEKU-1337 (A Minor, 136 BPM)</span>
+    <button class="btn-motif" id="btn-reroll-seed">REROLL SEED</button>
   </div>
 
-  <!-- ACOUSTIC PERSPECTIVE SELECTOR -->
-  <div class="deck-mode-bar">
-    <span class="motif-label">ACOUSTIC PERSPECTIVE:</span>
-    <button class="btn-deck selected" id="btn-perspective-arena" data-perspective="arena">SUBWOOFER ARENA (BASSLINE ARRAY)</button>
-    <button class="btn-deck" id="btn-perspective-headphones" data-perspective="headphones">SHIRAKO DJ HEADPHONES</button>
-  </div>
-
-  <!-- SHIRAKO TAKAMOTO DJ SOUNDBOARD -->
-  <div class="soundboard-bar">
-    <span class="soundboard-label">SHIRAKO SOUNDBOARD:</span>
-    <button class="btn-soundboard cyan" id="btn-sfx-scratch">DJ BABY SCRATCH</button>
-    <button class="btn-soundboard cyan" id="btn-sfx-spinback">TURNTABLE SPINBACK</button>
-    <button class="btn-soundboard magenta" id="btn-sfx-cannon">SONIC CANNON BLAST</button>
-    <button class="btn-soundboard orange" id="btn-sfx-bov">TURBO BOV FLUTTER</button>
-    <button class="btn-soundboard orange" id="btn-sfx-nitrox">NITROX 3 PURGE</button>
+  <!-- CONTINUOUS GRADIENT MONITOR -->
+  <div class="deck-mode-bar" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <span class="motif-label">GRADIENTS:</span>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      BASS: <strong style="color: var(--teku-cyan);">100%</strong>
+    </div>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      DRUMS: <strong id="label-grad-drums" style="color: var(--teku-orange);">0%</strong>
+    </div>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      STABS: <strong id="label-grad-stabs" style="color: var(--teku-magenta);">0%</strong>
+    </div>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      CUTOFF: <strong id="label-grad-cutoff" style="color: var(--teku-cyan);">320 Hz</strong>
+    </div>
+    <div style="font-size: 0.78rem; font-family: 'Orbitron', monospace; color: var(--teku-silver);">
+      TUBE: <strong id="label-grad-drive" style="color: #ff0055;">3.5x</strong>
+    </div>
   </div>
 
   <!-- REPLAY HUD PROGRESS -->
   <div id="replay-hud" style="display: none;">
     <div style="display: flex; justify-content: space-between; font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: bold;">
-      <span id="replay-stage-name" style="color: var(--teku-cyan);">STAGE 1: RED LIGHT COCKPIT IDLE</span>
+      <span id="replay-stage-name" style="color: var(--teku-cyan);">STAGE 1: STOPPED // RAW ROLLING SUB-BASSLINE LOOP ONLY</span>
       <span id="replay-time-label" style="color: var(--teku-silver);">0.0s / 75.0s</span>
     </div>
     <div class="progress-bar-shell">
@@ -704,11 +704,10 @@
 
   <!-- MUSICAL STATUS BAR -->
   <div class="musical-status-bar">
-    <div class="music-item"><span>Status:</span><span id="label-mode-name">IDLE (Continuous Analog 4-Cyl Rumble & Lope)</span></div>
-    <div class="music-item"><span>Motif:</span><span id="label-motif-name">AUTO (SHIRAKO)</span></div>
+    <div class="music-item"><span>Status:</span><span id="label-mode-name">STOPPED (Raw Sub-Bass Riff)</span></div>
     <div class="music-item"><span>Cycle:</span><span id="label-bar-cycle">Bar 1 of 8</span></div>
-    <div class="music-item"><span>Chord:</span><span id="label-chord">D Minor</span></div>
-    <div class="music-item"><span>Aggression:</span><span id="label-agg-score">0.00</span></div>
+    <div class="music-item"><span>Chord:</span><span id="label-chord">A Minor</span></div>
+    <div class="music-item"><span>Energy:</span><span id="label-agg-score">0.00</span></div>
   </div>
 
   <!-- BASSLINE EQUALIZER VISUALIZER -->
@@ -719,20 +718,20 @@
 
   <!-- TELEMETRY GAUGE CARDS -->
   <div class="grid-dashboard">
-    <!-- 16V Cam Screamer Card (>3K RPM Instrument) -->
+    <!-- Dynamic Driving Energy Card -->
     <div class="card card-screamer" id="card-screamer">
       <div class="card-title">
-        <span>16V Cam Screamer (&ge;3,000 RPM)</span>
-        <span class="screamer-badge dormant" id="screamer-status-badge">DORMANT (&lt;3K)</span>
+        <span>Breakbeat Filter & Energy</span>
+        <span class="screamer-badge dormant" id="screamer-status-badge">CRUISE</span>
       </div>
-      <div class="card-value" id="val-screamer-cutoff" style="color: var(--teku-orange); font-size: 2.2rem;">OFFLINE</div>
+      <div class="card-value" id="val-screamer-cutoff" style="color: var(--teku-orange); font-size: 2.2rem;">320 Hz</div>
       <div class="screamer-bar-container">
         <div class="screamer-bar-fill" id="screamer-rpm-fill"></div>
-        <div class="screamer-threshold-line" title="3,000 RPM Screamer Threshold"></div>
+        <div class="screamer-threshold-line" title="Energy Sweep Threshold"></div>
       </div>
       <div class="card-title" style="margin-top: 4px;">
-        <span>Hypersaw Formant</span>
-        <span id="label-screamer-resonance">Dual Detuned Saw + Sync</span>
+        <span>Dynamic Cutoff Sweep</span>
+        <span id="label-cutoff">320 Hz</span>
       </div>
     </div>
 
@@ -745,8 +744,8 @@
       <div class="card-value" id="val-rpm">750</div>
       <input type="range" id="slider-rpm" min="700" max="4200" value="750">
       <div class="card-title">
-        <span>TB-303 Acid Cutoff</span>
-        <span id="label-cutoff">260 Hz</span>
+        <span>Bass Tube Saturation</span>
+        <span id="label-thermal-drive">3.5x Drive</span>
       </div>
     </div>
 
@@ -819,6 +818,14 @@
   </div>
 </div>
 
-<script src="audio_engine.js"></script>
+<script src="js/rng.js"></script>
+<script src="js/theory.js"></script>
+<script src="js/generator.js"></script>
+<script src="js/mixer.js"></script>
+<script src="js/instruments.js"></script>
+<script src="js/telemetry_mapper.js"></script>
+<script src="js/arranger.js"></script>
+<script src="js/music_engine.js"></script>
+<script src="js/ui.js"></script>
 </body>
 </html>
