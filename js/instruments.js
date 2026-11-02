@@ -17,7 +17,7 @@ class TekuInstruments {
   }
 
   // ==========================================
-  // 1. THE TEKU RAW BASSLINE (Centerpiece Voice)
+  // 1. THE TEKU RAW BASSLINE + INTRO BASS-KICK PUNCH ("LA PATADA DE ENTRADA")
   // ==========================================
   triggerBass(freq, time, duration, vel = 0.85, isAccent = false, hasSlide = false, cutoffBoost = 0) {
     const ctx = this.ctx;
@@ -25,7 +25,7 @@ class TekuInstruments {
     const dur = Math.max(0.08, duration || 0.22);
 
     // ========================================================
-    // A. PHYSICAL SUB-BASS FOUNDATION (The 42 - 82 Hz Sweet Spot)
+    // A. PHYSICAL SUB-BASS FOUNDATION + TEKU-ISING INTRO PITCH THUMP
     // ========================================================
     const targetFreq = (hasSlide && this.lastBassFreq) ? this.lastBassFreq : freq;
     let subStartFreq = targetFreq;
@@ -39,41 +39,73 @@ class TekuInstruments {
     // 1. Primary Pure Sine Sub Oscillator (100% focused fundamental pressure)
     const subSine = ctx.createOscillator();
     subSine.type = 'sine';
-    subSine.frequency.setValueAtTime(subStartFreq, now);
 
     // 2. Secondary Triangle Sub Oscillator (Warm 2nd/3rd harmonic body)
     const subTri = ctx.createOscillator();
     subTri.type = 'triangle';
-    subTri.frequency.setValueAtTime(subStartFreq, now);
 
+    // TEKU-ISING INTRO PITCH SWEEP ("La Patada"):
+    // Measured from reference 0.0s-2.2s: starts at ~225 Hz (or ~3.5x sub) -> 100 Hz at 38ms -> locks onto 50 Hz at 78ms!
     if (hasSlide) {
+      subSine.frequency.setValueAtTime(subStartFreq, now);
+      subTri.frequency.setValueAtTime(subStartFreq, now);
       subSine.frequency.exponentialRampToValueAtTime(subEndFreq, now + Math.min(0.09, dur * 0.45));
       subTri.frequency.exponentialRampToValueAtTime(subEndFreq, now + Math.min(0.09, dur * 0.45));
+    } else {
+      const punchStart = isAccent ? Math.min(235, subEndFreq * 3.8) : Math.min(175, subEndFreq * 2.6);
+      const punchMid = subEndFreq * 1.65;
+      subSine.frequency.setValueAtTime(punchStart, now);
+      subSine.frequency.exponentialRampToValueAtTime(punchMid, now + 0.032);
+      subSine.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.076);
+
+      subTri.frequency.setValueAtTime(punchStart * 0.85, now);
+      subTri.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.065);
     }
 
-    // Dedicated Sub Lowpass Filter (120 Hz Butterworth flat Q=0.707)
+    // Dedicated Sub Lowpass Filter (Opens to 210 Hz for the initial 75ms chest thump, then settles to 120 Hz)
     const subFilter = ctx.createBiquadFilter();
     subFilter.type = 'lowpass';
-    subFilter.frequency.setValueAtTime(120, now);
-    subFilter.Q.setValueAtTime(0.707, now);
+    subFilter.frequency.setValueAtTime(isAccent ? 230 : 175, now);
+    subFilter.frequency.exponentialRampToValueAtTime(120, now + 0.080);
+    subFilter.Q.setValueAtTime(0.85, now);
 
-    // TRUE SUSTAINED SUB ADSR ENVELOPE (Holds full pressure across the note!)
+    // TRUE SUSTAINED SUB ADSR ENVELOPE (Hard -1.8dB chest impact transient -> deep sustained hold)
     const subGain = ctx.createGain();
-    const subPeak = Math.min(1.45, isAccent ? vel * 1.55 : vel * 1.35);
-    const holdEnd = now + dur * 0.82;
+    const subPeak = Math.min(1.62, isAccent ? vel * 1.68 : vel * 1.42);
+    const subSustain = subPeak * 0.82;
+    const holdEnd = now + dur * 0.84;
     subGain.gain.setValueAtTime(0.001, now);
-    subGain.gain.linearRampToValueAtTime(subPeak, now + 0.006);
-    subGain.gain.linearRampToValueAtTime(subPeak * 0.88, holdEnd);
+    subGain.gain.linearRampToValueAtTime(subPeak, now + 0.004); // Instant 4ms Teku impact attack
+    subGain.gain.exponentialRampToValueAtTime(subSustain, now + 0.085); // 80ms chest thump decay into sustain
+    subGain.gain.linearRampToValueAtTime(subSustain * 0.90, holdEnd);
     subGain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.99);
 
     subSine.connect(subFilter);
     subTri.connect(subFilter);
     subFilter.connect(subGain);
 
+    // 3. Dedicated Teku-Ising Upper-Bass Chest-Kick Thump Oscillator (225 Hz -> 95 Hz -> 50 Hz in 85ms)
+    // Gives every accented bass hit that exact "DOOM-BASS" physical kick transient from the intro of Teku-Ising!
+    const punchOsc = ctx.createOscillator();
+    const punchGain = ctx.createGain();
+    punchOsc.type = 'triangle';
+    const thumpStart = isAccent ? 225 : 170;
+    punchOsc.frequency.setValueAtTime(thumpStart, now);
+    punchOsc.frequency.exponentialRampToValueAtTime(102, now + 0.036);
+    punchOsc.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.082);
+
+    const punchAmt = (isAccent ? 0.95 : (hasSlide ? 0.25 : 0.62)) * vel;
+    punchGain.gain.setValueAtTime(0.001, now);
+    punchGain.gain.linearRampToValueAtTime(punchAmt, now + 0.003);
+    punchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.090);
+    punchOsc.connect(punchGain);
+
     if (this.mixer.subBassBus) {
       subGain.connect(this.mixer.subBassBus);
+      punchGain.connect(this.mixer.subBassBus);
     } else {
       subGain.connect(this.mixer.bassBus);
+      punchGain.connect(this.mixer.bassBus);
     }
 
     // ========================================================
@@ -92,15 +124,23 @@ class TekuInstruments {
     saw2.type = 'sawtooth';
     pulse.type = 'square';
 
-    saw1.frequency.setValueAtTime(midStartFreq, now);
-    saw2.frequency.setValueAtTime(midStartFreq, now);
-    pulse.frequency.setValueAtTime(midStartFreq * 0.5, now);
-
     if (hasSlide) {
+      saw1.frequency.setValueAtTime(midStartFreq, now);
+      saw2.frequency.setValueAtTime(midStartFreq, now);
+      pulse.frequency.setValueAtTime(midStartFreq * 0.5, now);
       const slideTime = now + Math.min(0.09, dur * 0.45);
       saw1.frequency.exponentialRampToValueAtTime(midEndFreq, slideTime);
       saw2.frequency.exponentialRampToValueAtTime(midEndFreq, slideTime);
       pulse.frequency.exponentialRampToValueAtTime(midEndFreq * 0.5, slideTime);
+    } else {
+      // Subtle 22ms pitch snap on the mid-bass attack too
+      const snapStart = isAccent ? midEndFreq * 1.45 : midEndFreq * 1.18;
+      saw1.frequency.setValueAtTime(snapStart, now);
+      saw2.frequency.setValueAtTime(snapStart, now);
+      pulse.frequency.setValueAtTime(snapStart * 0.5, now);
+      saw1.frequency.exponentialRampToValueAtTime(midEndFreq, now + 0.024);
+      saw2.frequency.exponentialRampToValueAtTime(midEndFreq, now + 0.024);
+      pulse.frequency.exponentialRampToValueAtTime(midEndFreq * 0.5, now + 0.024);
     }
     this.lastBassFreq = freq;
 
@@ -114,22 +154,22 @@ class TekuInstruments {
     midFilter1.type = 'lowpass';
     midFilter2.type = 'lowpass';
 
-    const baseCutoff = (isAccent ? 380 : 250) + cutoffBoost;
-    const peakCutoff = isAccent ? baseCutoff * 2.4 : baseCutoff * 1.7;
+    const baseCutoff = Math.max(140, (isAccent ? 380 : 250) + cutoffBoost);
+    const peakCutoff = isAccent ? baseCutoff * 2.6 : baseCutoff * 1.85;
 
     midFilter1.frequency.setValueAtTime(peakCutoff, now);
-    midFilter1.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.70);
-    midFilter1.Q.setValueAtTime(isAccent ? 3.2 : 2.0, now);
+    midFilter1.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.65);
+    midFilter1.Q.setValueAtTime(isAccent ? 3.4 : 2.1, now);
 
     midFilter2.frequency.setValueAtTime(peakCutoff * 1.1, now);
-    midFilter2.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.70);
-    midFilter2.Q.setValueAtTime(isAccent ? 1.8 : 1.2, now);
+    midFilter2.frequency.exponentialRampToValueAtTime(baseCutoff, now + dur * 0.65);
+    midFilter2.Q.setValueAtTime(isAccent ? 1.9 : 1.25, now);
 
     // Sustained Mid-Bass VCA
     const midGain = ctx.createGain();
-    const midPeak = isAccent ? vel * 0.52 : vel * 0.38;
+    const midPeak = isAccent ? vel * 0.54 : vel * 0.38;
     midGain.gain.setValueAtTime(0.001, now);
-    midGain.gain.linearRampToValueAtTime(midPeak, now + 0.006);
+    midGain.gain.linearRampToValueAtTime(midPeak, now + 0.005);
     midGain.gain.linearRampToValueAtTime(midPeak * 0.75, holdEnd);
     midGain.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.99);
 
@@ -149,12 +189,14 @@ class TekuInstruments {
     const stopTime = now + dur + 0.02;
     subSine.start(now);
     subTri.start(now);
+    punchOsc.start(now);
     saw1.start(now);
     saw2.start(now);
     pulse.start(now);
 
     subSine.stop(stopTime);
     subTri.stop(stopTime);
+    punchOsc.stop(now + 0.10);
     saw1.stop(stopTime);
     saw2.stop(stopTime);
     pulse.stop(stopTime);

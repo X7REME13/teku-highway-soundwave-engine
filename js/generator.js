@@ -133,17 +133,18 @@ class TekuGenerator {
     let events = [];
 
     if (archetype === 'teku_ising_signature') {
-      // Extracted directly from Teku-Ising (14s - 35s):
-      // Heavy 3-step sustained root notes with 16th-note syncopated pickups on steps 3, 7, 11, 14, 15
+      // Extracted directly from Teku-Ising intro (0.0s - 35s):
+      // Every quarter-note beat (steps 0, 4, 8, 12 = every 0.44s at 136 BPM) fires the iconic
+      // 225Hz -> 100Hz -> 50Hz Teku Intro Bass-Kick Punch ("La Patada"), followed by 350ms sub sustain!
       events = [
         { step: 0,  len: 3, deg: 0,        oct: 0, accent: true,  slide: false },
-        { step: 3,  len: 1, deg: tension1, oct: 0, accent: true,  slide: true  },
-        { step: 4,  len: 3, deg: 0,        oct: 0, accent: false, slide: false },
-        { step: 7,  len: 1, deg: tension2, oct: 0, accent: true,  slide: true  },
+        { step: 3,  len: 1, deg: tension1, oct: 0, accent: false, slide: true  },
+        { step: 4,  len: 3, deg: 0,        oct: 0, accent: true,  slide: false },
+        { step: 7,  len: 1, deg: tension2, oct: 0, accent: false, slide: true  },
         { step: 8,  len: 3, deg: 0,        oct: 0, accent: true,  slide: false },
-        { step: 11, len: 1, deg: 0,        oct: 1, accent: true,  slide: false },
-        { step: 12, len: 2, deg: 0,        oct: 0, accent: false, slide: false },
-        { step: 14, len: 1, deg: turnNote1, oct: 0, accent: true, slide: false },
+        { step: 11, len: 1, deg: 0,        oct: 1, accent: true,  slide: true  },
+        { step: 12, len: 2, deg: 0,        oct: 0, accent: true,  slide: false },
+        { step: 14, len: 1, deg: turnNote1, oct: 0, accent: false, slide: false },
         { step: 15, len: 1, deg: turnNote2, oct: 0, accent: true, slide: true  }
       ];
     } else if (archetype === 'shirako_big_beat') {
