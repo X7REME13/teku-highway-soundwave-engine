@@ -894,6 +894,7 @@ const btnRunObd = document.getElementById('btn-run-obd');
 const btnRunCalG = document.getElementById('btn-run-cal-g');
 const btnRunExport = document.getElementById('btn-run-export');
 const btnRunFs = document.getElementById('btn-run-fs');
+const btnRunBridge = document.getElementById('btn-run-bridge');
 
 if (btnRunReroll) {
   btnRunReroll.addEventListener('click', () => {
@@ -950,6 +951,15 @@ if (btnRunExport) {
 if (btnRunFs) {
   btnRunFs.addEventListener('click', () => {
     toggleFullscreen();
+  });
+}
+
+if (btnRunBridge) {
+  btnRunBridge.addEventListener('click', () => {
+    if (!engine.isRunning && btnAudio) btnAudio.click();
+    engine.triggerBridgeNow();
+    showHudToast('Trance Bridge Engaged // Pad & Echo Arp', '🌉');
+    log('>>> STOPLIGHT DECK: TRANCE BRIDGE TRIGGERED <<<');
   });
 }
 
