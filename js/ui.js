@@ -384,18 +384,6 @@ if (btnSkinZ31) btnSkinZ31.addEventListener('click', () => switchHudSkin('z31'))
 if (btnSkinS2k) btnSkinS2k.addEventListener('click', () => switchHudSkin('s2k'));
 if (btnSkinLfa) btnSkinLfa.addEventListener('click', () => switchHudSkin('lfa'));
 
-// URL param / hash skin selector for testing and deep-linking
-if (typeof window !== 'undefined' && window.location) {
-  if (window.location.hash === '#c4' || window.location.search.includes('hud=c4')) {
-    switchHudSkin('c4');
-  } else if (window.location.hash === '#z31' || window.location.search.includes('hud=z31')) {
-    switchHudSkin('z31');
-  } else if (window.location.hash === '#s2k' || window.location.search.includes('hud=s2k')) {
-    switchHudSkin('s2k');
-  } else if (window.location.hash === '#lfa' || window.location.search.includes('hud=lfa')) {
-    switchHudSkin('lfa');
-  }
-}
 
 // 1. 1987 Chevrolet Corvette C4 Digital Cluster
 const valC4Spd = document.getElementById('val-c4-spd');
@@ -714,6 +702,39 @@ sliderSpd.addEventListener('input', updateUI);
 sliderTps.addEventListener('input', updateUI);
 sliderG.addEventListener('input', updateUI);
 if (sliderTemp) sliderTemp.addEventListener('input', updateUI);
+
+// URL param / hash skin selector and telemetry preset parser for calibration & deep linking
+if (typeof window !== 'undefined' && window.location) {
+  try {
+    const rawSearch = window.location.search ? window.location.search.substring(1) : '';
+    const rawHash = window.location.hash ? window.location.hash.substring(1) : '';
+    const combined = rawSearch + '&' + rawHash;
+    const qParams = new URLSearchParams(combined);
+
+    if (qParams.has('spd') && sliderSpd) sliderSpd.value = qParams.get('spd');
+    if (qParams.has('rpm') && sliderRpm) sliderRpm.value = qParams.get('rpm');
+    if (qParams.has('tps') && sliderTps) sliderTps.value = qParams.get('tps');
+    if (qParams.has('g') && sliderG) sliderG.value = qParams.get('g');
+    if (qParams.has('temp') && sliderTemp) sliderTemp.value = qParams.get('temp');
+
+    if (rawHash === 'c4' || qParams.get('hud') === 'c4') {
+      switchHudSkin('c4');
+    } else if (rawHash === 'z31' || qParams.get('hud') === 'z31') {
+      switchHudSkin('z31');
+    } else if (rawHash === 's2k' || qParams.get('hud') === 's2k') {
+      switchHudSkin('s2k');
+    } else if (rawHash === 'lfa' || qParams.get('hud') === 'lfa') {
+      switchHudSkin('lfa');
+    } else {
+      updateUI();
+    }
+  } catch (err) {
+    updateUI();
+  }
+} else {
+  updateUI();
+}
+
 
 // Calibration Handler for Vehicle Phone Mount
 function calibrateGZero() {

@@ -202,6 +202,24 @@ const TEKU_TEST_RUNS = [
       { t: 28.0, rpm: 2800, spd: 50, tps: 40,  g: 0.0, temp: 95,  stage: 'RECOVERY // Bus headroom intact, zero distortion artifacts or DAC clipping' },
       { t: 35.0, rpm: 2200, spd: 40, tps: 30,  g: 0.0, temp: 90,  stage: 'STRESS TEST PASSED // Dynamic range and clarity verified' }
     ]
+  },
+  {
+    id: 'synth_speedometer_calibration',
+    name: 'Synth #7: Speedometer & Tachometer Sweep (0–120 km/h, 750–6000 RPM)',
+    category: 'Synthetic Edge Cases',
+    description: 'Stepped calibration sweep (0, 20, 40, 60, 80, 100, 120, 134 km/h) with exact RPM milestones to visually benchmark accuracy across all 5 clusters.',
+    duration: 48.0,
+    keyframes: [
+      { t: 0.0,  rpm: 750,  spd: 0,   tps: 13,  g: 0.0,   temp: 84, stage: 'CALIBRATION 0 KM/H // Stopped at 750 RPM idle, N/P gear, 0 speed bars, 3 tach bars' },
+      { t: 6.0,  rpm: 1500, spd: 20,  tps: 30,  g: 0.01,  temp: 85, stage: 'CALIBRATION 20 KM/H // 1500 RPM, 1st Gear, C4=3 speed / 6 tach bars, Z31=6 cols' },
+      { t: 12.0, rpm: 2200, spd: 40,  tps: 42,  g: 0.0,   temp: 86, stage: 'CALIBRATION 40 KM/H // 2200 RPM, 2nd Gear, C4=7 speed / 9 tach bars, S2K=9 tach bars' },
+      { t: 18.0, rpm: 3000, spd: 60,  tps: 55,  g: 0.0,   temp: 88, stage: 'CALIBRATION 60 KM/H // 3000 RPM, 3rd Gear, legal ceiling, C4=10 speed bars (50%)' },
+      { t: 24.0, rpm: 3800, spd: 80,  tps: 75,  g: 0.05,  temp: 90, stage: 'CALIBRATION 80 KM/H // 3800 RPM, 4th Gear, S2K VTEC ENGAGED, LFA power amber glow' },
+      { t: 30.0, rpm: 4800, spd: 100, tps: 90,  g: 0.0,   temp: 93, stage: 'CALIBRATION 100 KM/H // 4800 RPM, 5th Gear, C4=17 bars, S2K redline start, LFA redline' },
+      { t: 36.0, rpm: 6000, spd: 120, tps: 100, g: 0.0,   temp: 96, stage: 'CALIBRATION 120 KM/H // 6000 RPM, 6th Gear, C4=20 bars (100%), S2K=24 bars max' },
+      { t: 42.0, rpm: 6500, spd: 134, tps: 100, g: 0.0,   temp: 99, stage: 'CALIBRATION 134 KM/H // 6500 RPM, Clio GPS peak speed, all readouts capped clean' },
+      { t: 48.0, rpm: 750,  spd: 0,   tps: 13,  g: 0.0,   temp: 88, stage: 'SWEEP COMPLETE // Stopped at 0 km/h, all cluster scales verified accurate' }
+    ]
   }
 ];
 
