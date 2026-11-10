@@ -18,16 +18,24 @@ class TekuGenerator {
     this.generateNewSession();
   }
 
-  generateNewSession(seed = null) {
+  generateNewSession(seed = null, options = {}) {
     if (seed !== null) this.rng.setSeed(seed);
 
     // Pick Session Key & BPM (Calibrated for midtempo heavy cruising 110-116 BPM)
-    const key = this.rng.pick(TekuTheory.KEYS);
-    const bpm = this.rng.randInt(110, 116);
+    let key = options.key || null;
+    if (!key && options.keyName) {
+      key = TekuTheory.KEYS.find(k => k.name.toLowerCase() === options.keyName.toLowerCase());
+    }
+    if (!key) key = this.rng.pick(TekuTheory.KEYS);
+
+    const bpm = options.bpm || this.rng.randInt(110, 116);
 
     // Pick Riff Archetype & Scale
     const archetypes = ['teku_ising_signature', 'shirako_big_beat', 'accelecharger_tresillo', 'night_drift_303'];
-    const archetype = this.rng.pick(archetypes);
+    const archetype = options.archetype && archetypes.includes(options.archetype)
+      ? options.archetype
+      : this.rng.pick(archetypes);
+
     const progNames = Object.keys(TekuTheory.PROGRESSIONS);
     const progKey = this.rng.pick(progNames);
 
@@ -68,7 +76,9 @@ class TekuGenerator {
       drumsFill: drumsFill,
       turnaroundBass: turnaroundBass,
       turnaroundClimax: turnaroundClimax,
-      mutationCount: 0
+      mutationCount: 0,
+      lastMutation: null,
+      mutationHistory: []
     };
 
     return this.session;
@@ -322,18 +332,39 @@ class TekuGenerator {
 
   /** 8-Bar Evolutionary Mutation: mutates turnaround/pickup intervals while keeping the groove locked */
   mutateSession() {
-    if (!this.session) return;
+    if (!this.session) return null;
     this.session.mutationCount++;
 
-    // Evolve pickup/turnaround degrees on steps 3, 7, 14, 15 without breaking multi-step sustain
+    // Evolve pickup/turnaround degrees on steps 3, 7, 11, 14, 15 without breaking multi-step sustain
     const candidateSteps = [3, 7, 11, 14, 15];
     const targetStep = this.rng.pick(candidateSteps);
     const note = this.session.bassA[targetStep];
+    let mutationRecord = null;
+
     if (note && !note.rest && note.len === 1) {
+      const oldDeg = note.deg;
+      const oldOct = note.oct;
       note.deg = this.rng.pick([0, 1, 3, 7, 10, -2]);
       note.oct = this.rng.chance(0.25) ? 1 : 0;
       note.slide = this.rng.chance(0.50);
+
+      mutationRecord = {
+        mutationIndex: this.session.mutationCount,
+        step: targetStep,
+        oldDeg: oldDeg,
+        newDeg: note.deg,
+        oct: note.oct,
+        slide: note.slide,
+        timestamp: Date.now()
+      };
+
+      this.session.lastMutation = mutationRecord;
+      if (!this.session.mutationHistory) this.session.mutationHistory = [];
+      this.session.mutationHistory.unshift(mutationRecord);
+      if (this.session.mutationHistory.length > 12) this.session.mutationHistory.length = 12;
     }
+
+    return mutationRecord;
   }
 }
 

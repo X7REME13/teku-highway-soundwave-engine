@@ -18,6 +18,10 @@ class TekuArranger {
     this.sectionName = 'GROOVE';
     this.isPendingDrop = false;
     this.dropRiserTriggered = false;
+
+    // Real-time metadata for Music & Sequencer Debug Inspector
+    this.lastStepSnapshot = null;
+    this.eventHistory = [];
   }
 
   /**
@@ -283,6 +287,34 @@ class TekuArranger {
       const cutType = (bar === 8 || bar === 16) ? 'tear' : 'baby_scratch';
       this.instruments.triggerDJScratch(cutType, time);
     }
+
+    // Record events into history for Debug Inspector
+    if (events && events.length > 0) {
+      for (const ev of events) {
+        this.eventHistory.unshift({ event: ev, bar, step, time: Math.round(time * 100) / 100 });
+      }
+      if (this.eventHistory.length > 16) this.eventHistory.length = 16;
+    }
+
+    // Capture Real-Time Step Snapshot for Debug Inspector Matrix
+    this.lastStepSnapshot = {
+      step,
+      bar,
+      time,
+      sectionName: this.sectionName,
+      chordLabel: chord ? chord.label : 'i',
+      rootMidi,
+      isBridgeBar,
+      isBuildUpBar,
+      isClimaxBar,
+      hasBass: Boolean(bassNote && !bassNote.rest),
+      bassNote: bassNote || null,
+      drumNote: drumNote || null,
+      hasArp: Boolean(arpLevel > 0.08 && session.tranceArp && session.tranceArp[step] && !session.tranceArp[step].rest),
+      arpNote: (session.tranceArp && session.tranceArp[step]) || null,
+      hasHook: Boolean(!isBridgeBar && gradients.hook > 0.05 && session.hookMotif && session.hookMotif[step] && !session.hookMotif[step].rest),
+      hookNote: (session.hookMotif && session.hookMotif[step]) || null
+    };
   }
 
   /**
@@ -319,10 +351,10 @@ class TekuArranger {
       this.mixer.delayWet.gain.setTargetAtTime(Math.min(0.68, Math.max(0.08, targetWet)), t, 0.10);
     }
 
-    // 5. Thermal Overdrive on Bass (continuous 2.2 -> 5.5)
-    if (gradients.thermal !== undefined && this.mixer.bassDistortion) {
-      const drive = 2.2 + (gradients.thermal * 3.3);
-      this.mixer.bassDistortion.curve = this.mixer.makeAsymmetricTubeCurve(drive);
+    // 5. Thermal Overdrive on Bass (continuous pre-drive gain modulation, zero curve reallocations)
+    if (this.mixer.bassPreDrive && this.mixer.bassPreDrive.gain && gradients.thermal !== undefined) {
+      const targetDrive = 0.85 + (gradients.thermal * 0.70); // 0.85 -> 1.55x
+      this.mixer.bassPreDrive.gain.setTargetAtTime(targetDrive, t, tc);
     }
   }
 }

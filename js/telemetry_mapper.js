@@ -125,7 +125,9 @@ class TekuTelemetryMapper {
     const isStopped = speed <= 4.0;
     let idleRevFactor = 0.0;
     if (isStopped) {
-      const rpmBlip = Math.max(0.0, Math.min(1.0, (this.smoothed.rpm - 750) / 1800.0));
+      const rpmBlip = (this.smoothed.rpm > 850 && rpm > 850)
+        ? Math.max(0.0, Math.min(1.0, (this.smoothed.rpm - 850) / 1700.0))
+        : 0.0;
       const tpsBlip = effectiveThrottle > 6.0 ? Math.min(1.0, effectiveThrottle / 60.0) : 0.0;
       idleRevFactor = Math.min(1.0, Math.max(rpmBlip, tpsBlip));
       if (idleRevFactor > 0.25 || this.events.includes('THROTTLE_STAB')) {
@@ -153,8 +155,10 @@ class TekuTelemetryMapper {
     if (isWOT || this.events.includes('THROTTLE_STAB')) {
       this.flatOutHold = Math.min(1.0, (this.flatOutHold || 0) + 0.65);
       if (effectiveThrottle >= 90 || throttle >= 85) this.flatOutHold = 1.0;
+    } else if (effectiveThrottle <= 5.0) {
+      this.flatOutHold = 0.0; // Instantly drop flat-out when foot is off the gas
     } else {
-      this.flatOutHold = Math.max(0.0, (this.flatOutHold || 0) * 0.72);
+      this.flatOutHold = Math.max(0.0, (this.flatOutHold || 0) * 0.65);
     }
     this.gradients.flatOut = Math.max(0.0, Math.min(1.0, this.flatOutHold));
 
@@ -218,15 +222,18 @@ class TekuTelemetryMapper {
     // D3. Anti-Fatigue Trance Bridge Gradient
     // Swells smoothly when coasting at speed (low throttle) OR actively decelerating/braking
     const smoothedEff = this.smoothed.effectiveThrottle || 0;
-    const isSmoothCoasting = s >= 14.0 && (smoothedEff <= 8.0 || this.dSpeed < -1.5);
+    const effTps = Math.min(smoothedEff, effectiveThrottle);
+    const isSmoothCoasting = s >= 14.0 && (effTps <= 8.0 || this.dSpeed < -1.5);
     const isDecel = s > 12.0 && this.dSpeed < -2.0;
 
     if (isSmoothCoasting || isDecel || isCoasting) {
-      const throttleFactor = Math.min(1.0, Math.max(0, (12.0 - smoothedEff) / 12.0));
+      const throttleFactor = Math.min(1.0, Math.max(0, (12.0 - effTps) / 12.0));
       const speedFactor = Math.min(1.0, Math.max(0, (s - 12.0) / 24.0));
       const decelFactor = Math.min(1.0, Math.max(0, -this.dSpeed / 8.0));
       const bridgeFactor = Math.max(throttleFactor * speedFactor, decelFactor * 0.85);
-      this.gradients.tranceBridge = Math.min(1.0, (this.gradients.tranceBridge || 0) * 0.70 + Math.max(0.40, bridgeFactor) * 0.30);
+      // Immediate responsive swell when coasting/braking with foot off gas
+      const targetBridge = Math.max(0.45, bridgeFactor);
+      this.gradients.tranceBridge = Math.min(1.0, (this.gradients.tranceBridge || 0) * 0.50 + targetBridge * 0.50);
     } else {
       this.gradients.tranceBridge = Math.max(0.0, (this.gradients.tranceBridge || 0) * 0.70);
     }
@@ -238,7 +245,7 @@ class TekuTelemetryMapper {
     // E. Continuous Drum Lowpass Filter Cutoff Sweep (320 Hz when stopped -> 14,000 Hz at 58-60 km/h)
     // FLAT-OUT ATTACK OVERRIDE: Instant bypass to 14 kHz even at low speeds so floor-down launches rip through!
     // IDLE REV SWELL: When blipping throttle in neutral at 0 km/h, drum cutoff sweeps 320 Hz -> 3120 Hz
-    const speedRatio = Math.min(1.0, Math.max(0, s / 58.0));
+    const speedRatio = s <= 2.5 ? 0.0 : Math.min(1.0, Math.max(0, (s - 2.5) / 55.5));
     const speedCutoff = 320 + Math.pow(speedRatio, 1.25) * (14000 - 320);
     const flatOutCutoff = (this.gradients.flatOut || 0) * 14000;
     const idleRevCutoff = isStopped ? (320 + idleRevFactor * 2800) : 0;

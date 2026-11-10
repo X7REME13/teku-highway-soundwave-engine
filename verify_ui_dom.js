@@ -53,16 +53,20 @@ assert(manifest.display === 'standalone', 'Manifest display mode is "standalone"
 assert(manifest.icons.some(i => i.src.includes('icon-192')), 'Manifest has 192x192 icon');
 assert(manifest.icons.some(i => i.src.includes('icon-512')), 'Manifest has 512x512 icon');
 assert(manifest.icons.some(i => i.purpose === 'maskable'), 'Manifest has maskable icon for Android');
-assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6'), 'Service worker cache key bumped to v2/v3/v4/v5/v6');
+assert(swContent.includes('teku-soundwaves-v2') || swContent.includes('teku-soundwaves-v3') || swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6') || swContent.includes('teku-soundwaves-v7'), 'Service worker cache key bumped to v2/v3/v4/v5/v6/v7');
 assert(swContent.includes('teku-logo.png'), 'Authentic Teku logo cached in Service Worker');
 
-// 4. Retro Digital Cluster HUDs (Corvette C4 & Nissan 300ZX Z31)
-console.log('\nTEST 4: Verifying Retro HUD Clusters (1987 C4 & 1984 Z31):');
+// 4. Retro Digital Cluster HUDs (Corvette C4, Nissan 300ZX Z31, Honda S2000 AP1, Lexus LFA)
+console.log('\nTEST 4: Verifying Retro HUD Clusters (Teku, C4, Z31, S2K, LFA):');
 assert(htmlContent.includes('id="hud-c4"'), 'Corvette C4 container #hud-c4 exists in HTML');
 assert(htmlContent.includes('id="hud-z31"'), 'Nissan 300ZX container #hud-z31 exists in HTML');
+assert(htmlContent.includes('id="hud-s2k"'), 'Honda S2000 AP1 container #hud-s2k exists in HTML');
+assert(htmlContent.includes('id="hud-lfa"'), 'Lexus LFA container #hud-lfa exists in HTML');
 assert(htmlContent.includes('id="btn-skin-c4"'), 'Skin switch button #btn-skin-c4 exists');
 assert(htmlContent.includes('id="btn-skin-z31"'), 'Skin switch button #btn-skin-z31 exists');
 assert(htmlContent.includes('id="btn-skin-teku"'), 'Skin switch button #btn-skin-teku exists');
+assert(htmlContent.includes('id="btn-skin-s2k"'), 'Skin switch button #btn-skin-s2k exists');
+assert(htmlContent.includes('id="btn-skin-lfa"'), 'Skin switch button #btn-skin-lfa exists');
 
 // Verify C4 specific segments
 for (let i = 1; i <= 20; i++) {
@@ -85,6 +89,16 @@ for (let i = 1; i <= 28; i++) {
 for (let i = 1; i <= 10; i++) {
   assert(htmlContent.includes(`zt${i}`), `Z31 coolant ladder segment zt${i} exists`);
 }
+
+// Verify S2K specific segments (24-step F1 tach arc)
+for (let i = 1; i <= 24; i++) {
+  assert(htmlContent.includes(`s2k-${i}`), `S2K tachometer arc segment s2k-${i} exists`);
+}
+
+// Verify LFA elements
+assert(htmlContent.includes('id="lfa-tach-arc"'), 'LFA motorized tachometer arc #lfa-tach-arc exists');
+assert(htmlContent.includes('id="lfa-glow-ring"'), 'LFA outer glow ring #lfa-glow-ring exists');
+assert(htmlContent.includes('id="lfa-g-pip"'), 'LFA G-force radar pip #lfa-g-pip exists');
 
 // 5. Zero-Jitter Numeric Data Locking (Estación Terrena Standard)
 console.log('\nTEST 5: Verifying Estación Terrena Zero-Jitter Layout Locking:');
@@ -110,7 +124,7 @@ assert(htmlContent.includes('id="btn-lab-clear-logs"'), 'Lab clear logs button #
 assert(htmlContent.includes('id="teku-hud-toast"'), 'HUD toast container #teku-hud-toast exists');
 assert(htmlContent.includes('js/telemetry_logger.js'), 'index.html loads js/telemetry_logger.js');
 assert(swContent.includes('js/telemetry_logger.js'), 'Service worker caches js/telemetry_logger.js');
-assert(swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6'), 'Service worker cache bumped to v4/v5/v6');
+assert(swContent.includes('teku-soundwaves-v4') || swContent.includes('teku-soundwaves-v5') || swContent.includes('teku-soundwaves-v6') || swContent.includes('teku-soundwaves-v7'), 'Service worker cache bumped to v4/v5/v6/v7');
 assert(uiJsContent.includes('window.downloadTekuLogs'), 'Exposes window.downloadTekuLogs for console/quick actions');
 
 // Unit test TekuTelemetryLogger
@@ -166,7 +180,46 @@ assert(htmlContent.includes('.c4-reserve-badge.coasting'), 'CSS includes .c4-res
 assert(uiJsContent.includes('COASTING // ${spd} KM/H'), 'ui.js formats dedicated COASTING badge with speed');
 assert(uiJsContent.includes('NEUTRAL REV // ${rpm} RPM'), 'ui.js formats dedicated NEUTRAL REV badge with RPM');
 assert(uiJsContent.includes('COASTING // DRIFT'), 'Z31 HUD reflects coasting state');
-assert(swContent.includes('teku-soundwaves-v6'), 'Service Worker cache bumped to v6 for seamless client update');
+assert(swContent.includes('teku-soundwaves-v6') || swContent.includes('teku-soundwaves-v7'), 'Service Worker cache bumped to v6/v7 for seamless client update');
+
+// 10. Dual-View Mode (RUN vs DEBUG), Stoplight Deck, Run Simulator & Music Debug Inspector
+console.log('\nTEST 10: Verifying Dual-View Mode, Stoplight Deck, Run Simulator & Music Inspector:');
+assert(htmlContent.includes('id="btn-view-run"'), 'RUN View toggle #btn-view-run exists');
+assert(htmlContent.includes('id="btn-view-debug"'), 'DEBUG View toggle #btn-view-debug exists');
+assert(htmlContent.includes('id="run-stoplight-deck"'), 'Stoplight action deck #run-stoplight-deck exists in RUN view');
+assert(htmlContent.includes('id="btn-run-reroll"'), 'Stoplight button #btn-run-reroll exists');
+assert(htmlContent.includes('id="btn-run-stomp"'), 'Stoplight button #btn-run-stomp exists');
+assert(htmlContent.includes('id="btn-run-obd"'), 'Stoplight button #btn-run-obd exists');
+assert(htmlContent.includes('id="btn-run-cal-g"'), 'Stoplight button #btn-run-cal-g exists');
+assert(htmlContent.includes('id="btn-run-export"'), 'Stoplight button #btn-run-export exists');
+assert(htmlContent.includes('id="select-test-run"'), 'Run Simulator scenario selector #select-test-run exists');
+assert(htmlContent.includes('id="sim-scrubber"'), 'Run Simulator interactive scrubber #sim-scrubber exists');
+assert(htmlContent.includes('id="btn-import-log"'), 'Run Simulator log file import button #btn-import-log exists');
+assert(htmlContent.includes('id="debug-music-inspector"'), 'Music & Sequencer Debug Inspector #debug-music-inspector exists');
+assert(htmlContent.includes('id="input-custom-seed"'), 'Custom seed text input #input-custom-seed exists');
+assert(htmlContent.includes('id="btn-apply-seed"'), 'Apply seed button #btn-apply-seed exists');
+assert(htmlContent.includes('id="btn-lock-seed"'), 'Seed lock toggle button #btn-lock-seed exists');
+assert(htmlContent.includes('id="select-archetype"'), 'Archetype dropdown selector #select-archetype exists');
+assert(htmlContent.includes('id="sequencer-matrix-table"'), '16-step sequencer matrix table #sequencer-matrix-table exists');
+assert(htmlContent.includes('id="val-headroom-peak"'), 'Headroom peak dBFS readout #val-headroom-peak exists');
+assert(htmlContent.includes('id="val-headroom-rms"'), 'Headroom RMS dBFS readout #val-headroom-rms exists');
+assert(htmlContent.includes('id="led-clip-indicator"'), 'Clipping warning LED #led-clip-indicator exists');
+
+// 11. UI Controller Wiring (ui.js)
+console.log('\nTEST 11: Verifying UI Controller Wiring in js/ui.js:');
+assert(uiJsContent.includes('updateS2KHUD'), 'ui.js defines updateS2KHUD for Honda S2000 cluster');
+assert(uiJsContent.includes('updateLFAHUD'), 'ui.js defines updateLFAHUD for Lexus LFA cluster');
+assert(uiJsContent.includes("switchHudSkin('s2k')"), 'ui.js supports switching to s2k skin');
+assert(uiJsContent.includes("switchHudSkin('lfa')"), 'ui.js supports switching to lfa skin');
+assert(uiJsContent.includes('btnRunReroll'), 'ui.js attaches listener to #btn-run-reroll');
+assert(uiJsContent.includes('btnRunStomp'), 'ui.js attaches listener to #btn-run-stomp');
+assert(uiJsContent.includes('btnRunObd'), 'ui.js attaches listener to #btn-run-obd');
+assert(uiJsContent.includes('btnRunCalG'), 'ui.js attaches listener to #btn-run-cal-g');
+assert(uiJsContent.includes('btnRunExport'), 'ui.js attaches listener to #btn-run-export');
+assert(uiJsContent.includes('new TekuTestRunner'), 'ui.js instantiates TekuTestRunner bench engine');
+assert(uiJsContent.includes('updateMusicInspectorUI'), 'ui.js defines updateMusicInspectorUI for matrix and headroom meters');
+assert(uiJsContent.includes('getAudioLevels'), 'ui.js polls getAudioLevels for headroom and clipping monitoring');
+
 
 console.log('\n====================================================');
 if (failed === 0) {

@@ -86,9 +86,9 @@ class TekuInstruments {
     subFilter.frequency.exponentialRampToValueAtTime(120, now + 0.080);
     subFilter.Q.setValueAtTime(0.85, now);
 
-    // TRUE SUSTAINED SUB ADSR ENVELOPE (Hard -1.8dB chest impact transient -> deep sustained hold)
+    // TRUE SUSTAINED SUB ADSR ENVELOPE (Calibrated for -6 dBFS headroom with warm fundamental)
     const subGain = ctx.createGain();
-    const subPeak = Math.min(1.62, isAccent ? vel * 1.68 : vel * 1.42);
+    const subPeak = Math.min(0.78, isAccent ? vel * 0.82 : vel * 0.70);
     const subSustain = subPeak * 0.82;
     const holdEnd = now + dur * 0.84;
     subGain.gain.setValueAtTime(0.001, now);
@@ -111,7 +111,7 @@ class TekuInstruments {
     punchOsc.frequency.exponentialRampToValueAtTime(102, now + 0.036);
     punchOsc.frequency.exponentialRampToValueAtTime(subEndFreq, now + 0.082);
 
-    const punchAmt = (isAccent ? 0.95 : (hasSlide ? 0.25 : 0.62)) * vel;
+    const punchAmt = (isAccent ? 0.48 : (hasSlide ? 0.18 : 0.32)) * vel;
     punchGain.gain.setValueAtTime(0.001, now);
     punchGain.gain.linearRampToValueAtTime(punchAmt, now + 0.003);
     punchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.090);
@@ -184,7 +184,7 @@ class TekuInstruments {
 
     // Sustained Mid-Bass VCA
     const midGain = ctx.createGain();
-    const midPeak = isAccent ? vel * 0.54 : vel * 0.38;
+    const midPeak = isAccent ? vel * 0.32 : vel * 0.22;
     midGain.gain.setValueAtTime(0.001, now);
     midGain.gain.linearRampToValueAtTime(midPeak, now + 0.005);
     midGain.gain.linearRampToValueAtTime(midPeak * 0.75, holdEnd);
@@ -386,14 +386,16 @@ class TekuInstruments {
     padFilter.Q.setValueAtTime(1.4, now);
 
     const padGain = ctx.createGain();
-    const peak = vel * 0.14; // Balanced across 5 voices
+    const peak = vel * 0.11; // Balanced across 5 voices for clean stereo pad headroom
     padGain.gain.setValueAtTime(0.001, now);
     padGain.gain.linearRampToValueAtTime(peak, now + Math.min(0.25, dur * 0.25)); // Breathing Trance swell attack
     padGain.gain.linearRampToValueAtTime(peak * 0.85, now + dur * 0.78);
     padGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
     padFilter.connect(padGain);
-    if (this.mixer.tranceBus) {
+    if (this.mixer.padBus) {
+      padGain.connect(this.mixer.padBus);
+    } else if (this.mixer.tranceBus) {
       padGain.connect(this.mixer.tranceBus);
     } else {
       padGain.connect(this.mixer.stabBus);
@@ -440,8 +442,8 @@ class TekuInstruments {
     osc.frequency.exponentialRampToValueAtTime(52, now + 0.038);
     osc.frequency.exponentialRampToValueAtTime(44, now + 0.26);
 
-    gain.gain.setValueAtTime(vel * 1.25, now);
-    gain.gain.linearRampToValueAtTime(vel * 0.95, now + 0.06);
+    gain.gain.setValueAtTime(vel * 0.85, now);
+    gain.gain.linearRampToValueAtTime(vel * 0.68, now + 0.06);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
 
     // 2. Beater Click Transient (Punchy mid-snap at 950 Hz)
@@ -451,7 +453,7 @@ class TekuInstruments {
     clickOsc.frequency.setValueAtTime(920, now);
     clickOsc.frequency.exponentialRampToValueAtTime(120, now + 0.018);
 
-    clickGain.gain.setValueAtTime(vel * 0.55, now);
+    clickGain.gain.setValueAtTime(vel * 0.35, now);
     clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
 
     osc.connect(gain);
@@ -479,7 +481,7 @@ class TekuInstruments {
     osc.frequency.setValueAtTime(210, now);
     osc.frequency.exponentialRampToValueAtTime(105, now + 0.065);
 
-    oscGain.gain.setValueAtTime(vel * 0.85, now);
+    oscGain.gain.setValueAtTime(vel * 0.60, now);
     oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     osc.connect(oscGain);
 
@@ -500,7 +502,7 @@ class TekuInstruments {
     filter.Q.setValueAtTime(1.4, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(vel * 0.95, now);
+    noiseGain.gain.setValueAtTime(vel * 0.65, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
 
     noise.connect(filter);
@@ -516,7 +518,7 @@ class TekuInstruments {
   }
 
   triggerGhostSnare(time) {
-    this.triggerSnare(time, 0.28);
+    this.triggerSnare(time, 0.22);
   }
 
   triggerHat(time, isOpen = false, isAccent = false) {
@@ -537,7 +539,7 @@ class TekuInstruments {
     filter.frequency.setValueAtTime(isOpen ? 6400 : 8200, now);
 
     const gain = ctx.createGain();
-    const vol = isAccent ? 0.34 : (isOpen ? 0.30 : 0.16);
+    const vol = isAccent ? 0.22 : (isOpen ? 0.20 : 0.11);
     gain.gain.setValueAtTime(vol, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
@@ -633,7 +635,7 @@ class TekuInstruments {
       filter.Q.setValueAtTime(3.6, now);
 
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.24 * vel, now);
+      gain.gain.setValueAtTime(0.18 * vel, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
 
       osc.connect(filter);
@@ -740,7 +742,7 @@ class TekuInstruments {
     boomOsc.frequency.setValueAtTime(88, now);
     boomOsc.frequency.exponentialRampToValueAtTime(36, now + 0.22);
 
-    boomGain.gain.setValueAtTime(1.4, now);
+    boomGain.gain.setValueAtTime(0.92, now);
     boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
 
     boomOsc.connect(boomGain);

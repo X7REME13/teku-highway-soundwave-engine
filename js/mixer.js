@@ -13,9 +13,9 @@ class TekuMixer {
   initBuses() {
     const ctx = this.ctx;
 
-    // --- 1. MASTER BUS & GLUE COMPRESSION ---
+    // --- 1. MASTER BUS & TWO-STAGE DYNAMICS (Glue Compressor + Brickwall Limiter) ---
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.setValueAtTime(0.85, ctx.currentTime);
+    this.masterGain.gain.setValueAtTime(0.80, ctx.currentTime);
 
     // Car Audio Stereo Panner (fed by lateral G)
     if (ctx.createStereoPanner) {
@@ -25,15 +25,23 @@ class TekuMixer {
       this.panner = ctx.createGain(); // Fallback
     }
 
-    // Master Glue Compressor (protects car amplifiers while letting deep sub-bass breathe)
+    // Stage 1: Warm Glue Compressor (-12 dBFS threshold, 3:1 ratio, smooth 15ms attack)
     this.compressor = ctx.createDynamicsCompressor();
-    this.compressor.threshold.setValueAtTime(-7, ctx.currentTime);
-    this.compressor.knee.setValueAtTime(6, ctx.currentTime);
-    this.compressor.ratio.setValueAtTime(2.4, ctx.currentTime);
-    this.compressor.attack.setValueAtTime(0.035, ctx.currentTime); // 35ms allows full 45-75Hz sub wave punch
-    this.compressor.release.setValueAtTime(0.18, ctx.currentTime);
+    this.compressor.threshold.setValueAtTime(-12, ctx.currentTime);
+    this.compressor.knee.setValueAtTime(10, ctx.currentTime);
+    this.compressor.ratio.setValueAtTime(3.0, ctx.currentTime);
+    this.compressor.attack.setValueAtTime(0.015, ctx.currentTime);
+    this.compressor.release.setValueAtTime(0.16, ctx.currentTime);
 
-    // High-Resolution FFT Analyser for 30-Band 1/3-Octave Teku Equalizer
+    // Stage 2: True Peak Brickwall Limiter (-1.2 dBFS ceiling, 20:1 ratio, 1ms attack)
+    this.limiter = ctx.createDynamicsCompressor();
+    this.limiter.threshold.setValueAtTime(-1.2, ctx.currentTime);
+    this.limiter.knee.setValueAtTime(0, ctx.currentTime);
+    this.limiter.ratio.setValueAtTime(20.0, ctx.currentTime);
+    this.limiter.attack.setValueAtTime(0.001, ctx.currentTime);
+    this.limiter.release.setValueAtTime(0.050, ctx.currentTime);
+
+    // High-Resolution FFT Analyser for 30-Band 1/3-Octave Teku Equalizer & Headroom Meter
     this.analyser = ctx.createAnalyser();
     this.analyser.fftSize = 4096;
     this.analyser.smoothingTimeConstant = 0.78;
@@ -42,11 +50,20 @@ class TekuMixer {
       this.analyser.maxDecibels = -10;
     }
 
+    // Time-domain buffer for RMS & Peak dBFS measurement
+    this._timeDataBuffer = new Float32Array(512);
+
+    // Master routing chain: MasterGain -> Glue Compressor -> Limiter -> Analyser -> Output
     this.masterGain.connect(this.compressor);
-    this.compressor.connect(this.analyser);
+    this.compressor.connect(this.limiter);
+    this.limiter.connect(this.analyser);
     this.analyser.connect(ctx.destination);
 
-    // --- 2. BASS BUS ARCHITECTURE (Parallel Sub-Bass & Saturated Mid-Bass) ---
+    // --- 2. PRE-COMPUTED STATIC SATURATION CURVES (Zero dynamic allocations during playback) ---
+    this.staticTubeCurve = this.makeAsymmetricTubeCurve(3.0);
+    this.staticMildCurve = this.makeAsymmetricTubeCurve(1.6);
+
+    // --- 3. BASS BUS ARCHITECTURE (Subsonic HPF + Parallel Clean Sub & Warm Mid-Bass) ---
     this.bassBus = ctx.createGain();
     this.bassBus.gain.setValueAtTime(1.0, ctx.currentTime);
 
@@ -54,34 +71,49 @@ class TekuMixer {
     this.bassSidechainGain = ctx.createGain();
     this.bassSidechainGain.gain.setValueAtTime(1.0, ctx.currentTime);
 
-    // A. Dedicated Sub-Bass Bus: Pure, massive, clean sine foundation
-    this.subBassBus = ctx.createGain();
-    this.subBassBus.gain.setValueAtTime(1.35, ctx.currentTime); // +2.6dB dedicated sub boost!
+    // Subsonic 30 Hz High-Pass Filter (removes DC offset and inaudible speaker-straining rumble)
+    this.subHpf = ctx.createBiquadFilter();
+    this.subHpf.type = 'highpass';
+    this.subHpf.frequency.setValueAtTime(30, ctx.currentTime);
+    this.subHpf.Q.setValueAtTime(0.707, ctx.currentTime);
 
-    // B. Mid-Bass Bus: Receives tube distortion and saturation
+    // Dedicated Sub-Bass Bus: Pure, clean sine foundation calibrated for -6 dBFS headroom
+    this.subBassBus = ctx.createGain();
+    this.subBassBus.gain.setValueAtTime(0.88, ctx.currentTime);
+
+    // Mid-Bass Pre-Drive, Static Tube Distortion, and Post-Trim
     this.midBassBus = ctx.createGain();
-    this.midBassBus.gain.setValueAtTime(0.75, ctx.currentTime);
+    this.midBassBus.gain.setValueAtTime(0.68, ctx.currentTime);
+
+    this.bassPreDrive = ctx.createGain();
+    this.bassPreDrive.gain.setValueAtTime(1.0, ctx.currentTime);
 
     this.bassDistortion = ctx.createWaveShaper();
-    this.bassDistortion.curve = this.makeAsymmetricTubeCurve(3.2);
+    this.bassDistortion.curve = this.staticTubeCurve;
     this.bassDistortion.oversample = '4x';
 
-    // Route Sub directly into Sidechain Ducking (uncompromised clean sine power, no square-wave clipping)
-    this.subBassBus.connect(this.bassSidechainGain);
+    this.bassPostTrim = ctx.createGain();
+    this.bassPostTrim.gain.setValueAtTime(0.85, ctx.currentTime);
 
-    // Route Mid through Tube Distortion into Sidechain Ducking
-    this.midBassBus.connect(this.bassDistortion);
-    this.bassDistortion.connect(this.bassSidechainGain);
+    // Route Sub through Subsonic HPF into Sidechain Ducking
+    this.subBassBus.connect(this.subHpf);
+    this.subHpf.connect(this.bassSidechainGain);
+
+    // Route Mid through PreDrive -> Static Tube -> PostTrim -> Sidechain Ducking
+    this.midBassBus.connect(this.bassPreDrive);
+    this.bassPreDrive.connect(this.bassDistortion);
+    this.bassDistortion.connect(this.bassPostTrim);
+    this.bassPostTrim.connect(this.bassSidechainGain);
 
     // Route legacy bassBus into midBassBus for backward compatibility
     this.bassBus.connect(this.midBassBus);
 
-    // Bass connects directly to masterGain (bypassing panner so sub stays rock-solid mono!)
+    // Bass connects directly to masterGain (bypassing panner so sub stays rock-solid mono)
     this.bassSidechainGain.connect(this.masterGain);
 
-    // --- 3. DRUM BUS ---
+    // --- 4. DRUM BUS ---
     this.drumBus = ctx.createGain();
-    this.drumBus.gain.setValueAtTime(1.0, ctx.currentTime);
+    this.drumBus.gain.setValueAtTime(0.82, ctx.currentTime);
 
     this.drumFilter = ctx.createBiquadFilter();
     this.drumFilter.type = 'lowpass';
@@ -90,29 +122,40 @@ class TekuMixer {
     this.drumBus.connect(this.drumFilter);
     this.drumFilter.connect(this.panner);
 
-    // --- 4. STAB BUS ---
+    // --- 5. STAB & TRANCE LEAD BUS (Monophonic/Lead Distortion Path) ---
     this.stabBus = ctx.createGain();
-    this.stabBus.gain.setValueAtTime(0.75, ctx.currentTime);
+    this.stabBus.gain.setValueAtTime(0.65, ctx.currentTime);
 
-    // --- 4B. TRANCE & UPPER MADNESS BUS (With Dotted-16th Stereo Echo Delay) ---
     this.tranceBus = ctx.createGain();
-    this.tranceBus.gain.setValueAtTime(0.85, ctx.currentTime);
+    this.tranceBus.gain.setValueAtTime(0.70, ctx.currentTime);
 
-    // Sizzling Thermal Overdrive for Synth Leads, Pads & Stabs ("Spicy Mix")
+    this.synthPreDrive = ctx.createGain();
+    this.synthPreDrive.gain.setValueAtTime(1.0, ctx.currentTime);
+
     this.synthDistortion = ctx.createWaveShaper();
-    this.synthDistortion.curve = this.makeAsymmetricTubeCurve(1.2);
+    this.synthDistortion.curve = this.staticMildCurve;
     this.synthDistortion.oversample = '2x';
 
-    this.tranceBus.connect(this.synthDistortion);
-    this.stabBus.connect(this.synthDistortion);
-    this.synthDistortion.connect(this.panner);
+    this.synthPostTrim = ctx.createGain();
+    this.synthPostTrim.gain.setValueAtTime(0.85, ctx.currentTime);
+
+    this.tranceBus.connect(this.synthPreDrive);
+    this.stabBus.connect(this.synthPreDrive);
+    this.synthPreDrive.connect(this.synthDistortion);
+    this.synthDistortion.connect(this.synthPostTrim);
+    this.synthPostTrim.connect(this.panner);
+
+    // --- 6. DEDICATED CLEAN STEREO PAD BUS (Bypasses distortion to eliminate polyphonic IMD) ---
+    this.padBus = ctx.createGain();
+    this.padBus.gain.setValueAtTime(0.62, ctx.currentTime);
+    this.padBus.connect(this.panner);
 
     if (ctx.createDelay) {
       this.delayNode = ctx.createDelay(1.0);
       this.delayNode.delayTime.setValueAtTime(0.40, ctx.currentTime); // Dotted 16th at 112 BPM
 
       this.delayFeedback = ctx.createGain();
-      this.delayFeedback.gain.setValueAtTime(0.38, ctx.currentTime);
+      this.delayFeedback.gain.setValueAtTime(0.35, ctx.currentTime);
 
       this.delayFilter = ctx.createBiquadFilter();
       this.delayFilter.type = 'bandpass';
@@ -120,10 +163,12 @@ class TekuMixer {
       this.delayFilter.Q.setValueAtTime(0.7, ctx.currentTime);
 
       this.delayWet = ctx.createGain();
-      this.delayWet.gain.setValueAtTime(0.36, ctx.currentTime);
+      this.delayWet.gain.setValueAtTime(0.32, ctx.currentTime);
 
-      // Route shaped synth signal into delay line
-      this.synthDistortion.connect(this.delayNode);
+      // Route shaped synth signal and clean pad into delay line
+      this.synthPostTrim.connect(this.delayNode);
+      this.padBus.connect(this.delayNode);
+
       this.delayNode.connect(this.delayFilter);
       this.delayFilter.connect(this.delayFeedback);
       this.delayFeedback.connect(this.delayNode);
@@ -131,9 +176,9 @@ class TekuMixer {
       this.delayWet.connect(this.panner);
     }
 
-    // --- 5. FX BUS ---
+    // --- 7. FX BUS ---
     this.fxBus = ctx.createGain();
-    this.fxBus.gain.setValueAtTime(0.85, ctx.currentTime);
+    this.fxBus.gain.setValueAtTime(0.75, ctx.currentTime);
     this.fxBus.connect(this.panner);
 
     // Route Panner to Master
@@ -147,7 +192,7 @@ class TekuMixer {
     const t = time || this.ctx.currentTime;
     const gainParam = this.bassSidechainGain.gain;
     gainParam.cancelScheduledValues(t);
-    gainParam.setValueAtTime(0.22, t); // Quick duck (-13 dB dip for punchy kick impact)
+    gainParam.setValueAtTime(0.25, t); // Quick duck (-12 dB dip for punchy kick impact)
     gainParam.exponentialRampToValueAtTime(1.0, t + 0.11); // Smooth 110ms release
   }
 
@@ -170,62 +215,69 @@ class TekuMixer {
 
   /**
    * Modulate Bass & Synth Saturation + Delay Reverb by Engine Coolant Temp (°C)
-   * Cold (<65°C): Clean digital tone (1.6x-2.2x sub), dry reverb (0.10 wet)
-   * Warm (65-92°C): Optimal analog warmth (3.4x sub, 1.4x lead, 0.36 wet)
-   * Hot (>92°C): Sizzling spicy mix (up to 5.8x sub overdrive, 4.4x lead saturation, 0.52 wet)
+   * Modulates smooth PreDrive & PostTrim GainNodes (ZERO curve reallocations during audio playback)
    */
   updateThermalState(temp, gradients = null) {
-    // 1. Modulate Bass Distortion
-    if (this.bassDistortion) {
-      let bassDrive = 3.4;
+    const t = this.ctx.currentTime;
+    const tc = 0.08; // 80ms smooth time constant
+
+    // 1. Modulate Bass PreDrive & PostTrim
+    if (this.bassPreDrive && this.bassPreDrive.gain && this.bassPreDrive.gain.setTargetAtTime) {
+      let preDrive = 1.0;
+      let postTrim = 0.85;
       if (temp < 50) {
-        bassDrive = 1.6 + Math.max(0, (temp - 20) / 30.0) * 0.8;
+        preDrive = 0.70;
+        postTrim = 0.95;
       } else if (temp > 95) {
         const ratio = Math.min(1.0, (temp - 95.0) / 10.0);
-        bassDrive = 3.8 + ratio * 2.0; // 3.8 -> 5.8x
+        preDrive = 1.15 + ratio * 0.45; // 1.15x -> 1.60x drive
+        postTrim = 0.80 - ratio * 0.15; // compensate volume
       } else {
         const ratio = (temp - 50.0) / 45.0;
-        bassDrive = 2.4 + ratio * 1.4; // 2.4 -> 3.8x
+        preDrive = 0.80 + ratio * 0.35;
+        postTrim = 0.90 - ratio * 0.05;
       }
-      this.bassDistortion.curve = this.makeAsymmetricTubeCurve(bassDrive);
+      this.bassPreDrive.gain.setTargetAtTime(preDrive, t, tc);
+      if (this.bassPostTrim && this.bassPostTrim.gain) {
+        this.bassPostTrim.gain.setTargetAtTime(postTrim, t, tc);
+      }
     }
 
-    // 2. Modulate Synth Lead / Pad Saturation ("Spicy Mix")
-    if (this.synthDistortion) {
-      let synthDrive = 1.2;
+    // 2. Modulate Synth Lead Saturation PreDrive
+    if (this.synthPreDrive && this.synthPreDrive.gain && this.synthPreDrive.gain.setTargetAtTime) {
+      let synthDrive = 0.90;
       if (temp < 65) {
-        synthDrive = 1.0; // Clean linear pass
+        synthDrive = 0.75;
       } else if (temp > 92) {
         const spicyRatio = Math.min(1.0, (temp - 92.0) / 13.0);
-        synthDrive = 1.4 + spicyRatio * 3.0; // 1.4 -> 4.4x sizzling lead saturation!
+        synthDrive = 1.0 + spicyRatio * 0.50; // 1.0 -> 1.5x sizzling drive
       } else {
         const warmRatio = (temp - 65.0) / 27.0;
-        synthDrive = 1.0 + warmRatio * 0.4; // 1.0 -> 1.4x
+        synthDrive = 0.85 + warmRatio * 0.20;
       }
-      this.synthDistortion.curve = this.makeAsymmetricTubeCurve(synthDrive);
+      this.synthPreDrive.gain.setTargetAtTime(synthDrive, t, tc);
     }
 
     // 3. Modulate Delay Wetness & Feedback
-    const t = this.ctx.currentTime;
     if (this.delayWet && this.delayWet.gain && this.delayWet.gain.setTargetAtTime) {
-      let targetWet = 0.36;
+      let targetWet = 0.32;
       if (temp < 65) {
         const coldRatio = Math.max(0, (temp - 20) / 45.0);
-        targetWet = 0.10 + coldRatio * 0.24; // 0.10 -> 0.34
+        targetWet = 0.10 + coldRatio * 0.20;
       } else if (temp > 92) {
         const hotRatio = Math.min(1.0, (temp - 92.0) / 13.0);
-        targetWet = 0.36 + hotRatio * 0.16; // 0.36 -> 0.52
+        targetWet = 0.32 + hotRatio * 0.16;
       }
       this.delayWet.gain.setTargetAtTime(targetWet, t, 0.12);
     }
 
     if (this.delayFeedback && this.delayFeedback.gain && this.delayFeedback.gain.setTargetAtTime) {
-      let targetFeedback = 0.38;
+      let targetFeedback = 0.35;
       if (temp < 65) {
         targetFeedback = 0.18;
       } else if (temp > 92) {
         const hotRatio = Math.min(1.0, (temp - 92.0) / 13.0);
-        targetFeedback = 0.38 + hotRatio * 0.10;
+        targetFeedback = 0.35 + hotRatio * 0.10;
       }
       this.delayFeedback.gain.setTargetAtTime(targetFeedback, t, 0.12);
     }
@@ -233,6 +285,61 @@ class TekuMixer {
 
   updateThermalDistortion(temp) {
     this.updateThermalState(temp);
+  }
+
+  /**
+   * Real-time Audio Headroom & Telemetry Monitor
+   * Returns current RMS dBFS, Peak dBFS, Limiter Reduction dB, and clipping status
+   */
+  getAudioLevels() {
+    if (!this.analyser) {
+      return { rmsDb: -90, peakDb: -90, reductionDb: 0, isClipping: false };
+    }
+
+    if (!this._timeDataBuffer || this._timeDataBuffer.length !== this.analyser.fftSize) {
+      this._timeDataBuffer = new Float32Array(this.analyser.fftSize);
+    }
+
+    if (this.analyser.getFloatTimeDomainData) {
+      this.analyser.getFloatTimeDomainData(this._timeDataBuffer);
+    } else {
+      // Fallback for older WebAudio implementations
+      const uintBuf = new Uint8Array(this.analyser.fftSize);
+      this.analyser.getByteTimeDomainData(uintBuf);
+      for (let i = 0; i < uintBuf.length; i++) {
+        this._timeDataBuffer[i] = (uintBuf[i] - 128) / 128.0;
+      }
+    }
+
+    let sumSq = 0;
+    let peakAbs = 0;
+    const len = this._timeDataBuffer.length;
+    for (let i = 0; i < len; i++) {
+      const v = Math.abs(this._timeDataBuffer[i]);
+      if (v > peakAbs) peakAbs = v;
+      sumSq += v * v;
+    }
+
+    const rms = Math.sqrt(sumSq / Math.max(1, len));
+    const rmsDb = rms > 0.00001 ? Math.max(-90, 20 * Math.log10(rms)) : -90;
+    const peakDb = peakAbs > 0.00001 ? Math.max(-90, 20 * Math.log10(peakAbs)) : -90;
+
+    // DynamicsCompressor reduction is negative dB (e.g. -2.5 dB)
+    let reductionDb = 0;
+    if (this.limiter && typeof this.limiter.reduction === 'number') {
+      reductionDb = this.limiter.reduction;
+    } else if (this.compressor && typeof this.compressor.reduction === 'number') {
+      reductionDb = this.compressor.reduction;
+    }
+
+    const isClipping = peakDb >= -0.2;
+
+    return {
+      rmsDb: Math.round(rmsDb * 10) / 10,
+      peakDb: Math.round(peakDb * 10) / 10,
+      reductionDb: Math.round(reductionDb * 10) / 10,
+      isClipping: isClipping
+    };
   }
 
   /**

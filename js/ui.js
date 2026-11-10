@@ -299,9 +299,11 @@ function updateUI() {
     }
   }
 
-  // Update Retro Digital Clusters (1987 Corvette C4 & 1984 Nissan 300ZX Z31)
+  // Update Retro & JDM Digital Clusters (Teku Canopy, Corvette C4, Nissan Z31, Honda S2K, Lexus LFA)
   updateC4HUD(spd, rpm, tps, g, temp, st);
   updateZ31HUD(spd, rpm, tps, g, temp, st);
+  updateS2KHUD(spd, rpm, tps, g, temp, st);
+  updateLFAHUD(spd, rpm, tps, g, temp, st);
 
   // Record simulation/manual telemetry when OBD hardware is not connected
   if (logger && (!obd || !obd.isConnected)) {
@@ -344,13 +346,17 @@ function updateShiftLights(rpm) {
 // RETRO DIGITAL CLUSTER CONTROLLERS: 1987 C4 & 1984 Z31
 // ============================================================
 
-// Skin Switcher DOM Selectors
+// Skin Switcher DOM Selectors (5 Clusters: Teku, C4, Z31, S2K, LFA)
 const btnSkinTeku = document.getElementById('btn-skin-teku');
 const btnSkinC4 = document.getElementById('btn-skin-c4');
 const btnSkinZ31 = document.getElementById('btn-skin-z31');
+const btnSkinS2k = document.getElementById('btn-skin-s2k');
+const btnSkinLfa = document.getElementById('btn-skin-lfa');
 const hudTeku = document.getElementById('hud-teku');
 const hudC4 = document.getElementById('hud-c4');
 const hudZ31 = document.getElementById('hud-z31');
+const hudS2k = document.getElementById('hud-s2k');
+const hudLfa = document.getElementById('hud-lfa');
 
 let currentSkin = 'teku';
 
@@ -359,10 +365,14 @@ function switchHudSkin(skin) {
   if (hudTeku) hudTeku.style.display = (skin === 'teku') ? 'block' : 'none';
   if (hudC4) hudC4.style.display = (skin === 'c4') ? 'block' : 'none';
   if (hudZ31) hudZ31.style.display = (skin === 'z31') ? 'block' : 'none';
+  if (hudS2k) hudS2k.style.display = (skin === 's2k') ? 'block' : 'none';
+  if (hudLfa) hudLfa.style.display = (skin === 'lfa') ? 'block' : 'none';
 
   if (btnSkinTeku) btnSkinTeku.classList.toggle('active', skin === 'teku');
   if (btnSkinC4) btnSkinC4.classList.toggle('active', skin === 'c4');
   if (btnSkinZ31) btnSkinZ31.classList.toggle('active', skin === 'z31');
+  if (btnSkinS2k) btnSkinS2k.classList.toggle('active', skin === 's2k');
+  if (btnSkinLfa) btnSkinLfa.classList.toggle('active', skin === 'lfa');
 
   log(`[HUD] Active Cluster Skin: ${skin.toUpperCase()}`);
   updateUI();
@@ -371,6 +381,8 @@ function switchHudSkin(skin) {
 if (btnSkinTeku) btnSkinTeku.addEventListener('click', () => switchHudSkin('teku'));
 if (btnSkinC4) btnSkinC4.addEventListener('click', () => switchHudSkin('c4'));
 if (btnSkinZ31) btnSkinZ31.addEventListener('click', () => switchHudSkin('z31'));
+if (btnSkinS2k) btnSkinS2k.addEventListener('click', () => switchHudSkin('s2k'));
+if (btnSkinLfa) btnSkinLfa.addEventListener('click', () => switchHudSkin('lfa'));
 
 // URL param / hash skin selector for testing and deep-linking
 if (typeof window !== 'undefined' && window.location) {
@@ -378,6 +390,10 @@ if (typeof window !== 'undefined' && window.location) {
     switchHudSkin('c4');
   } else if (window.location.hash === '#z31' || window.location.search.includes('hud=z31')) {
     switchHudSkin('z31');
+  } else if (window.location.hash === '#s2k' || window.location.search.includes('hud=s2k')) {
+    switchHudSkin('s2k');
+  } else if (window.location.hash === '#lfa' || window.location.search.includes('hud=lfa')) {
+    switchHudSkin('lfa');
   }
 }
 
@@ -536,6 +552,162 @@ function updateZ31HUD(spd, rpm, tps, g, temp, st) {
   }
 }
 
+// 3. 1999 Honda S2000 AP1 F1 Digital Cluster
+const valS2kSpd = document.getElementById('val-s2k-spd');
+const valS2kGear = document.getElementById('val-s2k-gear');
+const valS2kTemp = document.getElementById('val-s2k-temp');
+const valS2kTps = document.getElementById('val-s2k-tps');
+const valS2kTrip = document.getElementById('val-s2k-trip');
+const valS2kG = document.getElementById('val-s2k-g');
+const valS2kBpm = document.getElementById('val-s2k-bpm');
+const s2kVtecLight = document.getElementById('s2k-vtec-light');
+
+const s2kTachBars = Array.from({ length: 24 }, (_, i) => document.querySelector(`#s2k-tach-ladder .s2k-${i + 1}`));
+const s2kTempBars = Array.from({ length: 8 }, (_, i) => document.querySelector(`#s2k-temp-ladder .st${i + 1}`));
+const s2kTpsBars = Array.from({ length: 8 }, (_, i) => document.querySelector(`#s2k-tps-ladder .sf${i + 1}`));
+
+let s2kTripAccum = 0.0;
+let s2kLastTripTime = Date.now();
+
+function updateS2KHUD(spd, rpm, tps, g, temp, st) {
+  if (!hudS2k || hudS2k.style.display === 'none') return;
+
+  if (valS2kSpd) valS2kSpd.textContent = spd;
+  if (valS2kTemp) valS2kTemp.textContent = `${temp.toFixed(0)}°C`;
+  if (valS2kTps) valS2kTps.textContent = `${Math.round(tps)}%`;
+  if (valS2kG) valS2kG.textContent = `${Math.abs(g).toFixed(2)} G`;
+  if (valS2kBpm) valS2kBpm.textContent = `${Math.round(engine.bpm || 112)} BPM`;
+
+  // Trip odometer calculation
+  const now = Date.now();
+  const dtHours = Math.max(0, (now - s2kLastTripTime) / 3600000.0);
+  s2kLastTripTime = now;
+  if (spd > 0) s2kTripAccum += spd * dtHours;
+  if (valS2kTrip) valS2kTrip.textContent = `${s2kTripAccum.toFixed(1)} KM`;
+
+  // Gear Calculation for S2000 6-Speed
+  let gear = 'N';
+  if (spd <= 0 && rpm <= 850) gear = 'N';
+  else if (spd < 20) gear = '1';
+  else if (spd < 36) gear = '2';
+  else if (spd < 52) gear = '3';
+  else if (spd < 68) gear = '4';
+  else if (spd < 85) gear = '5';
+  else gear = '6';
+  if (valS2kGear) valS2kGear.textContent = gear;
+
+  // 24-Segment F1 Sweeping Tachometer Arc (calibrated to 0-6000 RPM)
+  const numTach = Math.min(24, Math.max(0, Math.round((rpm / 6000) * 24)));
+  for (let i = 0; i < 24; i++) {
+    if (s2kTachBars[i]) s2kTachBars[i].classList.toggle('lit', i < numTach);
+  }
+
+  // 8-Segment Coolant Ladder (40°C - 110°C)
+  const numTemp = Math.min(8, Math.max(1, Math.round(((temp - 40) / 70) * 8)));
+  for (let i = 0; i < 8; i++) {
+    if (s2kTempBars[i]) s2kTempBars[i].classList.toggle('lit', i < numTemp);
+  }
+
+  // 8-Segment Throttle Ladder (0% - 100%)
+  const numTps = Math.min(8, Math.max(0, Math.round((tps / 100) * 8)));
+  for (let i = 0; i < 8; i++) {
+    if (s2kTpsBars[i]) s2kTpsBars[i].classList.toggle('lit', i < numTps);
+  }
+
+  // VTEC Indicator Light (Engages at >3200 RPM or aggressive throttle stomp)
+  const isVtec = (rpm >= 3200) || (tps > 75 && rpm > 2600) || Boolean(st?.gradients?.flatOut > 0.3);
+  if (s2kVtecLight) {
+    s2kVtecLight.classList.toggle('lit', isVtec);
+    s2kVtecLight.textContent = isVtec ? '⚡ VTEC ENGAGED' : 'VTEC DORMANT';
+  }
+}
+
+// 4. 2010 Lexus LFA / Cyber-Apex Motorized Tach Ring
+const valLfaSpd = document.getElementById('val-lfa-spd');
+const valLfaGear = document.getElementById('val-lfa-gear');
+const valLfaRpm = document.getElementById('val-lfa-rpm');
+const valLfaTemp = document.getElementById('val-lfa-temp');
+const valLfaTps = document.getElementById('val-lfa-tps');
+const valLfaG = document.getElementById('val-lfa-g');
+const valLfaMode = document.getElementById('val-lfa-mode');
+const lfaTempFill = document.getElementById('lfa-temp-fill');
+const lfaTpsFill = document.getElementById('lfa-tps-fill');
+const lfaTachArc = document.getElementById('lfa-tach-arc');
+const lfaGlowRing = document.getElementById('lfa-glow-ring');
+const lfaGPip = document.getElementById('lfa-g-pip');
+
+function updateLFAHUD(spd, rpm, tps, g, temp, st) {
+  if (!hudLfa || hudLfa.style.display === 'none') return;
+
+  if (valLfaSpd) valLfaSpd.textContent = spd;
+  if (valLfaRpm) valLfaRpm.textContent = rpm;
+  if (valLfaTemp) valLfaTemp.textContent = `${temp.toFixed(0)}°C`;
+  if (valLfaTps) valLfaTps.textContent = `${Math.round(tps)}%`;
+  if (valLfaG) valLfaG.textContent = Math.abs(g).toFixed(2);
+
+  // LFA Sequential ASG Gearbox
+  let gear = 'N';
+  if (spd <= 0 && rpm <= 850) gear = 'N';
+  else if (spd < 22) gear = '1';
+  else if (spd < 40) gear = '2';
+  else if (spd < 58) gear = '3';
+  else if (spd < 76) gear = '4';
+  else if (spd < 96) gear = '5';
+  else gear = '6';
+  if (valLfaGear) valLfaGear.textContent = gear;
+
+  // Coolant & Throttle Fill Gauges
+  if (lfaTempFill) {
+    const tempPct = Math.min(100, Math.max(5, ((temp - 40) / 70) * 100));
+    lfaTempFill.style.width = `${tempPct}%`;
+  }
+  if (lfaTpsFill) {
+    lfaTpsFill.style.width = `${Math.min(100, tps)}%`;
+  }
+
+  // Motorized Tach Ring: SVG circumference is ~741px (r = 118)
+  // Scale sweeps 80% of ring (593px) from 0 to 6000 RPM
+  const frac = Math.min(1.0, Math.max(0.0, rpm / 6000.0));
+  const dashOffset = Math.round(741 - (frac * 741 * 0.8));
+  if (lfaTachArc) {
+    lfaTachArc.style.strokeDashoffset = dashOffset;
+    if (rpm >= 4500) {
+      lfaTachArc.style.stroke = '#ff0055';
+    } else if (rpm >= 3000) {
+      lfaTachArc.style.stroke = '#ffaa00';
+    } else {
+      lfaTachArc.style.stroke = 'var(--teku-cyan)';
+    }
+  }
+
+  // Outer Glow Ring Color Shifting
+  if (lfaGlowRing) {
+    lfaGlowRing.classList.toggle('power', rpm >= 2800 && rpm < 4500);
+    lfaGlowRing.classList.toggle('redline', rpm >= 4500);
+  }
+
+  // G-Force Radar Crosshair Pip
+  if (lfaGPip) {
+    const leftPct = Math.min(90, Math.max(10, 50 + (g / 0.5) * 40));
+    lfaGPip.style.left = `${leftPct}%`;
+  }
+
+  // Drive Mode Tag
+  const events = (st && st.events) ? st.events : [];
+  const isCoasting = events.includes('COASTING') || ((st?.gradients?.tranceBridge || 0) > 0.35 && spd >= 14);
+  if (valLfaMode) {
+    if (isCoasting) {
+      valLfaMode.textContent = 'COASTING';
+    } else if (st?.energy > 0.65 || tps >= 75) {
+      valLfaMode.textContent = 'TRACK // APEX';
+    } else if (spd > 35) {
+      valLfaMode.textContent = 'SPORT';
+    } else {
+      valLfaMode.textContent = 'NORMAL';
+    }
+  }
+}
+
 // Slider Listeners
 sliderRpm.addEventListener('input', updateUI);
 sliderSpd.addEventListener('input', updateUI);
@@ -607,7 +779,9 @@ if (btnRerollSeed) {
   });
 }
 
-// Multi-View Switcher (Cockpit HUD vs Motorola Razr Flex vs Demo & Sim Lab)
+// Multi-View Switcher (Dual-View: RUN View vs DEBUG Lab, plus Motorola Razr Flex)
+const btnViewRun = document.getElementById('btn-view-run');
+const btnViewDebug = document.getElementById('btn-view-debug');
 const tabCockpit = document.getElementById('tab-cockpit');
 const tabRazr = document.getElementById('tab-razr');
 const tabDemo = document.getElementById('tab-demo');
@@ -618,8 +792,13 @@ const btnBackCockpit = document.getElementById('btn-back-cockpit');
 let currentView = 'cockpit';
 
 function switchView(target) {
-  currentView = target;
-  if (target === 'demo') {
+  const norm = (target === 'run' || target === 'cockpit') ? 'cockpit' : ((target === 'debug' || target === 'demo') ? 'demo' : target);
+  currentView = norm;
+
+  if (btnViewRun) btnViewRun.classList.toggle('active', norm === 'cockpit');
+  if (btnViewDebug) btnViewDebug.classList.toggle('active', norm === 'demo');
+
+  if (norm === 'demo') {
     if (viewCockpit) {
       viewCockpit.style.display = 'none';
       viewCockpit.classList.remove('razr-flex-active');
@@ -628,7 +807,8 @@ function switchView(target) {
     if (tabCockpit) tabCockpit.classList.remove('active');
     if (tabRazr) tabRazr.classList.remove('active');
     if (tabDemo) tabDemo.classList.add('active');
-  } else if (target === 'razr') {
+    log('[VIEW] Active Mode: DEBUG LAB & BENCH TESTING WORKSTATION');
+  } else if (norm === 'razr') {
     if (viewCockpit) {
       viewCockpit.style.display = 'flex';
       viewCockpit.classList.add('razr-flex-active');
@@ -639,7 +819,7 @@ function switchView(target) {
     if (tabDemo) tabDemo.classList.remove('active');
     log('Motorola Razr Flex Mode engaged: Upper Eye-Level HUD + Lower Dash Touch Deck');
   } else {
-    // Standard Cockpit HUD
+    // Standard RUN Cockpit Dashboard
     if (viewCockpit) {
       viewCockpit.style.display = 'flex';
       viewCockpit.classList.remove('razr-flex-active');
@@ -648,9 +828,12 @@ function switchView(target) {
     if (tabCockpit) tabCockpit.classList.add('active');
     if (tabRazr) tabRazr.classList.remove('active');
     if (tabDemo) tabDemo.classList.remove('active');
+    log('[VIEW] Active Mode: RUN COCKPIT DASHBOARD');
   }
 }
 
+if (btnViewRun) btnViewRun.addEventListener('click', () => switchView('cockpit'));
+if (btnViewDebug) btnViewDebug.addEventListener('click', () => switchView('demo'));
 if (tabCockpit) tabCockpit.addEventListener('click', () => switchView('cockpit'));
 if (tabRazr) tabRazr.addEventListener('click', () => switchView('razr'));
 if (tabDemo) tabDemo.addEventListener('click', () => switchView('demo'));
@@ -674,9 +857,79 @@ if (typeof window !== 'undefined' && window.matchMedia) {
 if (typeof window !== 'undefined' && window.location) {
   if (window.location.hash === '#razr' || window.location.search.includes('view=razr')) {
     switchView('razr');
-  } else if (window.location.hash === '#demo' || window.location.search.includes('view=demo')) {
+  } else if (window.location.hash === '#demo' || window.location.hash === '#debug' || window.location.search.includes('view=demo') || window.location.search.includes('view=debug')) {
     switchView('demo');
+  } else if (window.location.hash === '#run' || window.location.search.includes('view=run')) {
+    switchView('cockpit');
   }
+}
+
+// ============================================================
+// STOPLIGHT QUICK ACTION DECK (RUN VIEW // LARGE TOUCH BUTTONS)
+// ============================================================
+const btnRunReroll = document.getElementById('btn-run-reroll');
+const btnRunStomp = document.getElementById('btn-run-stomp');
+const btnRunObd = document.getElementById('btn-run-obd');
+const btnRunCalG = document.getElementById('btn-run-cal-g');
+const btnRunExport = document.getElementById('btn-run-export');
+const btnRunFs = document.getElementById('btn-run-fs');
+
+if (btnRunReroll) {
+  btnRunReroll.addEventListener('click', () => {
+    engine.setSeed(null);
+    if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
+    if (typeof updateMusicInspectorUI === 'function') updateMusicInspectorUI();
+    showHudToast('Track Seed Rerolled', '🎲');
+    log(`>>> Rerolled Session: ${formatSessionTag()} <<<`);
+  });
+}
+
+if (btnRunStomp) {
+  btnRunStomp.addEventListener('click', () => {
+    if (!engine.isRunning && btnAudio) btnAudio.click();
+    sliderSpd.value = 58;
+    sliderRpm.value = 3800;
+    sliderTps.value = 100;
+    updateUI();
+    if (engine.telemetryMapper && typeof engine.telemetryMapper.triggerAttackStomp === 'function') {
+      engine.telemetryMapper.triggerAttackStomp();
+    }
+    showHudToast('Full Throttle Stomp Engaged', '🔥');
+    log('>>> STOPLIGHT DECK: THROTTLE STOMP TRIGGERED <<<');
+  });
+}
+
+if (btnRunObd) {
+  btnRunObd.addEventListener('click', () => {
+    if (btnBluetooth) {
+      btnBluetooth.click();
+    } else if (obd) {
+      obd.connect();
+    }
+  });
+}
+
+if (btnRunCalG) {
+  btnRunCalG.addEventListener('click', () => {
+    calibrateGZero();
+  });
+}
+
+if (btnRunExport) {
+  btnRunExport.addEventListener('click', () => {
+    if (typeof window.downloadTekuLogs === 'function') {
+      window.downloadTekuLogs('csv');
+    } else {
+      const btnDownload = document.getElementById('btn-download-logs') || document.getElementById('btn-lab-download-csv');
+      if (btnDownload) btnDownload.click();
+    }
+  });
+}
+
+if (btnRunFs) {
+  btnRunFs.addEventListener('click', () => {
+    toggleFullscreen();
+  });
 }
 
 // Test Trance Bridge (Puente Atmosférico -> Snare Build-up -> Apex Drop)
@@ -1258,7 +1511,396 @@ btnReplay.addEventListener('click', () => {
   }, updateIntervalMs);
 });
 
-// Periodic Sequencer Bar & Chord Status Polling
+// =========================================================================
+// RUN SIMULATOR & OFFLINE BENCH TESTING SUITE (TEKU TEST RUNNER)
+// =========================================================================
+const selectTestRun = document.getElementById('select-test-run');
+const btnImportLog = document.getElementById('btn-import-log');
+const inputImportLog = document.getElementById('input-import-log');
+const btnSimPlay = document.getElementById('btn-sim-play');
+const btnSimStop = document.getElementById('btn-sim-stop');
+const btnSimLoop = document.getElementById('btn-sim-loop');
+const simScrubber = document.getElementById('sim-scrubber');
+const simTimeText = document.getElementById('sim-time-text');
+const simStageBanner = document.getElementById('sim-stage-banner');
+
+let testRunner = null;
+if (typeof TekuTestRunner !== 'undefined') {
+  testRunner = new TekuTestRunner(engine);
+}
+
+// Populate Scenario Selector Dropdown
+if (selectTestRun && typeof TEKU_TEST_RUNS !== 'undefined') {
+  selectTestRun.innerHTML = '';
+  let curCategory = '';
+  let curGroup = null;
+
+  TEKU_TEST_RUNS.forEach((run) => {
+    if (run.category !== curCategory) {
+      curCategory = run.category;
+      curGroup = document.createElement('optgroup');
+      curGroup.label = curCategory;
+      selectTestRun.appendChild(curGroup);
+    }
+    const opt = document.createElement('option');
+    opt.value = run.id;
+    opt.textContent = `${run.name}`;
+    (curGroup || selectTestRun).appendChild(opt);
+  });
+
+  // Handle Scenario Selection
+  selectTestRun.addEventListener('change', () => {
+    if (!testRunner) return;
+    const scenario = testRunner.loadScenario(selectTestRun.value);
+    if (scenario && simScrubber && simTimeText && simStageBanner) {
+      simScrubber.max = scenario.duration;
+      simScrubber.value = 0;
+      simTimeText.textContent = `0.0s / ${scenario.duration.toFixed(1)}s`;
+      simStageBanner.textContent = scenario.keyframes[0]?.stage || 'READY';
+      log(`[SIM] Loaded scenario: ${scenario.name}`);
+    }
+  });
+
+  // Set initial scenario
+  if (testRunner && TEKU_TEST_RUNS.length > 0) {
+    const initRun = testRunner.loadScenario(TEKU_TEST_RUNS[0].id);
+    if (initRun && simScrubber && simTimeText) {
+      simScrubber.max = initRun.duration;
+      simTimeText.textContent = `0.0s / ${initRun.duration.toFixed(1)}s`;
+    }
+  }
+}
+
+// Transport Controls: Play/Pause, Stop, Loop
+if (btnSimPlay) {
+  btnSimPlay.addEventListener('click', () => {
+    if (!testRunner) return;
+    if (testRunner.isPlaying) {
+      testRunner.pause();
+    } else {
+      if (!engine.isRunning && btnAudio) btnAudio.click();
+      testRunner.play();
+    }
+  });
+}
+
+if (btnSimStop) {
+  btnSimStop.addEventListener('click', () => {
+    if (testRunner) testRunner.stop();
+  });
+}
+
+if (btnSimLoop) {
+  btnSimLoop.addEventListener('click', () => {
+    if (!testRunner) return;
+    testRunner.setLoop(!testRunner.isLooping);
+    btnSimLoop.classList.toggle('active', testRunner.isLooping);
+  });
+}
+
+// Speed Multiplier Pills (0.5x, 1x, 2x, 4x)
+const simSpeedButtons = document.querySelectorAll('.btn-sim-speed');
+simSpeedButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    simSpeedButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const spd = parseFloat(btn.dataset.speed) || 1.0;
+    if (testRunner) testRunner.setSpeed(spd);
+  });
+});
+
+// Interactive Timeline Scrubber
+if (simScrubber) {
+  simScrubber.addEventListener('input', () => {
+    if (!testRunner) return;
+    testRunner.seek(parseFloat(simScrubber.value));
+  });
+}
+
+// Log File Importer (CSV / JSON)
+if (btnImportLog && inputImportLog) {
+  btnImportLog.addEventListener('click', () => inputImportLog.click());
+
+  inputImportLog.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const content = evt.target.result;
+      try {
+        let imported = null;
+        if (file.name.endsWith('.json')) {
+          imported = parseJsonTelemetryLog(content);
+        } else {
+          imported = parseCsvTelemetryLog(content);
+        }
+
+        if (imported && testRunner) {
+          testRunner.loadScenario(imported);
+          if (selectTestRun) {
+            const opt = document.createElement('option');
+            opt.value = imported.id;
+            opt.textContent = `📁 ${imported.name}`;
+            opt.selected = true;
+            selectTestRun.insertBefore(opt, selectTestRun.firstChild);
+          }
+          if (simScrubber) simScrubber.max = imported.duration;
+          if (simTimeText) simTimeText.textContent = `0.0s / ${imported.duration.toFixed(1)}s`;
+          if (simStageBanner) simStageBanner.textContent = `IMPORTED // ${imported.keyframes.length} frames ready`;
+          showHudToast(`Imported ${imported.name}`, '📁');
+          log(`[SIM] Successfully imported custom telemetry log: ${file.name} (${imported.duration.toFixed(1)}s)`);
+        }
+      } catch (err) {
+        showHudToast('Failed to parse log file', '⚠️');
+        log(`[SIM ERROR] Could not import log file: ${err.message}`);
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+// Connect TekuTestRunner State Updates to UI Sliders and Cockpit
+if (testRunner) {
+  testRunner.addListener((state) => {
+    // Update Sliders
+    sliderRpm.value = state.rpm;
+    sliderSpd.value = state.spd;
+    sliderTps.value = state.tps;
+    sliderG.value = state.g.toFixed(2);
+    if (sliderTemp) sliderTemp.value = state.temp;
+
+    // Update Transport UI
+    if (simScrubber) simScrubber.value = state.currentTime;
+    if (simTimeText) simTimeText.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
+    if (simStageBanner && state.stage) simStageBanner.textContent = state.stage;
+    if (btnSimPlay) btnSimPlay.textContent = state.isPlaying ? '⏸ PAUSE' : '▶ PLAY';
+
+    // Backwards Compatibility for Replay HUD elements
+    if (replayStageName && state.stage) replayStageName.textContent = state.stage;
+    if (replayTimeLabel) replayTimeLabel.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
+    if (replayProgressFill) replayProgressFill.style.width = `${state.progress * 100.0}%`;
+
+    // Apply Telemetry to Cockpit Gauges
+    updateUI();
+  });
+}
+
+// =========================================================================
+// MUSIC & SEQUENCER DEBUG INSPECTOR CONTROLLER
+// =========================================================================
+const inputCustomSeed = document.getElementById('input-custom-seed');
+const btnApplySeed = document.getElementById('btn-apply-seed');
+const btnLockSeed = document.getElementById('btn-lock-seed');
+const selectArchetype = document.getElementById('select-archetype');
+const selectKey = document.getElementById('select-key');
+const debugSectionName = document.getElementById('debug-section-name');
+const macroBarChips = Array.from(document.querySelectorAll('#macro-bar-strip .macro-bar-chip'));
+const valMutationCount = document.getElementById('val-mutation-count');
+const badgeLastMutation = document.getElementById('badge-last-mutation');
+const btnMutateNow = document.getElementById('btn-mutate-now');
+
+const valHeadroomPeak = document.getElementById('val-headroom-peak');
+const barHeadroomPeak = document.getElementById('bar-headroom-peak');
+const valHeadroomRms = document.getElementById('val-headroom-rms');
+const barHeadroomRms = document.getElementById('bar-headroom-rms');
+const valLimiterReduction = document.getElementById('val-limiter-reduction');
+const barLimiterReduction = document.getElementById('bar-limiter-reduction');
+const ledClipIndicator = document.getElementById('led-clip-indicator');
+
+let isSeedLocked = false;
+
+// 1. Initialize Sequencer Matrix 16-Step Grid Cells
+const matrixRows = {
+  bass: document.getElementById('matrix-row-bass'),
+  drums: document.getElementById('matrix-row-drums'),
+  hook: document.getElementById('matrix-row-hook'),
+  arp: document.getElementById('matrix-row-arp'),
+  fx: document.getElementById('matrix-row-fx')
+};
+
+const matrixCells = { bass: [], drums: [], hook: [], arp: [], fx: [] };
+
+Object.keys(matrixRows).forEach((trackKey) => {
+  const row = matrixRows[trackKey];
+  if (!row) return;
+  while (row.children.length > 1) {
+    row.removeChild(row.lastChild);
+  }
+  for (let s = 0; s < 16; s++) {
+    const td = document.createElement('td');
+    td.className = 'matrix-step-cell';
+    td.dataset.step = s;
+    row.appendChild(td);
+    matrixCells[trackKey].push(td);
+  }
+});
+
+// Seed Apply & Lock Handlers
+if (btnApplySeed && inputCustomSeed) {
+  btnApplySeed.addEventListener('click', () => {
+    const seed = inputCustomSeed.value.trim();
+    if (seed) {
+      engine.setSeed(seed);
+      if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
+      updateMusicInspectorUI();
+      showHudToast(`Loaded Seed: ${seed}`, '🎹');
+    }
+  });
+}
+
+if (btnLockSeed) {
+  btnLockSeed.addEventListener('click', () => {
+    isSeedLocked = !isSeedLocked;
+    btnLockSeed.textContent = isSeedLocked ? '🔒 LOCKED' : '🔓 UNLOCKED';
+    btnLockSeed.classList.toggle('active', isSeedLocked);
+    showHudToast(isSeedLocked ? 'Seed Locked (Rerolls Blocked)' : 'Seed Unlocked', '🔒');
+  });
+}
+
+// Archetype & Key Center Overrides
+if (selectArchetype) {
+  selectArchetype.addEventListener('change', () => {
+    const curSeed = engine.generator.sessionSeed;
+    engine.setSeed(curSeed, { archetype: selectArchetype.value });
+    if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
+    updateMusicInspectorUI();
+    showHudToast(`Archetype: ${selectArchetype.options[selectArchetype.selectedIndex].text}`, '⚡');
+  });
+}
+
+if (selectKey) {
+  selectKey.addEventListener('change', () => {
+    const curSeed = engine.generator.sessionSeed;
+    const keyVal = selectKey.value === 'auto' ? null : selectKey.value;
+    engine.setSeed(curSeed, { key: keyVal });
+    if (labelSessionSeed) labelSessionSeed.textContent = formatSessionTag();
+    updateMusicInspectorUI();
+    showHudToast(`Key: ${selectKey.value}`, '🎵');
+  });
+}
+
+// Evolutionary Pattern Mutation Trigger
+if (btnMutateNow) {
+  btnMutateNow.addEventListener('click', () => {
+    if (engine.generator && typeof engine.generator.mutateSession === 'function') {
+      const mut = engine.generator.mutateSession();
+      if (valMutationCount) valMutationCount.textContent = engine.generator.mutationCount || 0;
+      if (badgeLastMutation) badgeLastMutation.textContent = mut ? mut.type.toUpperCase() : 'MUTATED';
+      updateMusicInspectorUI();
+      showHudToast(`Pattern Mutated: ${mut ? mut.type : 'Evolution'}`, '⚡');
+    }
+  });
+}
+
+/**
+ * Updates the live 16-Step Matrix, 16-Bar Macro Strip, and Dynamics Meters
+ */
+function updateMusicInspectorUI() {
+  const session = engine.generator?.session;
+  if (!session) return;
+
+  // Sync Input Seed (if user is not actively typing)
+  if (inputCustomSeed && document.activeElement !== inputCustomSeed) {
+    inputCustomSeed.value = engine.generator.sessionSeed || '';
+  }
+
+  // Sync Macro Progression Bar
+  const curBar = (engine.arranger && engine.arranger.currentBar) ? engine.arranger.currentBar : 1;
+  const barIdx = (curBar - 1) % 16;
+  macroBarChips.forEach((chip, idx) => {
+    chip.classList.toggle('active', idx === barIdx);
+  });
+
+  if (debugSectionName) {
+    debugSectionName.textContent = (engine.arranger && engine.arranger.sectionName) ? engine.arranger.sectionName : 'GROOVE';
+  }
+  if (labelChord) {
+    const chord = session.progression ? session.progression[barIdx] : null;
+    labelChord.textContent = `${session.key?.name || 'G MINOR'} // ${chord ? chord.label : 'i'}`;
+  }
+
+  // Update Mutation Count
+  if (valMutationCount) valMutationCount.textContent = engine.generator.mutationCount || 0;
+  if (badgeLastMutation && engine.generator.lastMutation) {
+    badgeLastMutation.textContent = engine.generator.lastMutation.type.toUpperCase();
+  }
+
+  // Live 16-Step Sequencer Matrix Grid (Only compute when Demo/Debug view is visible)
+  if (viewDemo && viewDemo.style.display !== 'none') {
+    const snap = engine.arranger?.lastStepSnapshot;
+    const curStep = snap ? snap.step : -1;
+
+    for (let s = 0; s < 16; s++) {
+      const isCur = s === curStep;
+
+      // Bass Row
+      if (matrixCells.bass[s]) {
+        const hasNote = session.bassRiff && session.bassRiff[s] && !session.bassRiff[s].rest;
+        matrixCells.bass[s].classList.toggle('has-note', Boolean(hasNote));
+        matrixCells.bass[s].classList.toggle('active-step', isCur);
+      }
+
+      // Drums Row
+      if (matrixCells.drums[s]) {
+        const dp = session.drumPattern && session.drumPattern[s];
+        const hasHit = dp && (dp.kick || dp.snare || dp.hat);
+        matrixCells.drums[s].classList.toggle('has-note', Boolean(hasHit));
+        matrixCells.drums[s].classList.toggle('active-step', isCur);
+      }
+
+      // Hook Row
+      if (matrixCells.hook[s]) {
+        const hasHook = session.hookMotif && session.hookMotif[s] && !session.hookMotif[s].rest;
+        matrixCells.hook[s].classList.toggle('has-note', Boolean(hasHook));
+        matrixCells.hook[s].classList.toggle('active-step', isCur);
+      }
+
+      // Trance Arp Row
+      if (matrixCells.arp[s]) {
+        const hasArp = session.tranceArp && session.tranceArp[s] && !session.tranceArp[s].rest;
+        matrixCells.arp[s].classList.toggle('has-note', Boolean(hasArp));
+        matrixCells.arp[s].classList.toggle('active-step', isCur);
+      }
+
+      // FX / Chords Row
+      if (matrixCells.fx[s]) {
+        const hasFx = s === 0 || s === 8 || (barIdx >= 12);
+        matrixCells.fx[s].classList.toggle('has-note', Boolean(hasFx));
+        matrixCells.fx[s].classList.toggle('active-step', isCur);
+      }
+    }
+  }
+
+  // Audio Headroom & Master Dynamics Limiter Meter
+  if (engine.mixer && typeof engine.mixer.getAudioLevels === 'function') {
+    const levels = engine.mixer.getAudioLevels();
+
+    if (valHeadroomPeak) valHeadroomPeak.textContent = `${levels.peakDb.toFixed(1)} dBFS`;
+    if (barHeadroomPeak) {
+      const peakPct = Math.max(0, Math.min(100, ((levels.peakDb + 40) / 40) * 100));
+      barHeadroomPeak.style.width = `${peakPct}%`;
+    }
+
+    if (valHeadroomRms) valHeadroomRms.textContent = `${levels.rmsDb.toFixed(1)} dBFS`;
+    if (barHeadroomRms) {
+      const rmsPct = Math.max(0, Math.min(100, ((levels.rmsDb + 50) / 50) * 100));
+      barHeadroomRms.style.width = `${rmsPct}%`;
+    }
+
+    if (valLimiterReduction) valLimiterReduction.textContent = `${levels.reductionDb.toFixed(1)} dB`;
+    if (barLimiterReduction) {
+      const grPct = Math.max(0, Math.min(100, (levels.reductionDb / 12) * 100));
+      barLimiterReduction.style.width = `${grPct}%`;
+    }
+
+    if (ledClipIndicator) {
+      ledClipIndicator.classList.toggle('active', levels.isClipping);
+    }
+  }
+}
+
+// Periodic Sequencer Bar, Chord Status & Debug Inspector Polling (10 Hz)
 setInterval(() => {
   if (!engine.isRunning) return;
   const bar = engine.bar || 1;
@@ -1273,6 +1915,9 @@ setInterval(() => {
   if (labelChord) {
     labelChord.textContent = `${session.key.name} // ${chord.label}`;
   }
+
+  // Live Inspector Updates
+  updateMusicInspectorUI();
 }, 100);
 
 // =========================================================================
