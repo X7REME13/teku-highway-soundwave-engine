@@ -800,6 +800,80 @@ if (btnRerollSeed) {
   });
 }
 
+// ============================================================
+// MASTER AUDIO VOLUME CONTROLLER (RUN TRACK DECK & DEBUG LAB)
+// ============================================================
+const sliderMasterVol = document.getElementById('slider-master-vol');
+const labelMasterVol = document.getElementById('label-master-vol');
+const btnVolMute = document.getElementById('btn-vol-mute');
+
+const sliderDebugVol = document.getElementById('slider-debug-vol');
+const labelDebugVol = document.getElementById('label-debug-vol');
+const btnDebugVolMute = document.getElementById('btn-debug-vol-mute');
+
+let currentVolumePct = 50;
+let prevUnmutedVolumePct = 50;
+
+try {
+  const savedVol = localStorage.getItem('teku_master_vol');
+  if (savedVol !== null && !isNaN(Number(savedVol))) {
+    currentVolumePct = Math.max(0, Math.min(100, Math.round(Number(savedVol))));
+  }
+} catch (e) {}
+
+function updateVolumeUI(pct, applyToEngine = true) {
+  currentVolumePct = Math.max(0, Math.min(100, Math.round(pct)));
+  if (currentVolumePct > 0) prevUnmutedVolumePct = currentVolumePct;
+
+  const frac = currentVolumePct / 100.0;
+  if (applyToEngine && typeof engine.setMasterVolume === 'function') {
+    engine.setMasterVolume(frac);
+  }
+
+  const volText = `${currentVolumePct}%`;
+  const volIcon = currentVolumePct === 0 ? '🔇' : (currentVolumePct < 50 ? '🔉' : '🔊');
+
+  if (sliderMasterVol) sliderMasterVol.value = currentVolumePct;
+  if (labelMasterVol) labelMasterVol.textContent = volText;
+  if (btnVolMute) btnVolMute.textContent = volIcon;
+
+  if (sliderDebugVol) sliderDebugVol.value = currentVolumePct;
+  if (labelDebugVol) labelDebugVol.textContent = volText;
+  if (btnDebugVolMute) btnDebugVolMute.textContent = volIcon;
+
+  try {
+    localStorage.setItem('teku_master_vol', String(currentVolumePct));
+  } catch (e) {}
+}
+
+function toggleMute() {
+  if (currentVolumePct > 0) {
+    updateVolumeUI(0, true);
+    if (typeof showHudToast === 'function') showHudToast('Audio Muted', '🔇');
+  } else {
+    const target = prevUnmutedVolumePct > 0 ? prevUnmutedVolumePct : 50;
+    updateVolumeUI(target, true);
+    if (typeof showHudToast === 'function') showHudToast(`Volume: ${target}%`, '🔊');
+  }
+}
+
+if (sliderMasterVol) {
+  sliderMasterVol.addEventListener('input', (e) => updateVolumeUI(Number(e.target.value), true));
+}
+if (btnVolMute) {
+  btnVolMute.addEventListener('click', toggleMute);
+}
+
+if (sliderDebugVol) {
+  sliderDebugVol.addEventListener('input', (e) => updateVolumeUI(Number(e.target.value), true));
+}
+if (btnDebugVolMute) {
+  btnDebugVolMute.addEventListener('click', toggleMute);
+}
+
+// Initial volume calibration on script load
+updateVolumeUI(currentVolumePct, true);
+
 // Multi-View Switcher (Dual-View: RUN View vs DEBUG Lab, plus Motorola Razr Flex)
 const btnViewRun = document.getElementById('btn-view-run');
 const btnViewDebug = document.getElementById('btn-view-debug');

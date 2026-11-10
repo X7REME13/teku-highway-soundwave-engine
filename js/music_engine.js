@@ -37,6 +37,7 @@ class TekuMusicEngine {
 
     this.bpm = 112; // Calibrated for midtempo heavy cruising (110-116 BPM)
     this.stepCount = 16;
+    this.userVolume = 0.50; // Calibrated default master volume (clean non-fatiguing headroom)
 
     // Telemetry Cache
     this.latestTelemetry = {
@@ -100,8 +101,9 @@ class TekuMusicEngine {
       if (this.mixer.masterGain.gain.cancelScheduledValues) {
         this.mixer.masterGain.gain.cancelScheduledValues(now);
       }
+      const targetVol = typeof this.userVolume === 'number' ? this.userVolume : 0.50;
       if (this.mixer.masterGain.gain.setValueAtTime) {
-        this.mixer.masterGain.gain.setValueAtTime(0.85, now);
+        this.mixer.masterGain.gain.setValueAtTime(targetVol, now);
       }
     }
 
@@ -141,6 +143,18 @@ class TekuMusicEngine {
         this.mixer.masterGain.gain.setValueAtTime(0.0, now);
       }
     }
+  }
+
+  /**
+   * Set Master Volume (0.0 to 1.0)
+   */
+  setMasterVolume(vol) {
+    const v = Math.max(0.0, Math.min(1.0, Number(vol)));
+    this.userVolume = v;
+    if (this.mixer && typeof this.mixer.setMasterVolume === 'function') {
+      this.mixer.setMasterVolume(this.isRunning ? v : 0.0);
+    }
+    return this.userVolume;
   }
 
   /**

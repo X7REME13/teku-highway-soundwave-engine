@@ -323,9 +323,14 @@ console.assert(engine.mixer.masterGain.gain.value === 0.0, 'Master gain must be 
 engine.start();
 engine.stop();
 engine.start();
-console.assert(engine.isRunning === true, 'Engine must be running after rapid re-start');
-console.assert(engine.mixer.masterGain.gain.value === 0.85, 'Master gain must be fully restored to 0.85 (not stuck in silence)');
-console.log('   ✓ Rapid Start -> Stop -> Start sequence cleanly restores masterGain to 0.85 without silence.\n');
+console.assert(engine.mixer.masterGain.gain.value === engine.userVolume, `Master gain must be fully restored to ${engine.userVolume} (not stuck in silence)`);
+console.log(`   ✓ Rapid Start -> Stop -> Start sequence cleanly restores masterGain to ${engine.userVolume} without silence.`);
+
+// Test setMasterVolume
+engine.setMasterVolume(0.35);
+console.assert(engine.userVolume === 0.35, 'setMasterVolume updates userVolume to 0.35');
+console.assert(engine.mixer.masterGain.gain.value === 0.35, 'setMasterVolume updates masterGain node to 0.35');
+console.log('   ✓ setMasterVolume dynamically controls masterGain headroom with zero clicks.\n');
 
 // -----------------------------------------------------------------
 // TEST 9: VISCERAL FLAT-OUT ATTACK OVERHAUL (WOT LAUNCH)

@@ -251,10 +251,15 @@ assert(htmlContent.includes('.c4-dic-cell .dseg-wrap'), 'C4 DIC digital numbers 
 assert(htmlContent.includes('.teku-track-deck'), 'Teku track deck optimized for mobile portrait view');
 assert(htmlContent.includes('.pwa-mobile-banner'), 'PWA mobile banner scoped for 360px portrait margins');
 assert(htmlContent.includes('.visualizer-container canvas') && htmlContent.includes('155px'), 'Mobile CSS provides 155px canvas height for 30-band visualizer');
-assert(uiJsContent.includes('(NUM_SEGMENTS * segH + (NUM_SEGMENTS - 1) * segGapY) > plotH') || uiJsContent.includes('segGapY = plotH < 90 ? 1 : 2'), 'ui.js dynamically adapts segH and segGapY to plotH');
-
-
-
+assert(uiJsContent.includes('(NUM_SEGMENTS * segH + (NUM_SEGMENTS - 1) * segGapY) > plotH') || uiJsContent.includes('segGapY = plotH < 90 ? 1 : 2'), 'ui.js dynamically adapts segH and segGapY to plotH');// 13. Master Audio Output Volume Controls
+console.log('\nTEST 13: Verifying Master Audio Output Volume Controls:');
+assert(htmlContent.includes('id="slider-master-vol"'), 'Track deck includes #slider-master-vol');
+assert(htmlContent.includes('id="label-master-vol"'), 'Track deck includes #label-master-vol');
+assert(htmlContent.includes('id="btn-vol-mute"'), 'Track deck includes #btn-vol-mute button');
+assert(htmlContent.includes('id="slider-debug-vol"'), 'Debug transport includes #slider-debug-vol');
+assert(htmlContent.includes('.teku-vol-dock'), 'CSS includes .teku-vol-dock styling');
+assert(uiJsContent.includes('engine.setMasterVolume'), 'ui.js calls engine.setMasterVolume on volume changes');
+assert(uiJsContent.includes('teku_master_vol'), 'ui.js persists volume in localStorage (teku_master_vol)');
 
 console.log('\n====================================================');
 if (failed === 0) {

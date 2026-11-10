@@ -1666,6 +1666,87 @@
       box-shadow: 0 0 12px var(--teku-cyan);
     }
 
+    /* TEKU HEAD-UNIT MASTER VOLUME DOCK */
+    .teku-vol-dock {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 4px;
+      padding: 3px 8px;
+      box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .btn-vol-mute {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 2px 3px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease;
+      color: var(--teku-cyan);
+    }
+
+    .btn-vol-mute:hover {
+      transform: scale(1.18);
+    }
+
+    .teku-vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 75px;
+      height: 6px;
+      background: #0a1322;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .teku-vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--teku-cyan);
+      box-shadow: 0 0 8px var(--teku-cyan);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .teku-vol-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #ffffff;
+    }
+
+    .teku-vol-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      border: none;
+      background: var(--teku-cyan);
+      box-shadow: 0 0 8px var(--teku-cyan);
+      cursor: pointer;
+    }
+
+    .teku-vol-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--teku-cyan);
+      min-width: 3.5ch;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
     /* DEMO LAB STYLES */
     .demo-lab-header {
       background: rgba(255, 119, 0, 0.12);
@@ -4620,6 +4701,17 @@
     border-radius: 4px;
     font-size: 0.65rem;
   }
+  .teku-vol-dock {
+    padding: 2px 6px;
+    gap: 4px;
+  }
+  .teku-vol-slider {
+    width: 60px;
+  }
+  .teku-vol-label {
+    font-size: 0.60rem;
+    min-width: 3ch;
+  }
 
   /* Dual-View & Simulator Debug Lab in Mobile Portrait */
   .demo-lab-header {
@@ -5490,6 +5582,11 @@
       <span class="track-title" id="label-session-seed">TEKU-1337 // G MINOR (115 BPM)</span>
       <span class="track-bar-phase" id="label-bar-cycle">BAR 1/16 [GROOVE]</span>
     </div>
+    <div class="teku-vol-dock" title="Master Audio Output Volume">
+      <button class="btn-vol-mute" id="btn-vol-mute" type="button" title="Mute / Unmute Audio">🔊</button>
+      <input type="range" class="teku-vol-slider" id="slider-master-vol" min="0" max="100" value="50" step="1" title="Adjust Master Output Volume" aria-label="Master Volume">
+      <span class="teku-vol-label" id="label-master-vol">50%</span>
+    </div>
     <button id="btn-reroll-seed" style="display: none;" type="button"></button>
   </div>
 </div>
@@ -5535,6 +5632,11 @@
           <button class="btn-sim-transport btn-sim-speed active" data-speed="1.0" type="button">1x</button>
           <button class="btn-sim-transport btn-sim-speed" data-speed="2.0" type="button">2x</button>
           <button class="btn-sim-transport btn-sim-speed" data-speed="4.0" type="button">4x</button>
+        </div>
+        <div class="teku-vol-dock" style="margin-left: auto;" title="Master Audio Output Volume">
+          <button class="btn-vol-mute" id="btn-debug-vol-mute" type="button" title="Mute / Unmute Audio">🔊</button>
+          <input type="range" class="teku-vol-slider" id="slider-debug-vol" min="0" max="100" value="50" step="1" title="Adjust Master Output Volume" aria-label="Master Volume">
+          <span class="teku-vol-label" id="label-debug-vol">50%</span>
         </div>
         <button id="btn-replay" style="display: none;" type="button"></button>
       </div>

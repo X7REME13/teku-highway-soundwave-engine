@@ -15,7 +15,8 @@ class TekuMixer {
 
     // --- 1. MASTER BUS & TWO-STAGE DYNAMICS (Glue Compressor + Brickwall Limiter) ---
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.setValueAtTime(0.80, ctx.currentTime);
+    this.userVolume = 0.50; // Calibrated default master volume (-6 dBFS headroom to prevent harshness)
+    this.masterGain.gain.setValueAtTime(this.userVolume, ctx.currentTime);
 
     // Car Audio Stereo Panner (fed by lateral G)
     if (ctx.createStereoPanner) {
@@ -349,6 +350,26 @@ class TekuMixer {
     if (!this.panner || !this.panner.pan) return;
     const pan = Math.max(-0.85, Math.min(0.85, (g / 0.35) * 0.75));
     this.panner.pan.setTargetAtTime(pan, this.ctx.currentTime, 0.04);
+  }
+
+  /**
+   * Set Master Audio Volume (0.0 to 1.0) with smooth anti-pop gain transition
+   */
+  setMasterVolume(vol) {
+    const v = Math.max(0.0, Math.min(1.0, Number(vol)));
+    this.userVolume = v;
+    if (this.masterGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      if (this.masterGain.gain.cancelScheduledValues) {
+        this.masterGain.gain.cancelScheduledValues(now);
+      }
+      if (this.masterGain.gain.setTargetAtTime) {
+        this.masterGain.gain.setTargetAtTime(v, now, 0.015);
+      } else if (this.masterGain.gain.setValueAtTime) {
+        this.masterGain.gain.setValueAtTime(v, now);
+      }
+    }
+    return this.userVolume;
   }
 }
 
