@@ -1693,28 +1693,33 @@ if (btnImportLog && inputImportLog) {
 
 // Connect TekuTestRunner State Updates to UI Sliders and Cockpit
 if (testRunner) {
-  testRunner.addListener((state) => {
-    // Update Sliders
-    sliderRpm.value = state.rpm;
-    sliderSpd.value = state.spd;
-    sliderTps.value = state.tps;
-    sliderG.value = state.g.toFixed(2);
-    if (sliderTemp) sliderTemp.value = state.temp;
+  const attachListener = typeof testRunner.addListener === 'function'
+    ? testRunner.addListener.bind(testRunner)
+    : (typeof testRunner.onUpdate === 'function' ? testRunner.onUpdate.bind(testRunner) : null);
+  if (attachListener) {
+    attachListener((state) => {
+      // Update Sliders
+      sliderRpm.value = state.rpm;
+      sliderSpd.value = state.spd;
+      sliderTps.value = state.tps;
+      sliderG.value = state.g.toFixed(2);
+      if (sliderTemp) sliderTemp.value = state.temp;
 
-    // Update Transport UI
-    if (simScrubber) simScrubber.value = state.currentTime;
-    if (simTimeText) simTimeText.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
-    if (simStageBanner && state.stage) simStageBanner.textContent = state.stage;
-    if (btnSimPlay) btnSimPlay.textContent = state.isPlaying ? '⏸ PAUSE' : '▶ PLAY';
+      // Update Transport UI
+      if (simScrubber) simScrubber.value = state.currentTime;
+      if (simTimeText) simTimeText.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
+      if (simStageBanner && state.stage) simStageBanner.textContent = state.stage;
+      if (btnSimPlay) btnSimPlay.textContent = state.isPlaying ? '⏸ PAUSE' : '▶ PLAY';
 
-    // Backwards Compatibility for Replay HUD elements
-    if (replayStageName && state.stage) replayStageName.textContent = state.stage;
-    if (replayTimeLabel) replayTimeLabel.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
-    if (replayProgressFill) replayProgressFill.style.width = `${state.progress * 100.0}%`;
+      // Backwards Compatibility for Replay HUD elements
+      if (replayStageName && state.stage) replayStageName.textContent = state.stage;
+      if (replayTimeLabel) replayTimeLabel.textContent = `${state.currentTime.toFixed(1)}s / ${state.duration.toFixed(1)}s`;
+      if (replayProgressFill) replayProgressFill.style.width = `${state.progress * 100.0}%`;
 
-    // Apply Telemetry to Cockpit Gauges
-    updateUI();
-  });
+      // Apply Telemetry to Cockpit Gauges
+      updateUI();
+    });
+  }
 }
 
 // =========================================================================
@@ -2176,8 +2181,16 @@ function drawVisualizer() {
   // 5. Render 30 Segmented LED Columns + Floating Peak-Hold Caps + Bottom Labels
   const gapX = Math.max(2, Math.floor(colStep * 0.20));
   const barW = Math.max(4, colStep - gapX);
-  const segGapY = 2;
-  const segH = Math.max(3, (plotH - (NUM_SEGMENTS - 1) * segGapY) / NUM_SEGMENTS);
+  let segGapY = plotH < 90 ? 1 : 2;
+  let segH = (plotH - (NUM_SEGMENTS - 1) * segGapY) / NUM_SEGMENTS;
+  if (segH < 2 && segGapY > 1) {
+    segGapY = 1;
+    segH = (plotH - (NUM_SEGMENTS - 1) * segGapY) / NUM_SEGMENTS;
+  }
+  segH = Math.max(1, segH);
+  if ((NUM_SEGMENTS * segH + (NUM_SEGMENTS - 1) * segGapY) > plotH) {
+    segH = Math.max(1, (plotH - (NUM_SEGMENTS - 1) * segGapY) / NUM_SEGMENTS);
+  }
 
   ctx.font = '700 8px Orbitron, monospace';
   ctx.textAlign = 'center';

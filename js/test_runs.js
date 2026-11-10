@@ -362,6 +362,17 @@ class TekuTestRunner {
 
   onUpdate(callback) {
     this.listeners.push(callback);
+    return () => {
+      this.listeners = this.listeners.filter(cb => cb !== callback);
+    };
+  }
+
+  addListener(callback) {
+    return this.onUpdate(callback);
+  }
+
+  removeListener(callback) {
+    this.listeners = this.listeners.filter(cb => cb !== callback);
   }
 
   emit(state) {

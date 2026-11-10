@@ -106,6 +106,13 @@ assert(htmlContent.includes('tabular-nums'), 'CSS includes font-variant-numeric:
 assert(htmlContent.includes('"tnum" 1'), 'CSS includes font-feature-settings: "tnum" 1');
 assert(htmlContent.includes('min-width: 3ch'), 'Fixed width 3ch allocated for speed readouts');
 assert(htmlContent.includes('min-width: 4ch'), 'Fixed width 4ch allocated for RPM readouts');
+assert(htmlContent.includes('min-width: 2.2ch'), 'Fixed width 2.2ch allocated for Teku speed and C4/Z31 RPM');
+assert(htmlContent.includes('min-width: 5.5ch'), 'Fixed width 5.5ch allocated for G-force readouts');
+assert(htmlContent.includes('min-width: 14ch'), 'Fixed width 14ch allocated for track bar phase cycle');
+assert(htmlContent.includes('min-width: 90px'), 'Fixed width 90px allocated for headroom peak/rms and sim time');
+assert(htmlContent.includes('#val-s2k-gear'), 'S2K gear included in tabular layout locking');
+assert(htmlContent.includes('#val-lfa-gear'), 'LFA gear included in tabular layout locking');
+assert(htmlContent.includes('#c4-gear-box'), 'C4 gear box included in tabular layout locking');
 assert(htmlContent.includes('text-align: right'), 'Fixed numeric alignment text-align: right specified');
 
 // 6. Flat-Out WOT Attack Overhaul
@@ -217,8 +224,36 @@ assert(uiJsContent.includes('btnRunObd'), 'ui.js attaches listener to #btn-run-o
 assert(uiJsContent.includes('btnRunCalG'), 'ui.js attaches listener to #btn-run-cal-g');
 assert(uiJsContent.includes('btnRunExport'), 'ui.js attaches listener to #btn-run-export');
 assert(uiJsContent.includes('new TekuTestRunner'), 'ui.js instantiates TekuTestRunner bench engine');
+const { TekuTestRunner } = require('./js/test_runs.js');
+const runnerInst = new TekuTestRunner();
+assert(typeof runnerInst.addListener === 'function', 'TekuTestRunner implements addListener method');
+let updateFired = false;
+const unsub = runnerInst.addListener(() => { updateFired = true; });
+runnerInst.emit({});
+assert(updateFired === true, 'runner.addListener receives emitted state');
+if (typeof unsub === 'function') unsub();
+assert(uiJsContent.includes("testRunner.addListener === 'function'"), 'ui.js performs defensive feature detection on testRunner.addListener');
 assert(uiJsContent.includes('updateMusicInspectorUI'), 'ui.js defines updateMusicInspectorUI for matrix and headroom meters');
 assert(uiJsContent.includes('getAudioLevels'), 'ui.js polls getAudioLevels for headroom and clipping monitoring');
+
+// 12. Mobile Portrait Orientation Layout Optimization (360px - 390px)
+console.log('\nTEST 12: Verifying Mobile Portrait Orientation Layout (360px - 390px):');
+assert(htmlContent.includes('speed-card'), 'Teku cluster includes .speed-card class');
+assert(htmlContent.includes('rev-counter-card'), 'Teku cluster includes .rev-counter-card class');
+assert(htmlContent.includes('clamp(0.68rem, 2.8vw, 0.78rem)'), 'Header logo uses fluid clamp scaling for narrow portrait widths');
+assert(htmlContent.includes('clamp(0.50rem, 2.0vw, 0.58rem)'), 'Mode badge uses fluid clamp scaling to fit 360px portrait');
+assert(htmlContent.includes('clamp(1.9rem, 7.2vw, 2.4rem)'), 'Teku gauge big number scales safely within portrait cards');
+assert(htmlContent.includes('.lfa-speed-big span:first-child'), 'LFA speed number explicitly scoped on mobile to avoid overflow');
+assert(htmlContent.includes('grid-template-columns: repeat(2, 1fr)'), 'Stoplight action deck provides 2-column touch grid on mobile');
+assert(htmlContent.includes('.demo-actions-grid'), 'Demo actions grid optimized for mobile portrait view');
+assert(htmlContent.includes('.teku-brand'), 'Header brand styling applies to .teku-brand container');
+assert(htmlContent.includes('.c4-dic-cell .dseg-wrap'), 'C4 DIC digital numbers targeted with explicit 7-segment mobile styling');
+assert(htmlContent.includes('.teku-track-deck'), 'Teku track deck optimized for mobile portrait view');
+assert(htmlContent.includes('.pwa-mobile-banner'), 'PWA mobile banner scoped for 360px portrait margins');
+assert(htmlContent.includes('.visualizer-container canvas') && htmlContent.includes('155px'), 'Mobile CSS provides 155px canvas height for 30-band visualizer');
+assert(uiJsContent.includes('(NUM_SEGMENTS * segH + (NUM_SEGMENTS - 1) * segGapY) > plotH') || uiJsContent.includes('segGapY = plotH < 90 ? 1 : 2'), 'ui.js dynamically adapts segH and segGapY to plotH');
+
+
 
 
 console.log('\n====================================================');

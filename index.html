@@ -2036,19 +2036,35 @@
     /* ============================================================
        ESTACIÓN-TERRENA-PC ANTI-JITTER & TABULAR DATA LOCKING
        ============================================================ */
-    .num, .micro-val, .gauge-big-num, .card-value, .c4-digital-val, .c4-dic-num, .z31-digital-val {
+    .num, .micro-val, .gauge-big-num, .card-value, .c4-digital-val, .c4-dic-num, .z31-digital-val,
+    .dseg-val, .s2k-gear-num, .lfa-hub-gear, .lfa-hub-rpm-number, .s2k-sub-val, .lfa-mini-val,
+    #val-spd, #val-rpm, #val-tps, #val-g, #val-temp, #val-c4-spd, #val-c4-rpm, #val-c4-drive,
+    #val-c4-temp, #val-c4-bpm, #val-c4-g, #val-z31-spd, #val-z31-rpm, #val-s2k-spd, #val-s2k-rpm,
+    #val-s2k-gear, #val-lfa-spd, #val-lfa-rpm, #val-lfa-gear, #val-headroom-peak, #val-headroom-rms,
+    #val-limiter-reduction, #sim-time-text, #mode-badge, #label-bar-cycle,
+    #val-rpm-demo, #val-spd-demo, #val-tps-demo, #val-g-demo, #val-temp-demo,
+    #val-z31-temp, #val-s2k-temp, #val-s2k-tps, #val-s2k-trip, #val-s2k-g, #val-s2k-bpm,
+    #val-lfa-temp, #val-lfa-tps, #val-lfa-g, #val-mutation-count {
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
     }
 
-    #val-spd, #val-c4-spd, #val-z31-spd {
+    #val-spd {
+      min-width: 2.2ch;
       min-width: 3ch;
       display: inline-block;
       text-align: right;
       flex-shrink: 0;
     }
 
-    #val-rpm {
+    #val-c4-spd, #val-z31-spd, #val-s2k-spd, #val-lfa-spd, #val-spd-demo {
+      min-width: 3ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-rpm, #val-s2k-rpm, #val-lfa-rpm, #val-rpm-demo {
       min-width: 4ch;
       display: inline-block;
       text-align: right;
@@ -2062,6 +2078,22 @@
       flex-shrink: 0;
     }
 
+    #c4-gear-box, #val-c4-gear-box {
+      min-width: 5ch;
+      display: inline-flex;
+      justify-content: center;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    #val-s2k-gear, #val-lfa-gear {
+      min-width: 1.5ch;
+      display: inline-flex;
+      justify-content: center;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
     #val-tps, #val-tps-demo {
       min-width: 3ch;
       display: inline-block;
@@ -2069,15 +2101,71 @@
       flex-shrink: 0;
     }
 
+    #val-c4-drive {
+      min-width: 3.5ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-c4-bpm {
+      min-width: 3.5ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
     #val-g, #val-g-demo, #val-c4-g {
-      min-width: 5.4ch;
+      min-width: 5.5ch;
       display: inline-block;
       text-align: right;
       flex-shrink: 0;
     }
 
     #val-temp, #val-temp-demo, #val-c4-temp {
-      min-width: 4.5ch;
+      min-width: 3ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-z31-temp, #val-s2k-temp {
+      min-width: 5ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-s2k-tps {
+      min-width: 4ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-s2k-trip {
+      min-width: 7.5ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-s2k-g {
+      min-width: 6ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-s2k-bpm {
+      min-width: 7ch;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-lfa-g {
+      min-width: 4ch;
       display: inline-block;
       text-align: right;
       flex-shrink: 0;
@@ -2085,6 +2173,7 @@
 
     #mode-badge {
       min-width: 19ch;
+      min-width: 23ch;
       display: inline-flex;
       justify-content: center;
       text-align: center;
@@ -2092,9 +2181,32 @@
     }
 
     #label-bar-cycle {
-      min-width: 18ch;
+      min-width: 14ch;
+      min-width: 24ch;
       display: inline-block;
       text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-headroom-peak, #val-headroom-rms {
+      min-width: 90px;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #val-limiter-reduction {
+      min-width: 60px;
+      display: inline-block;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #sim-time-text {
+      min-width: 90px;
+      min-width: 115px;
+      display: inline-block;
+      text-align: center;
       flex-shrink: 0;
     }
 
@@ -2439,7 +2551,8 @@
       letter-spacing: 0.5px;
     }
 
-    .c4-dic-num {
+    .c4-dic-num,
+    .c4-dic-cell .dseg-wrap {
       font-family: 'DSEG7-Classic-Italic', monospace;
       font-style: italic;
       font-size: 1.75rem;
@@ -3867,6 +3980,17 @@
 
 /* Responsive Overrides for Mobile Viewports (<= 600px) */
 @media (max-width: 600px) {
+  body {
+    padding: 6px 8px;
+    overflow-x: hidden;
+  }
+  .container {
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   /* Compact 2-Row Mobile Header Architecture (Saves ~100px vertical height) */
   .teku-header {
     display: flex;
@@ -3876,51 +4000,76 @@
     clip-path: none;
     border-radius: 6px;
     min-height: auto;
+    width: 100%;
+    box-sizing: border-box;
   }
   .header-row-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    min-width: 0;
+    gap: 4px;
   }
   .header-row-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    min-width: 0;
   }
   .header-left {
     display: flex;
     align-items: center;
     gap: 5px;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .header-brand,
+  .teku-brand {
+    min-width: 0;
+    overflow: hidden;
   }
   .header-left .teku-crest {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
   }
   .header-left .teku-logo-text {
-    font-size: 0.80rem;
-    letter-spacing: 0.8px;
+    font-size: clamp(0.68rem, 2.8vw, 0.78rem);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .header-row-top #mode-badge {
-    font-size: 0.58rem;
+    font-size: clamp(0.50rem, 2.0vw, 0.58rem);
     padding: 2px 5px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     white-space: nowrap;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
   }
   .header-right {
     display: flex;
     align-items: center;
     gap: 4px;
     justify-content: flex-end;
+    flex-shrink: 0;
   }
   .header-right .btn-fullscreen-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3px 6px;
-    font-size: 0.70rem;
+    padding: 2px 6px;
+    font-size: 0.72rem;
     min-height: 24px;
+    min-width: 26px;
+    flex-shrink: 0;
   }
   .header-right .fs-label {
     display: none;
@@ -3936,128 +4085,631 @@
     justify-content: space-between;
     gap: 4px;
     width: 100%;
+    min-width: 0;
     flex-wrap: nowrap;
   }
   .header-center .view-mode-switcher {
     padding: 2px;
     gap: 2px;
     flex-shrink: 0;
+    display: flex;
   }
   .header-center .btn-view-toggle {
     font-size: 0.58rem;
-    padding: 2px 4px;
+    padding: 2px 5px;
     letter-spacing: 0;
+    white-space: nowrap;
   }
   .header-center .hud-skin-switcher {
     padding: 2px;
     gap: 2px;
     display: flex;
     flex-shrink: 1;
+    min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
   .header-center .btn-skin {
     font-size: 0.50rem;
-    padding: 2px 3px;
+    padding: 2px 4px;
     letter-spacing: 0;
     white-space: nowrap;
   }
 
-  /* S2000 AP1 Cluster Mobile Optimization */
-  .s2k-hero-row {
-    grid-template-columns: 64px 1fr 64px;
+  /* Teku Canopy Mobile Portrait Optimization */
+  .teku-canopy {
+    padding: 6px 8px;
+    gap: 8px;
+    clip-path: none;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .shift-light-bar {
+    padding: 3px 6px;
+    gap: 3px;
+  }
+  .teku-gauges-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
     gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+  .teku-gauge {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 6px;
+    clip-path: none;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .gauge-meta {
+    font-size: 0.55rem;
+    letter-spacing: 0.5px;
+    gap: 2px;
+  }
+  .gauge-meta .gauge-name {
+    font-size: clamp(0.48rem, 1.8vw, 0.56rem);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gauge-meta .gauge-limit {
+    font-size: clamp(0.42rem, 1.4vw, 0.48rem);
+    padding: 1px 2px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .gauge-number-wrap {
+    margin: 2px 0;
+    gap: 3px;
+    align-items: baseline;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .gauge-big-num {
+    font-size: clamp(1.9rem, 7.2vw, 2.4rem);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .gauge-unit-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .cluster-winglet {
+    width: 2px;
+    flex-shrink: 0;
+  }
+  .teku-micro-telemetry {
+    padding: 4px 6px;
+    font-size: 0.58rem;
+    gap: 4px;
+    clip-path: none;
+    border-radius: 4px;
+  }
+  .micro-label {
+    font-size: 0.50rem;
+    letter-spacing: 0.3px;
+  }
+  .micro-val {
+    font-size: 0.58rem;
+  }
+
+  /* Corvette C4 Cluster Mobile Portrait Optimization */
+  .c4-cluster-panel {
+    padding: 6px 6px 10px 6px;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .c4-bolt.tl { top: 2px; left: 2px; }
+  .c4-bolt.tr { top: 2px; right: 2px; }
+  .c4-bolt.bl { bottom: 2px; left: 2px; }
+  .c4-bolt.br { bottom: 2px; right: 2px; }
+  .c4-bezel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px;
+    width: 100%;
+  }
+  .c4-bay-speed {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 145px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  .c4-bay-tach {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 145px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  .c4-bay-title {
+    font-size: 0.52rem;
+    letter-spacing: 0.8px;
+    top: 4px;
+    left: 4px;
+  }
+  .c4-speed-digital-dock .dseg-wrap,
+  .c4-tach-val-dock .dseg-wrap {
+    font-size: 2.0rem;
+  }
+  .c4-gear-box {
+    font-size: 0.85rem;
+    padding: 1px 3px;
+    left: 32%;
+    top: 66%;
+  }
+  .c4-bay-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: auto;
+    padding: 0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .c4-dic-header {
+    font-size: clamp(0.46rem, 1.8vw, 0.54rem);
+    letter-spacing: 0.6px;
+    padding: 2px 4px;
+  }
+  .c4-delco-tag {
+    font-size: 0.44rem;
+    letter-spacing: 0.4px;
+  }
+  .c4-dic-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr 1.15fr;
+    gap: 0;
+    height: auto;
+  }
+  .c4-dic-cell {
+    padding: 4px 4px;
+    min-width: 0;
+  }
+  .c4-dic-num,
+  .c4-dic-cell .dseg-wrap {
+    font-size: 1.15rem;
+  }
+  .c4-label {
+    font-size: 0.50rem;
+    letter-spacing: 0.5px;
+  }
+  .c4-sub-label {
+    font-size: 0.45rem;
+  }
+  .c4-steering-cutout {
+    display: none;
+  }
+  .c4-bottom-notch-wrap {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin: 6px auto 0 auto;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .c4-year-plaque {
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    padding: 2px 10px;
+    transform: none;
+  }
+
+  /* Nissan 300ZX Z31 VFD Mobile Portrait Optimization */
+  .z31-cluster-panel {
+    padding: 6px 6px 10px 6px;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .z31-top-row {
+    padding: 4px 6px;
+    gap: 4px;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .z31-turn-arrow {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .z31-speed-box {
+    padding: 2px 6px;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .z31-speed-readout .dseg-wrap {
+    font-size: 1.7rem;
+  }
+  .z31-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.8px;
+  }
+  .z31-unit {
+    font-size: 0.58rem;
+  }
+  .z31-warning-lamp {
+    font-size: clamp(0.48rem, 1.8vw, 0.56rem);
+    padding: 2px 4px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .z31-main-grid {
+    grid-template-columns: 42px 1fr 42px;
+    gap: 4px;
+    padding: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .z31-sub-gauge {
+    padding: 4px 2px;
+    min-width: 0;
+  }
+  .z31-sub-title {
+    font-size: 0.52rem;
+    letter-spacing: 0.2px;
+  }
+  .z31-sub-val {
+    font-size: 0.52rem;
+  }
+  .z31-center-tach {
+    padding: 4px 6px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .z31-tach-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding-bottom: 2px;
+  }
+  .z31-tach-badge {
+    font-size: 0.58rem;
+    padding: 1px 3px;
+    letter-spacing: 0.5px;
+  }
+  .z31-tach-scale-label {
+    font-size: 0.50rem;
+    letter-spacing: 0.2px;
+  }
+  .z31-tach-num-wrap {
+    gap: 4px;
+  }
+  .z31-tach-num-wrap .dseg-wrap {
+    font-size: 1.4rem;
+  }
+  .z31-rpm-unit {
+    font-size: 0.54rem;
+  }
+  .z31-tach-svg {
+    height: 80px;
+    width: 100%;
+    margin: 2px 0;
+  }
+
+  /* Honda S2000 AP1 Mobile Portrait Optimization */
+  .s2k-cluster-panel {
+    padding: 6px 8px 12px 8px;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .s2k-tach-bay {
+    padding: 6px 8px;
+    overflow: hidden;
+  }
+  .s2k-tach-header {
+    font-size: clamp(0.50rem, 1.8vw, 0.60rem);
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+  }
+  .s2k-tach-arc {
+    height: 24px;
+    gap: 1.5px;
+    padding: 2px;
+  }
+  .s2k-tach-legend {
+    font-size: 0.54rem;
+    margin-top: 2px;
+    padding: 0 2px;
+  }
+  .s2k-hero-row {
+    display: grid;
+    grid-template-columns: minmax(46px, 56px) 1fr minmax(46px, 56px);
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .s2k-wing-bay {
-    padding: 6px 3px;
+    padding: 4px 2px;
+    min-width: 0;
+  }
+  .s2k-gauge-title {
+    font-size: 0.54rem;
+    letter-spacing: 0.4px;
   }
   .s2k-vert-ladder {
-    width: 20px;
+    width: 18px;
   }
   .s2k-sub-val {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
   }
   .s2k-center-stage {
-    padding: 6px 8px;
+    padding: 4px 6px;
+    min-width: 0;
+    overflow: hidden;
   }
-  .s2k-dseg-spd {
-    font-size: 3.2rem;
-    min-width: 2.2ch;
+  .s2k-gear-bezel {
+    gap: 4px;
   }
-  .s2k-unit-label {
-    font-size: 0.85rem;
+  .s2k-gear-lbl {
+    font-size: 0.58rem;
   }
   .s2k-gear-num {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+  }
+  .s2k-speed-dock {
+    gap: 4px;
+    align-items: baseline;
+  }
+  .s2k-dseg-spd {
+    font-size: clamp(2.3rem, 7.8vw, 2.8rem);
+    min-width: 2ch;
+    letter-spacing: -1px;
+  }
+  .s2k-unit-label {
+    font-size: 0.70rem;
+  }
+  .s2k-rev-indicator {
+    font-size: 0.56rem;
+    padding: 2px 6px;
+    letter-spacing: 0.4px;
   }
   .s2k-bottom-strip {
-    font-size: 0.65rem;
-    gap: 8px;
+    font-size: 0.58rem;
+    gap: 6px;
     flex-wrap: wrap;
     justify-content: center;
+    padding: 0 2px;
   }
 
   /* Lexus LFA Motorized Ring Mobile Layout */
+  .lfa-cluster-panel {
+    padding: 6px 8px 12px 8px;
+    overflow: hidden;
+    border-radius: 6px;
+  }
   .lfa-bezel {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-areas: 
       "ring ring"
       "left right";
-    gap: 8px;
+    gap: 6px;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
   }
   .lfa-ring-container {
     grid-area: ring;
-    width: 190px;
-    height: 190px;
+    width: 176px;
+    height: 176px;
     margin: 0 auto;
   }
   .lfa-center-hub {
-    width: 110px;
-    height: 110px;
+    width: 102px;
+    height: 102px;
   }
   .lfa-hub-rpm-number {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
   .lfa-hub-gear {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
+  }
+  .lfa-hub-rpm-label {
+    font-size: 0.50rem;
+  }
+  .lfa-flank-card {
+    padding: 6px 8px;
+    min-width: 0;
+    overflow: hidden;
   }
   .lfa-left-card {
     grid-area: left;
-    padding: 8px 10px;
   }
   .lfa-right-card {
     grid-area: right;
-    padding: 8px 10px;
+  }
+  .lfa-card-title {
+    font-size: 0.54rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
   }
   .lfa-speed-big {
-    font-size: 2.4rem;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .lfa-speed-big span:first-child {
+    font-size: 1.95rem;
+    min-width: 3ch;
+  }
+  .lfa-speed-big .lfa-unit {
+    font-size: 0.70rem;
+  }
+  .lfa-mini-meter {
+    grid-template-columns: 24px 1fr 34px;
+    gap: 4px;
+    font-size: 0.58rem;
   }
   .lfa-g-radar {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
+  }
+  .lfa-g-val-text {
+    font-size: 0.56rem;
+  }
+  .lfa-mode-tag {
+    font-size: 0.52rem;
+    padding: 1px 4px;
   }
 
   /* Stoplight Button Deck Mobile Touch Optimization */
-  .stoplight-buttons-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .run-stoplight-deck {
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .sound-deck-trigger .btn-accelecharger {
+    min-height: 52px;
+    padding: 10px 14px;
+    font-size: clamp(0.82rem, 3.2vw, 0.96rem);
+    letter-spacing: 1px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .stoplight-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .btn-stoplight {
     min-height: 56px;
-    padding: 8px 6px;
+    padding: 8px 4px;
+    gap: 3px;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .btn-sl-icon {
     font-size: 1.3rem;
   }
   .btn-sl-text {
-    font-size: 0.68rem;
-    letter-spacing: 0.5px;
+    font-size: clamp(0.60rem, 2.1vw, 0.68rem);
+    letter-spacing: 0.3px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .visualizer-container {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .visualizer-container canvas {
+    height: 155px;
+  }
+  .teku-track-deck {
+    padding: 6px 8px;
+    clip-path: none;
+    border-radius: 4px;
+    font-size: 0.65rem;
   }
 
-  /* Music Inspector on Mobile */
+  /* Dual-View & Simulator Debug Lab in Mobile Portrait */
+  .demo-lab-header {
+    padding: 8px 10px;
+    gap: 6px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .demo-lab-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.8px;
+  }
+  #btn-back-cockpit {
+    font-size: 0.68rem;
+    padding: 6px 10px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .sim-transport-bar {
+    padding: 8px 10px;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .sim-transport-bar #select-test-run {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 0.72rem;
+  }
+  .sim-controls-row {
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .sim-controls-row .btn-sim-transport {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+  .sim-scrubber-wrap {
+    gap: 6px;
+  }
+  #sim-time-text {
+    font-size: 0.68rem;
+    min-width: 90px;
+    min-width: 105px;
+  }
+  .sim-stage-banner {
+    font-size: 0.66rem;
+    padding: 4px 8px;
+  }
+  .debug-music-inspector {
+    padding: 8px 10px;
+    gap: 8px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inspector-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .inspector-title {
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+  }
+  .seed-controls-group {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .seed-controls-group input,
+  .seed-controls-group select,
+  .seed-controls-group button {
+    font-size: 0.68rem;
+    padding: 4px 6px;
+  }
+  #input-custom-seed {
+    max-width: 110px;
+    flex: 1;
+    min-width: 60px;
+  }
+  #select-archetype, #select-key {
+    max-width: 100%;
+    width: 100%;
+  }
   .macro-progression-bar {
     gap: 2px;
   }
@@ -4066,14 +4718,64 @@
     font-size: 0.52rem;
     padding: 3px 1px;
   }
+  .matrix-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 4px 0;
+  }
+  .matrix-table {
+    font-size: 0.64rem;
+    min-width: 320px;
+  }
+  .matrix-table th, .matrix-table td {
+    padding: 2px 3px;
+  }
   .headroom-monitor-row {
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
   }
   .led-clip-box {
-    grid-column: span 2;
+    grid-column: 2;
+    align-self: center;
     flex-direction: row;
     justify-content: center;
+    gap: 6px;
+    padding: 4px;
+  }
+  .demo-actions-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    width: 100%;
+  }
+  .demo-actions-grid button {
+    padding: 8px 8px !important;
+    font-size: 0.70rem !important;
+    min-height: 40px !important;
+    width: 100% !important;
+  }
+  .deck-mode-bar {
+    gap: 6px !important;
+    padding: 6px !important;
+    font-size: 0.66rem !important;
+  }
+  .deck-mode-bar div {
+    font-size: 0.66rem !important;
+  }
+  .grid-dashboard {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .pwa-mobile-banner {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    padding: 8px 10px;
+    gap: 8px;
+    clip-path: none;
+    border-radius: 6px;
   }
 }
 
@@ -4162,7 +4864,7 @@
       <!-- TWIN DIGITAL HERO GAUGES -->
       <div class="teku-gauges-row">
         <!-- SPEEDOMETER -->
-        <div class="teku-gauge speed-section">
+        <div class="teku-gauge speed-section speed-card">
           <div class="gauge-meta">
             <span class="gauge-name">SPEED</span>
             <span class="gauge-limit">MAX 60</span>
@@ -4180,7 +4882,7 @@
         <div class="cluster-winglet"></div>
 
         <!-- REV COUNTER / TACHOMETER -->
-        <div class="teku-gauge rpm-section">
+        <div class="teku-gauge rpm-section rev-counter-card">
           <div class="gauge-meta">
             <span class="gauge-name">REV COUNTER</span>
             <span class="gauge-limit">SHIFT 2.4K</span>
@@ -4213,7 +4915,7 @@
         </div>
         <div class="micro-item" style="flex: 0 0 auto;">
           <span class="micro-label">COOLANT</span>
-          <span class="micro-val" id="val-temp" style="color: var(--teku-cyan);">88°C</span>
+          <span class="micro-val" style="color: var(--teku-cyan);"><span id="val-temp">88</span>°C</span>
         </div>
       </div>
     </div>
@@ -4814,7 +5516,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span style="font-family: 'Orbitron', monospace; font-size: 0.78rem; font-weight: 900; color: var(--teku-cyan);">SCENARIO:</span>
-          <select id="select-test-run" class="select-teku" style="min-width: 280px; font-size: 0.76rem;"></select>
+          <select id="select-test-run" class="select-teku" style="font-size: 0.76rem;"></select>
         </div>
         <div style="display: flex; gap: 6px; align-items: center;">
           <input type="file" id="input-import-log" accept=".csv,.json,.tsv" style="display: none;">
